@@ -1,10 +1,11 @@
+
 <template>
   <img alt="Dashboard logo" src="./assets/logo-dash.jpeg">
   <DashBoard msg="Welcome to Your Dashboard"/>
 </template>
 
 <script>
-import Dashboard from "@/components/Dashboard.vue";
+import Dashboard from "@/components/Scenarios.vue"; // change the .vue file that is displayed here
 
 export default {
   name: 'App',
@@ -24,3 +25,5 @@ export default {
   margin-top: 60px;
 }
 </style>
+
+
