@@ -42,3 +42,36 @@ docker run -p 8080:80 --name <ContainerName> <TagName> -d
 ### Access the Dashboard
 
 If you used the default host port `8080`, you can now access the dashboard via http://localhost:8080/
+
+___
+## Run via Docker Compose
+
+To start the Dashboard and all its dependencies you can use the provided docker-compose file.
+The following commands need to be executed in the folder of the docker compose file.
+
+### Start Everything with Docker Compose
+
+```
+docker compose up -d
+```
+- `-d`_ Starts the container in detached mode, so that you dont need to have the terminal open and running.
+
+### Access the Dashboard
+
+If you used the default host port `8080`, you can now access the dashboard via http://localhost:8080/
+
+
+### Stop Everything with Docker Compose
+
+```
+docker compose down
+```
+
+### Further information to the docker-compose.yml
+- `version: "1"`: Version of the docker-compose file.
+- `name: "dashboard-project"`: The name of the toplevel container group that contains all the containers.
+- `services:`: Here we describe all the services we want to start with the docker compose file.
+- `dashboard:`: Is the name of your first server (The dashboard).
+- `build: ./:`: Because we have no image registry we need to build the Dockerfile manually at the location `./` which is our Dockerfile.
+- `ports: - 8080:80:`: Here we describe which ports we want to bind to our container. Our Dockerfile opens up port `80`, and we now bind it to our system port `8080`.
+- `networks: dashboardNetwork`: We currently dont need this because we only have one service, but when we have more then one this is the network layer our services can communicate over.
