@@ -1,6 +1,7 @@
 <template>
+  <img alt="Dashboard logo" src="@/assets/logo-dash.jpeg">
   <div class="hello">
-    <h1>{{ msg }}</h1>
+    <h1>Welcome to Your Dashboard</h1>
     <p>
       This is our Dashboard
     </p>
