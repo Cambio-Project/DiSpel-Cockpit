@@ -1,3 +1,79 @@
+<script>
+import axios from "core-js/internals/queue";
+
+export default {
+  data() {
+    return {
+      scopes: ["Globally", "Before R", "After Q", "Between Q and R", "After Q until R"],
+      selectionType: null,
+      occurrenceOptions: ["Steady State", "Minimum Duration", "Maximum Duration", "Recurrence", "Universality", "Absence", "Existence", "Bounded Existence", "Transient State"],
+      orderOptions: ["Response", "Response Chain 1N", "Response Chain N1", "Response Invariance", "Precedence", "Precedence Chain 1N", "Precedence Chain N1", "Until"],
+      events: ["EventA"],
+      customEvent: "",
+      targetLogics: ["SEG", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
+      selectedScope: null,
+      selectedOccurrence: null,
+      selectedOrder: null,
+      selectedEvent: null,
+      selectedTargetLogic: "SEG",
+      mapping: null
+    };
+  },
+  methods: {
+    handleOccurrenceChange() {
+      // Reset selected event when occurrence changes
+      this.selectedEvent = null;
+    },
+    handleTypeChange() {
+      // Reset preview when pattern type changes
+      this.selectedOccurrence = null;
+      this.selectedOrder = null;
+    },
+    addCustomEvent() {
+      // Add the custom event to the list if it is not empty
+      if (this.customEvent.trim() !== "") {
+        this.events.push(this.customEvent.trim());
+        // Clear the input field after adding the custom event
+        this.customEvent = "";
+      }
+    },
+    async transformToTemporalLogic() {
+
+      try {
+        // Perform the HTTP request with the input data
+        //TODO correct endpoint
+        const response = await axios.post('http://localhost:8080/transformPattern', {
+          scope: this.selectedScope,
+          pattern: this.selectionType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
+          patternProps: {
+            event: this.selectedEvent,
+            time: null,
+            probability: null,
+          },
+          events: [
+            {
+              name: this.selectedEvent,
+              specification: null
+            }
+          ],
+          targetLogic: this.selectedTargetLogic,
+        });
+
+        // Update the mapping property with the response
+        this.mapping = response.data;
+
+        // Debug
+        console.log(this.mapping);
+        console.log('Transformation successful!');
+      } catch (error) {
+        // Handle any errors that occur during the HTTP request
+        console.error('Error transforming to temporal logic:', error);
+      }
+    },
+  },
+};
+</script>
+
 <template>
   <div class="selection-container">
     <h1>PSPWizard</h1>
@@ -37,6 +113,19 @@
       </select>
     </div>
 
+    <div class="selection-group">
+      <div class="button-group">
+        <button class="button" @click="test">Time Bound</button>
+        <button class="button" @click="test">Probability Bound</button>
+      </div>
+    </div>
+
+    <div class="selection-group">
+      <label class="title">Add Custom Event:</label>
+      <input v-model="customEvent" type="text" class="select-event-box" />
+      <button class="event-button" @click="addCustomEvent">Add Custom Event</button>
+    </div>
+
     <div class="message-container">
       <p>Preview:</p>
       <div v-if="selectedOccurrence === 'Universality'">
@@ -66,47 +155,30 @@
       </div>
     </div>
 
+    <div class="selection-group">
+      <label class="title">Target Logic:</label><br>
+      <select v-model="selectedTargetLogic">
+        <option v-for="targetLogic in targetLogics" :key="targetLogic">{{ targetLogic }}</option>
+      </select>
+    </div>
+
     <div class="selected-options">
       <label class="title">Selected Options:</label>
-      <div>{{ selectedScope }}, {{ selectionType === 'Occurrence' ? selectedOccurrence : selectedOrder }}</div>
+      <div>{{ selectedScope }}, {{ selectionType === 'Occurrence' ? selectedOccurrence : selectedOrder }}, {{selectedTargetLogic}}</div>
     </div>
 
     <div>
-      <button class="commit-button" @click="test">Transform to Temporal Logic</button>
+      <button class="commit-button" @click="transformToTemporalLogic">Transform to {{ selectedTargetLogic }}</button>
+    </div>
+
+    <div class="message-container">
+      <p>Specification in Target Logic:</p>
+      <pre v-if="mapping">{{ JSON.stringify(mapping, null, 2) }}</pre>
     </div>
 
     <br>
   </div>
 </template>
-
-<script>
-export default {
-  data() {
-    return {
-      scopes: ["Globally", "Before R", "After Q", "Between Q and R", "After Q until R"],
-      selectionType: null,
-      occurrenceOptions: ["Steady State", "Minimum Duration", "Maximum Duration", "Recurrence", "Universality", "Absence", "Existence", "Bounded Existence", "Transient State"],
-      orderOptions: ["Response", "Response Chain 1N", "Response Chain N1", "Response Invariance", "Precedence", "Precedence Chain 1N", "Precedence Chain N1", "Until"],
-      events: ["EventA", "EventB", "EventC"],
-      selectedScope: null,
-      selectedOccurrence: null,
-      selectedOrder: null,
-      selectedEvent: null,
-    };
-  },
-  methods: {
-    handleOccurrenceChange() {
-      // Reset selected event when occurrence changes
-      this.selectedEvent = null;
-    },
-    handleTypeChange() {
-      // Reset preview when pattern type changes
-      this.selectedOccurrence = null;
-      this.selectedOrder = null;
-    },
-  },
-};
-</script>
 
 <style scoped>
 .selection-container {
@@ -115,7 +187,7 @@ export default {
 }
 
 .selection-group {
-  margin-bottom: 15px;
+  margin: 1vw;
 }
 
 .selection-group .title {
@@ -127,6 +199,14 @@ export default {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.select-event-box {
+  width: 50%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-left: 0.4vw;
 }
 
 .radio-group {
@@ -161,16 +241,46 @@ export default {
   font-weight: bold;
 }
 
+.button {
+  background-color: #ccc; /* Green */
+  border: none;
+  color: black;
+  padding: 0.7vw 1.4vw;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 0.6vw;
+  margin: 0.6vw;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 8vw;
+}
+
+.event-button {
+  background-color: #ccc; /* Green */
+  border: none;
+  color: black;
+  padding: 0.7vw 1.4vw;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 0.8vw;
+  margin: 0.6vw;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 10vw;
+}
+
 .commit-button {
   background-color: #4CAF50; /* Green */
   border: none;
   color: white;
-  padding: 10px 20px;
+  padding: 0.7vw 1.4vw;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 16px;
-  margin-top: 10px;
+  font-size: 0.9vw;
+  margin-top: 0.6vw;
   cursor: pointer;
   border-radius: 4px;
 }
