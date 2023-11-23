@@ -1,5 +1,5 @@
 <script>
-import axios from "core-js/internals/queue";
+//import axios from "core-js/internals/queue";
 
 export default {
   data() {
@@ -39,28 +39,38 @@ export default {
     },
     async transformToTemporalLogic() {
 
+      const payload = JSON.stringify({
+        scope: this.selectedScope,
+        pattern: this.selectionType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
+        patternProps: {
+          event: this.selectedEvent,
+          timeBound: "",
+          probabilityBound: ""
+        },
+        events: [
+          {
+            name: this.selectedEvent,
+            specification: ""
+          }
+        ],
+        targetLogic: this.selectedTargetLogic,
+      })
+
+      console.log(payload)
+
       try {
         // Perform the HTTP request with the input data
         //TODO correct endpoint
-        const response = await axios.post('http://localhost:8080/transformPattern', {
-          scope: this.selectedScope,
-          pattern: this.selectionType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
-          patternProps: {
-            event: this.selectedEvent,
-            time: null,
-            probability: null,
+        const response = await fetch('http://localhost:8080/transformPattern', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
           },
-          events: [
-            {
-              name: this.selectedEvent,
-              specification: null
-            }
-          ],
-          targetLogic: this.selectedTargetLogic,
+          body: payload
         });
 
         // Update the mapping property with the response
-        this.mapping = response.data;
+        this.mapping = await response.json();
 
         // Debug
         console.log(this.mapping);
