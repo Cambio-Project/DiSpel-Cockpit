@@ -14,7 +14,10 @@ export default {
       selectedScope: null,
       selectedOccurrence: null,
       selectedOrder: null,
-      selectedEvent: null,
+      selectedEvent1: null,
+      selectedEvent2: null,
+      selectedEvent3: null,
+      selectedEvent4: null,
       selectedTargetLogic: "SEG",
       mapping: null
     };
@@ -37,30 +40,9 @@ export default {
         this.customEvent = "";
       }
     },
-    async transformToTemporalLogic() {
-
-      const payload = JSON.stringify({
-        scope: this.selectedScope,
-        pattern: this.selectionType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
-        patternProps: {
-          event: this.selectedEvent,
-          timeBound: "",
-          probabilityBound: ""
-        },
-        events: [
-          {
-            name: this.selectedEvent,
-            specification: ""
-          }
-        ],
-        targetLogic: this.selectedTargetLogic,
-      })
-
-      console.log(payload)
-
+    async sendTransformRequest(payload) {
       try {
         // Perform the HTTP request with the input data
-        //TODO correct endpoint
         const response = await fetch('http://localhost:8080/transformPattern', {
           method: "POST",
           headers: {
@@ -79,6 +61,29 @@ export default {
         // Handle any errors that occur during the HTTP request
         console.error('Error transforming to temporal logic:', error);
       }
+    },
+    async transformToTemporalLogic() {
+
+      const payload = JSON.stringify({
+        scope: this.selectedScope,
+        pattern: this.selectionType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
+        patternProps: {
+          event: this.selectedEvent3,
+          timeBound: "",
+          probabilityBound: ""
+        },
+        events: [
+          {
+            name: this.selectedEvent3,
+            specification: ""
+          }
+        ],
+        targetLogic: this.selectedTargetLogic,
+      })
+
+      console.log(payload)
+
+      await this.sendTransformRequest(payload)
     },
   },
 };
@@ -138,27 +143,65 @@ export default {
 
     <div class="message-container">
       <p>Preview:</p>
+      <div v-if="selectedScope === 'Globally'">
+        Globally
+      </div>
+      <div v-if="selectedScope === 'Before R'">
+        Before
+        <select v-model="selectedEvent1">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+      </div>
+      <div v-if="selectedScope === 'After Q'">
+        After
+        <select v-model="selectedEvent1">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+      </div>
+      <div v-if="selectedScope === 'Between Q and R'">
+        Between
+        <select v-model="selectedEvent1">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        and
+        <select v-model="selectedEvent2">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+      </div>
+      <div v-if="selectedScope === 'After Q until R'">
+        After
+        <select v-model="selectedEvent1">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        until
+        <select v-model="selectedEvent2">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+      </div>
+
+      <br>
+
       <div v-if="selectedOccurrence === 'Universality'">
-        It is always the case that
-        <select v-model="selectedEvent">
+        it is always the case that
+        <select v-model="selectedEvent3">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         holds.
       </div>
       <div v-if="selectedOccurrence === 'Absence'">
         It is never the case that
-        <select v-model="selectedEvent">
+        <select v-model="selectedEvent3">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         holds.
       </div>
       <div v-if="selectedOrder=== 'Response'">
-        If
-        <select v-model="selectedEvent">
+        if
+        <select v-model="selectedEvent3">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [has occurred] then in response
-        <select v-model="selectedEvent">
+        <select v-model="selectedEvent4">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [eventually holds].
@@ -170,11 +213,6 @@ export default {
       <select v-model="selectedTargetLogic">
         <option v-for="targetLogic in targetLogics" :key="targetLogic">{{ targetLogic }}</option>
       </select>
-    </div>
-
-    <div class="selected-options">
-      <label class="title">Selected Options:</label>
-      <div>{{ selectedScope }}, {{ selectionType === 'Occurrence' ? selectedOccurrence : selectedOrder }}, {{selectedTargetLogic}}</div>
     </div>
 
     <div>
@@ -251,16 +289,20 @@ export default {
   font-weight: bold;
 }
 
+.button-group {
+  display: flex;
+}
+
 .button {
   background-color: #ccc; /* Green */
   border: none;
   color: black;
-  padding: 0.7vw 1.4vw;
+  padding: 0.4vw 1vw;
   text-align: center;
   text-decoration: none;
   display: inline-block;
   font-size: 0.6vw;
-  margin: 0.6vw;
+  margin: 0.2vw;
   cursor: pointer;
   border-radius: 4px;
   width: 8vw;
