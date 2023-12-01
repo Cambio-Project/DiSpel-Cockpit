@@ -18,6 +18,7 @@ export default {
       selectedEvent2: null,
       selectedEvent3: null,
       selectedEvent4: null,
+      selectedEvent5: null,
       selectedTargetLogic: "SEG",
       mapping: null
     };
@@ -181,6 +182,32 @@ export default {
 
       <br>
 
+      <div v-if="selectedOccurrence === 'Steady State'">
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] in the long run.
+      </div>
+      <div v-if="selectedOccurrence === 'Minimum Duration'">
+        once
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [becomes satisfied] it remains so for at least //TODO
+      </div>
+      <div v-if="selectedOccurrence === 'Maximum Duration'">
+        once
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [becomes satisfied] it remains so for less than //TODO
+      </div>
+      <div v-if="selectedOccurrence === 'Recurrence'">
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] repeatedly [every //TODO]
+      </div>
       <div v-if="selectedOccurrence === 'Universality'">
         it is always the case that
         <select v-model="selectedEvent3">
@@ -189,11 +216,29 @@ export default {
         holds.
       </div>
       <div v-if="selectedOccurrence === 'Absence'">
-        It is never the case that
+        it is never the case that
         <select v-model="selectedEvent3">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         holds.
+      </div>
+      <div v-if="selectedOccurrence === 'Existence'">
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] eventually.
+      </div>
+      <div v-if="selectedOccurrence === 'Bounded Existence'">
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] at most //TODO times.
+      </div>
+      <div v-if="selectedOccurrence === 'Transient State'">
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] after //TODO
       </div>
       <div v-if="selectedOrder=== 'Response'">
         if
@@ -205,6 +250,78 @@ export default {
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [eventually holds].
+      </div>
+      <div v-if="selectedOrder=== 'Response Chain 1N'">
+        if
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [has occurred] then in response
+        <select v-model="selectedEvent4">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [eventually holds] //TODO
+      </div>
+      <div v-if="selectedOrder=== 'Response Chain N1'">
+        if
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        //TODO
+      </div>
+      <div v-if="selectedOrder=== 'Response Invariance'">
+        if
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [has occurred] then in response
+        <select v-model="selectedEvent4">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] continually.
+      </div>
+      <div v-if="selectedOrder=== 'Precedence'">
+        if
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] then it must have been the case that
+        <select v-model="selectedEvent4">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [has occured] before
+        <select v-model="selectedEvent5">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds].
+      </div>
+      <div v-if="selectedOrder=== 'Precedence Chain 1N'">
+        if
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] //TODO
+      </div>
+      <div v-if="selectedOrder=== 'Precedence Chain N1'">
+        if
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] then it must be the case that
+        <select v-model="selectedEvent4">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        //TODO
+      </div>
+      <div v-if="selectedOrder=== 'Until'">
+        <select v-model="selectedEvent3">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] without interruption until
+        <select v-model="selectedEvent4">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds].
       </div>
     </div>
 
