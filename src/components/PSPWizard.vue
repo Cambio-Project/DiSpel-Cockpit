@@ -14,8 +14,8 @@ export default {
       selectedScope: null,
       selectedOccurrence: null,
       selectedOrder: null,
-      selectedEvent1: null,
-      selectedEvent2: null,
+      selectedScopeEventQ: null,
+      selectedScopeEventR: null,
       selectedEvent3: null,
       selectedEvent4: null,
       selectedEvent5: null,
@@ -65,6 +65,8 @@ export default {
     },
     async transformToTemporalLogic() {
 
+      /*
+      // old payload
       const payload = JSON.stringify({
         scope: this.selectedScope,
         pattern: this.selectionType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
@@ -80,6 +82,44 @@ export default {
           }
         ],
         targetLogic: this.selectedTargetLogic,
+      })
+       */
+
+      const payload = JSON.stringify({
+        scope: {
+          type: this.selectedScope,
+          q_event: {
+            name: this.selectedScopeEventQ,
+            specification: ""
+          },
+          r_event: {
+            name: this.selectedScopeEventR,
+            specification: ""
+          }
+        },
+        pattern: {
+          type: this.selectionType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
+          event: {
+            name: this.selectedEvent3,
+            specification: ""
+          },
+          pattern_specifications: {
+            time_unit: "",
+            upper_limit: "",
+            frequency: ""
+          },
+          time_bound: {
+            type: "",
+            time_unit: "",
+            upper_limit: "",
+            lower_limit: ""
+          },
+          probability_bound: {
+            type: "",
+            probability: ""
+          }
+        },
+        target_logic: this.selectedTargetLogic
       })
 
       console.log(payload)
@@ -149,33 +189,33 @@ export default {
       </div>
       <div v-if="selectedScope === 'Before R'">
         Before
-        <select v-model="selectedEvent1">
+        <select v-model="selectedScopeEventQ">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
       </div>
       <div v-if="selectedScope === 'After Q'">
         After
-        <select v-model="selectedEvent1">
+        <select v-model="selectedScopeEventQ">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
       </div>
       <div v-if="selectedScope === 'Between Q and R'">
         Between
-        <select v-model="selectedEvent1">
+        <select v-model="selectedScopeEventQ">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         and
-        <select v-model="selectedEvent2">
+        <select v-model="selectedScopeEventR">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
       </div>
       <div v-if="selectedScope === 'After Q until R'">
         After
-        <select v-model="selectedEvent1">
+        <select v-model="selectedScopeEventQ">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         until
-        <select v-model="selectedEvent2">
+        <select v-model="selectedScopeEventR">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
       </div>
