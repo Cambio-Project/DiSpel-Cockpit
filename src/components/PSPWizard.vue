@@ -1,11 +1,76 @@
 <script>
 //import axios from "core-js/internals/queue";
 
+// creates the scope part of the payload
+function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR) {
+  return {
+    type: selectedScope,
+    q_event: createEvent(selectedScopeEventQ, ""),
+    r_event: createEvent(selectedScopeEventR, "")
+  };
+}
+
+// creates the event part of the payload
+function createEvent(name, specification) {
+  return {
+    name: name,
+    specification: specification
+  };
+}
+
+// creates the time_bound part of the payload
+function createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
+  return {
+    type: type,
+    time_unit: timeUnit,
+    upper_limit: upperLimit,
+    lower_limit: lowerLimit
+  };
+}
+
+// creates the pattern part of the payload
+function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS) {
+  return {
+    type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
+    event_p: createEvent(selectedEventP, ""),
+    event_s: createEvent(selectedEventS, ""),
+    chained_events: [
+      {
+        event: createEvent("", ""),
+        constrain_event: createEvent("", ""),
+        time_bound: createTimeBound("", "", 0, 0)
+      }
+    ],
+    pattern_specifications: {
+      time_unit: "",
+      upper_limit: 0,
+      frequency: 0
+    },
+    pattern_constrains: {
+      time_bound: createTimeBound("", "", 0, 0),
+      probability_bound: {
+        type: "",
+        probability: 0
+      },
+      event_constrain: createEvent("", "")
+    }
+  };
+}
+
+// creates the payload
+function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTargetLogic) {
+  return {
+    scope: createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR),
+    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS),
+    target_logic: selectedTargetLogic
+  };
+}
+
 export default {
   data() {
     return {
       scopes: ["Globally", "Before R", "After Q", "Between Q and R", "After Q until R"],
-      selectionType: null,
+      selectedPatternType: null,
       occurrenceOptions: ["Steady State", "Minimum Duration", "Maximum Duration", "Recurrence", "Universality", "Absence", "Existence", "Bounded Existence", "Transient State"],
       orderOptions: ["Response", "Response Chain 1N", "Response Chain N1", "Response Invariance", "Precedence", "Precedence Chain 1N", "Precedence Chain N1", "Until"],
       events: ["EventA"],
@@ -16,8 +81,8 @@ export default {
       selectedOrder: null,
       selectedScopeEventQ: null,
       selectedScopeEventR: null,
-      selectedEvent3: null,
-      selectedEvent4: null,
+      selectedEventP: null,
+      selectedEventS: null,
       selectedEvent5: null,
       selectedTargetLogic: "SEG",
       mapping: null
@@ -66,18 +131,18 @@ export default {
     async transformToTemporalLogic() {
 
       /*
-      // old payload
+      // very old payload
       const payload = JSON.stringify({
         scope: this.selectedScope,
-        pattern: this.selectionType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
+        pattern: this.selectedPatternType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
         patternProps: {
-          event: this.selectedEvent3,
+          event: this.selectedEventP,
           timeBound: "",
           probabilityBound: ""
         },
         events: [
           {
-            name: this.selectedEvent3,
+            name: this.selectedEventP,
             specification: ""
           }
         ],
@@ -85,6 +150,7 @@ export default {
       })
        */
 
+      /*
       const payload = JSON.stringify({
         scope: {
           type: this.selectedScope,
@@ -98,9 +164,9 @@ export default {
           }
         },
         pattern: {
-          type: this.selectionType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
+          type: this.selectedPatternType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
           event: {
-            name: this.selectedEvent3,
+            name: this.selectedEventP,
             specification: ""
           },
           pattern_specifications: {
@@ -121,10 +187,79 @@ export default {
         },
         target_logic: this.selectedTargetLogic
       })
+      */
+      /*
+      const payload = JSON.stringify({
+        scope: {
+          type: this.selectedScope,
+          q_event: {
+            name: this.selectedScopeEventQ,
+            specification: ""
+          },
+          r_event: {
+            name: this.selectedScopeEventR,
+            specification: ""
+          }
+        },
+        pattern: {
+          type: this.selectedPatternType === 'Occurrence' ? this.selectedOccurrence : this.selectedOrder,
+          event_p: {
+            name: this.selectedEventP,
+            specification: ""
+          },
+          event_s: {
+            name: "",
+            specification: ""
+          },
+          chained_events: [
+            {
+              event: {
+                name: "",
+                specification: ""
+              },
+              constrain_event: {
+                name: "",
+                specification: ""
+              },
+              time_bound: {
+                type: "Interval",
+                time_unit: "min",
+                upper_limit: 20,
+                lower_limit: 12
+              }
+            }
+          ],
+          pattern_specifications: {
+            time_unit: "sec",
+            upper_limit: 14,
+            frequency: 3
+          },
+          pattern_constrains: {
+            time_bound: {
+              type: "Interval",
+              time_unit: "sec",
+              upper_limit: 42,
+              lower_limit: 31
+            },
+            probability_bound: {
+              type: "GreaterThan",
+              probability: 0.2
+            },
+            event_constrain: {
+              name: "eventConstrain",
+              specification: "eventConstrainSpecificiation"
+            }
+          }
+        },
+        target_logic: this.selectedTargetLogic
+      })
+       */
+
+      const payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedTargetLogic);
 
       console.log(payload)
 
-      await this.sendTransformRequest(payload)
+      await this.sendTransformRequest(JSON.stringify(payload))
     },
   },
 };
@@ -145,24 +280,24 @@ export default {
       <label class="title">Pattern Type:</label>
       <div class="radio-group">
         <div class="radio">
-          <input type="radio" v-model="selectionType" value="Occurrence" id="occurrence" @change="handleTypeChange" />
+          <input type="radio" v-model="selectedPatternType" value="Occurrence" id="occurrence" @change="handleTypeChange" />
           <label for="occurrence">Occurrence</label>
         </div>
         <div class="radio">
-          <input type="radio" v-model="selectionType" value="Order" id="order" @change="handleTypeChange" />
+          <input type="radio" v-model="selectedPatternType" value="Order" id="order" @change="handleTypeChange" />
           <label for="order">Order</label>
         </div>
       </div>
     </div>
 
-    <div v-if="selectionType === 'Occurrence'" class="selection-group">
+    <div v-if="selectedPatternType === 'Occurrence'" class="selection-group">
       <label class="title">Pattern:</label>
       <select v-model="selectedOccurrence" @change="handleOccurrenceChange" class="select-box">
         <option v-for="occurrence in occurrenceOptions" :key="occurrence">{{ occurrence }}</option>
       </select>
     </div>
 
-    <div v-if="selectionType === 'Order'" class="selection-group">
+    <div v-if="selectedPatternType === 'Order'" class="selection-group">
       <label class="title">Pattern:</label>
       <select v-model="selectedOrder" @change="handleOccurrenceChange" class="select-box">
         <option v-for="order in orderOptions" :key="order">{{ order }}</option>
@@ -223,110 +358,110 @@ export default {
       <br>
 
       <div v-if="selectedOccurrence === 'Steady State'">
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] in the long run.
       </div>
       <div v-if="selectedOccurrence === 'Minimum Duration'">
         once
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [becomes satisfied] it remains so for at least //TODO
       </div>
       <div v-if="selectedOccurrence === 'Maximum Duration'">
         once
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [becomes satisfied] it remains so for less than //TODO
       </div>
       <div v-if="selectedOccurrence === 'Recurrence'">
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] repeatedly [every //TODO]
       </div>
       <div v-if="selectedOccurrence === 'Universality'">
         it is always the case that
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         holds.
       </div>
       <div v-if="selectedOccurrence === 'Absence'">
         it is never the case that
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         holds.
       </div>
       <div v-if="selectedOccurrence === 'Existence'">
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] eventually.
       </div>
       <div v-if="selectedOccurrence === 'Bounded Existence'">
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] at most //TODO times.
       </div>
       <div v-if="selectedOccurrence === 'Transient State'">
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] after //TODO
       </div>
       <div v-if="selectedOrder=== 'Response'">
         if
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [has occurred] then in response
-        <select v-model="selectedEvent4">
+        <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [eventually holds].
       </div>
       <div v-if="selectedOrder=== 'Response Chain 1N'">
         if
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [has occurred] then in response
-        <select v-model="selectedEvent4">
+        <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [eventually holds] //TODO
       </div>
       <div v-if="selectedOrder=== 'Response Chain N1'">
         if
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         //TODO
       </div>
       <div v-if="selectedOrder=== 'Response Invariance'">
         if
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [has occurred] then in response
-        <select v-model="selectedEvent4">
+        <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] continually.
       </div>
       <div v-if="selectedOrder=== 'Precedence'">
         if
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] then it must have been the case that
-        <select v-model="selectedEvent4">
+        <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [has occured] before
@@ -337,28 +472,28 @@ export default {
       </div>
       <div v-if="selectedOrder=== 'Precedence Chain 1N'">
         if
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] //TODO
       </div>
       <div v-if="selectedOrder=== 'Precedence Chain N1'">
         if
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] then it must be the case that
-        <select v-model="selectedEvent4">
+        <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         //TODO
       </div>
       <div v-if="selectedOrder=== 'Until'">
-        <select v-model="selectedEvent3">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] without interruption until
-        <select v-model="selectedEvent4">
+        <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds].
