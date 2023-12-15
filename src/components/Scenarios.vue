@@ -2,6 +2,7 @@
 
 export default {
   name: "ScenarioList",
+  el: '#app',
   data() {
     return{
       items:[
@@ -18,9 +19,18 @@ export default {
 },
   methods:{
     newScenario() {
-      this.items.push({ id: this.items.length + 1, label: "#"+ (this.items.length + 1)});
-    }
-  }
+      
+      this.items.push({ id: this.items.length +1, label: "#"+ (this.items.length +1)});
+      this.highlightedItemId = this.items.length +1;
+      this.$nextTick(() => {this.scrollToItem()});
+    },
+    scrollToItem(){
+      const listContent = this.$refs.listContent;
+      if (listContent){
+        listContent.scrollTop = listContent.scrollHeight;
+      }
+    },
+}  
 };
 
 </script>
@@ -28,13 +38,12 @@ export default {
 
 <template>
   <h1>Scenarios</h1>
-
   <div class="btn-group">
     <button class="search-button" @click="test">Search</button>
     <button class="new-button" @click="newScenario">New</button>
   </div>
   <div class="list-container">
-    <div class="list-content">
+    <div class="list-content" ref="listContent">
       <div v-for="item in items" :key="item.id" class="list-item">
         {{ item.label }}
       </div>
