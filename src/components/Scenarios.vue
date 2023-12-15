@@ -117,6 +117,6 @@ body {
 
     .list-content {
       max-height: 100%; /* Ensure that the content can take full height */
-      overflow-y: auto; /* Enable vertical scrollbar */
+      overflow-y: scroll; /* Enable vertical scrollbar */
     }
 </style>
