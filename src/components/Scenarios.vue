@@ -6,25 +6,31 @@ export default {
   data() {
     return{
       items:[
-        { id: 1, label: "#1" },
-        { id: 2, label: "#2" },
-        { id: 3, label: "#3" },
-        { id: 4, label: "#4" },
-        { id: 5, label: "#5" },
-        { id: 6, label: "#6" },
-        { id: 7, label: "#7" },
-        { id: 8, label: "#8" },
+        { id: 1, label: "#1", highlighted: false },
+        { id: 2, label: "#2", highlighted: false  },
+        { id: 3, label: "#3", highlighted: false  },
+        { id: 4, label: "#4", highlighted: false  },
+        { id: 5, label: "#5", highlighted: false  },
+        { id: 6, label: "#6", highlighted: false  },
+        { id: 7, label: "#7", highlighted: false  },
+        { id: 8, label: "#8", highlighted: false  },
       ],
   };
 },
   methods:{
     newScenario() {
-      
-      this.items.push({ id: this.items.length +1, label: "#"+ (this.items.length +1)});
-      this.highlightedItemId = this.items.length +1;
+      // push a new item to the list
+      this.items.push({ id: this.items.length +1, label: "#"+ (this.items.length +1), highlighted: true});
       this.$nextTick(() => {this.scrollToItem()});
+      // reset the highlighted coloar after 1 second
+      setTimeout(() => {
+          this.items.forEach(element => {
+            element.highlighted = false;
+          });
+          }, 1000);
     },
-    scrollToItem(){
+    // Scroll automaticly to the newly added item
+    scrollToItem(){ 
       const listContent = this.$refs.listContent;
       if (listContent){
         listContent.scrollTop = listContent.scrollHeight;
@@ -44,7 +50,7 @@ export default {
   </div>
   <div class="list-container">
     <div class="list-content" ref="listContent">
-      <div v-for="item in items" :key="item.id" class="list-item">
+      <div v-for="item in items" :key="item.id" :class="{'list-item': true, 'highlighted': item.highlighted}">
         {{ item.label }}
       </div>
     </div>
@@ -54,7 +60,7 @@ export default {
 
 <style scoped>
 .search-button {
-  background-color: rgb(146, 208, 223); /* Light Blue */
+  background-color: rgb(146, 208, 223);
   border: none;
   color: white;
   padding: 10px 20px;
@@ -71,7 +77,7 @@ export default {
   background-color: rgb(87, 144, 158);
 }
 .new-button {
-  background-color: rgb(114, 214, 101); /* Light Blue */
+  background-color: rgb(114, 214, 101);
   border: none;
   color: white;
   padding: 10px 20px;
@@ -118,5 +124,9 @@ body {
     .list-content {
       max-height: 100%; /* Ensure that the content can take full height */
       overflow-y: scroll; /* Enable vertical scrollbar */
+    }
+
+    .highlighted {
+      background-color: #d8ffcf;
     }
 </style>
