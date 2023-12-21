@@ -1,18 +1,30 @@
-<template>
-  <img alt="Dashboard logo" src="./assets/logo-dash.jpeg">
-  <DashBoard msg="Welcome to Your Dashboard"/>
-</template>
+<script setup>
+import { ref, computed } from 'vue'
+import Dashboard from '@/components/Dashboard.vue'
+import Scenarios from "@/components/Scenarios.vue";
 
-<script>
-import Dashboard from "@/components/Dashboard.vue";
-
-export default {
-  name: 'App',
-  components: {
-    DashBoard: Dashboard
-  }
+const routes = {
+  '/': Dashboard,
+  '/scenarios': Scenarios
 }
+
+const currentPath = ref(window.location.hash)
+
+window.addEventListener('hashchange', () => {
+  currentPath.value = window.location.hash
+})
+
+const currentView = computed(() => {
+  return routes[currentPath.value.slice(1) || '/']
+})
+
 </script>
+
+<template>
+  <component :is="currentView" />
+  <a href="#/">Dashboard</a> |
+  <a href="#/scenarios">Scenarios</a>
+</template>
 
 <style>
 #app {
@@ -24,3 +36,5 @@ export default {
   margin-top: 60px;
 }
 </style>
+
+
