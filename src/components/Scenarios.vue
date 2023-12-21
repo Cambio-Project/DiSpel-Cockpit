@@ -108,7 +108,7 @@ body {
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
       overflow: hidden;
-      height: 400px; /* Set a fixed height for the container */
+      height: 370px; /* Set a fixed height for the container */
     }
 
     .list-item {
