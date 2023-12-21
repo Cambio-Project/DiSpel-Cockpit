@@ -4,9 +4,13 @@
 // creates the scope part of the payload
 function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR) {
   const scope = {
-    type: selectedScope,
-    q_event: createEvent(selectedScopeEventQ, "")
+    type: selectedScope
   };
+
+  // include q_event if it exists
+  if (selectedScopeEventQ && selectedScopeEventQ.trim() !== "") {
+    scope.q_event = createEvent(selectedScopeEventQ, "");
+  }
 
   // include r_event if it exists
   if (selectedScopeEventR && selectedScopeEventR.trim() !== "") {
@@ -44,8 +48,7 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
   var test = false
 
   // include s_event if exists
-  //TODO correct check
-  if (test) {
+  if (selectedEventS && selectedEventS.trim() !== "") {
     pattern.s_event = createEvent(selectedEventS, "")
   }
 
