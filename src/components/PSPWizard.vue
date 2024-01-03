@@ -153,7 +153,12 @@ export default {
         // Update the mapping property with the response
         const responsePayload = await response.json();
 
-        this.mapping = responsePayload.payload.mapping
+        // if mapping is returned, display it, else display the error message
+        if (responsePayload.payload.mapping) {
+          this.mapping = responsePayload.payload.mapping
+        } else {
+          this.mapping = responsePayload.payload.error
+        }
 
         // Debug
         console.log(this.mapping);
