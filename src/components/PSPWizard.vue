@@ -28,6 +28,7 @@ function createEvent(name, specification) {
   };
 }
 
+/*
 // creates the time_bound part of the payload
 function createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
   return {
@@ -37,6 +38,7 @@ function createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
     lower_limit: lowerLimit
   };
 }
+ */
 
 // creates the pattern part of the payload
 function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS) {
@@ -57,9 +59,10 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
   if (test) {
     pattern.chained_events = [
       {
+        //TODO why is this required?
         event: createEvent("", ""),
-        constrain_event: createEvent("", ""),
-        time_bound: createTimeBound("", "", 0, 0)
+        //time_bound: createTimeBound("", "", 0, 0),
+        //constrain_event = createConstraintEvent("", "");
       }
     ];
   }
@@ -74,16 +77,18 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
     };
   }
 
-  // include pattern_constrains if one exists
+  // include pattern_constrains if one exists (Response always needs constrainEvent)
   //TODO correct check
-  if (test) {
+  if (selectedOrder === "Response" || test) {
     pattern.pattern_constrains = {
+      /*
       time_bound: createTimeBound("", "", 0, 0),
-          probability_bound: {
+      probability_bound: {
         type: "",
-            probability: 0
+        probability: 0
       },
-      event_constrain: createEvent("", "")
+       */
+      constrain_event: createEvent("", "")
     };
   }
 
@@ -108,7 +113,7 @@ export default {
       orderOptions: ["Response", "ResponseChain1N", "ResponseChainN1", "ResponseInvariance", "Precedence", "PrecedenceChain1N", "PrecedenceChainN1", "Until"],
       events: ["EventA"],
       customEvent: "",
-      targetLogics: ["SEG", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
+      targetLogics: ["LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       selectedScope: null,
       selectedOccurrence: null,
       selectedOrder: null,
