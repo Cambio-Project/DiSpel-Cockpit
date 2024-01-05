@@ -84,16 +84,53 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 
   // include pattern_constrains if one exists
   //TODO correct check
-  if (test) {
-    pattern.pattern_constrains = {   
+  
+  if (selectedProbabilityBound !== null && probability !== null) {
+    if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !==null) {
+    pattern.pattern_constrains = {
           time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
           probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
-          constrain_event: createEvent("", "")
+      };
+    }
+    else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
+    pattern.pattern_constrains = {
+          time_bound: createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
+          probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
+      };
+    }
+    else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
+    pattern.pattern_constrains = {
+          time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
+          probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
+      };
+    }
+    else {
+      pattern.pattern_constrains = {
+          probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
+      };
+    }
+  }
+  else if (selectedProbabilityBound === null || probability === null) {
+    if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !==null) {
+    pattern.pattern_constrains = {
+          time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
     };
   }
-  if (selectedProbabilityBound !== null && probability !== null) {
-    pattern.pattern_constrains = {
-          probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
+    else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
+      pattern.pattern_constrains = {
+            time_bound: createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
+      };
+    }
+    else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
+      pattern.pattern_constrains = {
+            time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
+      };
+    }
+  }
+  
+  if (test) {
+    pattern.pattern_constrains = {   
+          constrain_event: createEvent("", "")
     };
   }
 
@@ -134,7 +171,7 @@ export default {
       lowerLimit: null,
       probabilityBoundOptions: ["GreaterEqual", "Greater", "LowerEqual", "Lower"],
       probability: null,
-      timeUnit: ["time unit"],
+      timeUnit: "time units",
       selectedTargetLogic: "SEG",
       mapping: null,
       checkedProbability: false,
@@ -163,14 +200,20 @@ export default {
       // Add the custom probabilitiy
       this.probability.push()
     },
-    handleProbabilityChance() {
+    handleProbabilityChange() {
       // Reset probabilityBound and probability when unchecked
       this.selectedProbabilityBound = null;
       this.probability = null;
     },
-    handleTimeChance() {
-      // TODO Reset timeBound unchecked
-      
+    handleTimeChange() {
+      // Reset timeBound and timUnit when unchecked
+      this.selectedTimeBound = null;
+      this.timeUnit = "time units";
+    },
+    handleLimitChange() {
+      // Reset limits when timeBound changes
+      this.upperLimit = null;
+      this.lowerLimit = null;
     },
     async sendTransformRequest(payload) {
       try {
@@ -254,7 +297,7 @@ export default {
 
     <div class="selection-group">
       <div class="check-group">
-        <input type="checkbox" id="checkboxProb" v-model="checkedProbability" @change="handleProbabilityChance">
+        <input type="checkbox" id="checkboxProb" v-model="checkedProbability" @change="handleProbabilityChange">
         <label class="title" >Probability Bound</label>
           <div v-show="checkedProbability">
             <select v-model="selectedProbabilityBound" class="select-box">
@@ -263,11 +306,32 @@ export default {
             <input v-model="probability" :min="0" :max="1" step="0.1" type="number" placeholder="Enter Probability">
           </div>
       </div>
+
+      <div class="selection-group">
       <div class="check-group">
-        <div v-if="selectedPatternType === 'Order'" class="selection-group">
+        <div v-if="selectedPatternType === 'Order' || selectedOccurrence === 'Universality' || selectedOccurrence === 'Absence' || selectedOccurrence === 'Existence' || selectedOccurrence === 'BoundedExistence' " class="selection-group">
             <input type="checkbox" id="checkboxTime" v-model="checkedTime" @change="handleTimeChange">
             <label class="title" >Time Bound</label>
-            <!--TODO-->
+            <div v-show="checkedTime">
+              <select v-model="selectedTimeBound" @change="handleLimitChange" class="select-box">
+                <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
+              </select>
+              <div v-if="selectedTimeBound === 'Upper' ">
+                <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Within">
+                <input v-model="timeUnit" type="text">
+                
+              </div>
+              <div v-if="selectedTimeBound === 'Lower' ">
+                <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="After">
+                <input v-model="timeUnit" type="text">
+              </div>
+              <div v-if="selectedTimeBound === 'Interval' ">
+                <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit">
+                <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit">
+                <input v-model="timeUnit" type="text">
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -460,6 +524,18 @@ export default {
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds].
+      </div>
+
+      <br>
+
+      <div v-if="selectedTimeBound=== 'Lower' ">
+        after {{ lowerLimit }} {{ timeUnit }}
+      </div>
+      <div v-if="selectedTimeBound=== 'Upper' ">
+        within {{ upperLimit }} {{ timeUnit }}
+      </div>
+      <div v-if="selectedTimeBound=== 'Interval' ">
+        between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
       </div>
 
       <br>
