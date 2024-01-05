@@ -38,8 +38,16 @@ function createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
   };
 }
 
+// creates probability part of the payload
+function createProbabiltiyBound(type, probability){
+  return {
+    type: type,
+    probability: probability
+  };
+}
+
 // creates the pattern part of the payload
-function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS) {
+function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit) {
   const pattern = {
     type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
     p_event: createEvent(selectedEventP, "")
@@ -77,13 +85,15 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
   // include pattern_constrains if one exists
   //TODO correct check
   if (test) {
+    pattern.pattern_constrains = {   
+          time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
+          probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
+          constrain_event: createEvent("", "")
+    };
+  }
+  if (selectedProbabilityBound !== null && probability !== null) {
     pattern.pattern_constrains = {
-      time_bound: createTimeBound("", "", 0, 0),
-          probability_bound: {
-        type: "",
-            probability: 0
-      },
-      event_constrain: createEvent("", "")
+          probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
     };
   }
 
@@ -91,10 +101,10 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 }
 
 // creates the payload
-function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTargetLogic) {
+function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit) {
   return {
     scope: createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR),
-    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS),
+    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit),
     target_logic: selectedTargetLogic
   };
 }
@@ -117,8 +127,18 @@ export default {
       selectedEventP: null,
       selectedEventS: null,
       selectedEvent5: null,
+      selectedTimeBound: null,
+      timeBoundOptions: ["Interval", "Lower", "Upper"],
+      selectedProbabilityBound: null,
+      upperLimit: null,
+      lowerLimit: null,
+      probabilityBoundOptions: ["GreaterEqual", "Greater", "LowerEqual", "Lower"],
+      probability: null,
+      timeUnit: ["time unit"],
       selectedTargetLogic: "SEG",
-      mapping: null
+      mapping: null,
+      checkedProbability: false,
+      checkedTime: false
     };
   },
   methods: {
@@ -138,6 +158,19 @@ export default {
         // Clear the input field after adding the custom event
         this.customEvent = "";
       }
+    },
+    addProbability() {
+      // Add the custom probabilitiy
+      this.probability.push()
+    },
+    handleProbabilityChance() {
+      // Reset probabilityBound and probability when unchecked
+      this.selectedProbabilityBound = null;
+      this.probability = null;
+    },
+    handleTimeChance() {
+      // TODO Reset timeBound unchecked
+      
     },
     async sendTransformRequest(payload) {
       try {
@@ -170,7 +203,7 @@ export default {
     },
     async transformToTemporalLogic() {
 
-      const payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedTargetLogic);
+      const payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedTargetLogic, this.selectedTimeBound, this.selectedProbabilityBound, this.timeUnit, this.probability, this.upperLimit, this.lowerLimit);
 
       console.log(payload)
 
@@ -220,11 +253,26 @@ export default {
     </div>
 
     <div class="selection-group">
-      <div class="button-group">
-        <button class="button" @click="test">Time Bound</button>
-        <button class="button" @click="test">Probability Bound</button>
+      <div class="check-group">
+        <input type="checkbox" id="checkboxProb" v-model="checkedProbability" @change="handleProbabilityChance">
+        <label class="title" >Probability Bound</label>
+          <div v-show="checkedProbability">
+            <select v-model="selectedProbabilityBound" class="select-box">
+              <option v-for="prob in probabilityBoundOptions" :key="prob">{{ prob }}</option>
+            </select>
+            <input v-model="probability" :min="0" :max="1" step="0.1" type="number" placeholder="Enter Probability">
+          </div>
+      </div>
+      <div class="check-group">
+        <div v-if="selectedPatternType === 'Order'" class="selection-group">
+            <input type="checkbox" id="checkboxTime" v-model="checkedTime" @change="handleTimeChange">
+            <label class="title" >Time Bound</label>
+            <!--TODO-->
+        </div>
       </div>
     </div>
+
+    
 
     <div class="selection-group">
       <label class="title">Add Custom Event:</label>
@@ -413,6 +461,21 @@ export default {
         </select>
         [holds].
       </div>
+
+      <br>
+
+      <div v-if="selectedProbabilityBound=== 'Lower' && probability !== null" >
+        with a probability lower than {{ probability }}
+      </div>
+      <div v-if="selectedProbabilityBound=== 'LowerEqual' && probability !== null">
+        with a probability lower or equal than {{ probability }}
+      </div>
+      <div v-if="selectedProbabilityBound=== 'Greater' && probability !== null">
+        with a probability greater than {{ probability }}
+      </div>
+      <div v-if="selectedProbabilityBound=== 'GreaterEqual' && probability !== null">
+        with a probability greater or equal than {{ probability }}
+      </div>
     </div>
 
     <div class="selection-group">
@@ -437,7 +500,7 @@ export default {
 
 <style scoped>
 .selection-container {
-  max-width: 400px;
+  max-width: 600px;
   margin: auto;
 }
 
@@ -467,6 +530,11 @@ export default {
 .radio-group {
   display: flex;
   justify-content: center;
+}
+
+.check-group {
+  display: flex;
+  justify-content: left;
 }
 
 .radio-group input {
