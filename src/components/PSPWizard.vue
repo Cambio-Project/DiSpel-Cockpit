@@ -79,7 +79,7 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 
   // include pattern_constrains if one exists (Response always needs constrainEvent)
   //TODO correct check
-  if (selectedOrder === "Response" || test) {
+  if (test) {
     pattern.pattern_constrains = {
       /*
       time_bound: createTimeBound("", "", 0, 0),
@@ -166,6 +166,7 @@ export default {
         }
 
         // Debug
+        console.log(responsePayload)
         console.log(this.mapping);
         console.log('Transformation successful!');
       } catch (error) {
