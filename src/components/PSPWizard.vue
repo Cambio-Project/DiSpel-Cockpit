@@ -41,7 +41,7 @@ function createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
  */
 
 // creates the pattern part of the payload
-function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS) {
+function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedConstraintEvent) {
   const pattern = {
     type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
     p_event: createEvent(selectedEventP, "")
@@ -79,27 +79,30 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 
   // include pattern_constrains if one exists (Response always needs constrainEvent)
   //TODO correct check
-  if (test) {
+  if ((selectedConstraintEvent && selectedConstraintEvent != "Constraint") || test) {
     pattern.pattern_constrains = {
       /*
       time_bound: createTimeBound("", "", 0, 0),
       probability_bound: {
         type: "",
         probability: 0
-      },
+      }
        */
-      constrain_event: createEvent("", "")
     };
+
+    if (selectedConstraintEvent) {
+      pattern.pattern_constrains.constrain_event = createEvent(selectedConstraintEvent, "")
+    }
   }
 
   return pattern;
 }
 
 // creates the payload
-function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTargetLogic) {
+function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedConstraintEvent, selectedTargetLogic) {
   return {
     scope: createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR),
-    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS),
+    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedConstraintEvent),
     target_logic: selectedTargetLogic
   };
 }
@@ -113,7 +116,7 @@ export default {
       orderOptions: ["Response", "ResponseChain1N", "ResponseChainN1", "ResponseInvariance", "Precedence", "PrecedenceChain1N", "PrecedenceChainN1", "Until"],
       events: ["EventA"],
       customEvent: "",
-      targetLogics: ["LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
+      targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       selectedScope: null,
       selectedOccurrence: null,
       selectedOrder: null,
@@ -122,7 +125,8 @@ export default {
       selectedEventP: null,
       selectedEventS: null,
       selectedEvent5: null,
-      selectedTargetLogic: "SEG",
+      selectedConstraintEvent: null,
+      selectedTargetLogic: "SEL",
       mapping: null
     };
   },
@@ -176,7 +180,7 @@ export default {
     },
     async transformToTemporalLogic() {
 
-      const payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedTargetLogic);
+      const payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedConstraintEvent, this.selectedTargetLogic);
 
       console.log(payload)
 
@@ -421,6 +425,14 @@ export default {
       </div>
     </div>
 
+    <div v-if="selectedOrder=== 'Response'" class="selection-group">
+      <label class="title">Constraint Event:</label><br>
+      <select v-model="selectedConstraintEvent">
+        <option value="Constraint">Constraint</option>
+        <option v-for="event in events" :key="event">{{ event }}</option>
+      </select>
+    </div>
+
     <div class="selection-group">
       <label class="title">Target Logic:</label><br>
       <select v-model="selectedTargetLogic">
@@ -434,7 +446,7 @@ export default {
 
     <div class="message-container">
       <p>Specification in Target Logic:</p>
-      <pre v-if="mapping">{{ mapping }}</pre>
+      <pre v-if="mapping" style="white-space: pre-wrap;">{{ mapping }}</pre>
     </div>
 
     <br>
@@ -489,8 +501,10 @@ export default {
   border-radius: 1vw;
   padding-top: 0.5vw;
   padding-bottom: 1.5vw;
-  margin-top: 2vw;
+  margin: 2vw;
   min-height: 6vw;
+  max-height: 20vh;
+  overflow-y: auto;
 }
 
 .message-container p {
