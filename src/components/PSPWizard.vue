@@ -41,7 +41,7 @@ function createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
  */
 
 // creates the pattern part of the payload
-function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedConstraintEvent) {
+function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent) {
   const pattern = {
     type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
     p_event: createEvent(selectedEventP, "")
@@ -68,13 +68,21 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
   }
 
   // include pattern_specifications if one exists
-  //TODO correct check
-  if (test) {
+  if (selectedTime || selectedInterval) {
     pattern.pattern_specifications = {
-      time_unit: "",
-      upper_limit: 0,
-      frequency: 0
+      time_unit: selectedTimeUnitType
     };
+    // time and interval need to be 0 if not instantiated (not null)
+    if (selectedTime) {
+      pattern.pattern_specifications.upper_limit = selectedTime
+    } else {
+      pattern.pattern_specifications.upper_limit = 0
+    }
+    if (selectedInterval) {
+      pattern.pattern_specifications.frequency = selectedInterval
+    } else {
+      pattern.pattern_specifications.frequency = 0
+    }
   }
 
   // include pattern_constrains if one exists (Response always needs constrainEvent)
@@ -99,10 +107,10 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 }
 
 // creates the payload
-function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedConstraintEvent, selectedTargetLogic) {
+function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic) {
   return {
     scope: createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR),
-    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedConstraintEvent),
+    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent),
     target_logic: selectedTargetLogic
   };
 }
@@ -126,6 +134,9 @@ export default {
       selectedEventS: null,
       selectedEvent5: null,
       selectedConstraintEvent: null,
+      selectedTime: null,
+      selectedInterval: null,
+      selectedTimeUnitType: "time units",
       selectedTargetLogic: "SEL",
       mapping: null
     };
@@ -180,7 +191,7 @@ export default {
     },
     async transformToTemporalLogic() {
 
-      const payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedConstraintEvent, this.selectedTargetLogic);
+      const payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedTime, this.selectedTimeUnitType, this.selectedInterval, this.selectedConstraintEvent, this.selectedTargetLogic);
 
       console.log(payload)
 
@@ -293,20 +304,27 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [becomes satisfied] it remains so for at least //TODO
+        [becomes satisfied] it remains so for at least
+        <input v-model="selectedTime" type="number" class="select-pattern-box" />
+        <input v-model="selectedTimeUnitType" type="text" class="select-pattern-box" />
       </div>
       <div v-if="selectedOccurrence === 'MaximumDuration'">
         once
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [becomes satisfied] it remains so for less than //TODO
+        [becomes satisfied] it remains so for less than
+        <input v-model="selectedTime" type="number" class="select-pattern-box" />
+        <input v-model="selectedTimeUnitType" type="text" class="select-pattern-box" />
       </div>
       <div v-if="selectedOccurrence === 'Recurrence'">
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [holds] repeatedly [every //TODO]
+        [holds] repeatedly [every
+        <input v-model="selectedTime" type="number" class="select-pattern-box" />
+        <input v-model="selectedTimeUnitType" type="text" class="select-pattern-box" />
+        ]
       </div>
       <div v-if="selectedOccurrence === 'Universality'">
         it is always the case that
@@ -332,13 +350,17 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [holds] at most //TODO times.
+        [holds] at most
+        <input v-model="selectedInterval" type="number" class="select-pattern-box" />
+        times.
       </div>
       <div v-if="selectedOccurrence === 'TransientState'">
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [holds] after //TODO
+        [holds] after
+        <input v-model="selectedTime" type="number" class="select-pattern-box" />
+        <input v-model="selectedTimeUnitType" type="text" class="select-pattern-box" />
       </div>
       <div v-if="selectedOrder=== 'Response'">
         if
@@ -455,7 +477,7 @@ export default {
 
 <style scoped>
 .selection-container {
-  max-width: 400px;
+  max-width: 50vh;
   margin: auto;
 }
 
@@ -469,6 +491,13 @@ export default {
 
 .select-box {
   width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.select-pattern-box {
+  width: 30%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -503,7 +532,7 @@ export default {
   padding-bottom: 1.5vw;
   margin: 2vw;
   min-height: 6vw;
-  max-height: 20vh;
+  max-height: 40vh;
   overflow-y: auto;
 }
 
