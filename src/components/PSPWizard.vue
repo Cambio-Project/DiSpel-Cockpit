@@ -138,8 +138,51 @@ export default {
       selectedInterval: null,
       selectedTimeUnitType: "time units",
       selectedTargetLogic: "SEL",
-      mapping: null
+      mapping: null,
+      showCopyFeedback: false
     };
+  },
+  computed: {
+    displayScopes() {
+      // Map technical names to better display names
+      const scopeMap = {
+        "Globally": "Globally",
+        "BeforeR": "Before R",
+        "AfterQ": "After Q",
+        "BetweenQandR": "Between Q and R",
+        "AfterQUntilR": "After Q Until R"
+      };
+
+      // Create an array of objects with label and value properties
+      return this.scopes.map(scope => ({ label: scopeMap[scope], value: scope }));
+    },
+    displayOccurrenceOptions() {
+      const occurenceMap = {
+        "SteadyState": "Steady State",
+        "MinimumDuration": "Minimum Duration",
+        "MaximumDuration": "Maximum Duration",
+        "Recurrence": "Recurrence",
+        "Universality": "Universality",
+        "Absence": "Absence",
+        "Existence": "Existence",
+        "BoundedExistence": "Bounded Existence",
+        "TransientState": "Transient State",
+      };
+      return this.occurrenceOptions.map(option => ({ label: occurenceMap[option], value: option }));
+    },
+    displayOrderOptions() {
+      const orderMap = {
+        "Response": "Response",
+        "ResponseChain1N": "Response Chain 1N",
+        "ResponseChainN1": "Response Chain N1",
+        "ResponseInvariance": "Response Invariance",
+        "Precedence": "Precedence",
+        "PrecedenceChain1N": "Precedence Chain 1N",
+        "PrecedenceChainN1": "Precedence Chain N1",
+        "Until": "Until"
+      };
+      return this.orderOptions.map(option => ({ label: orderMap[option], value: option }));
+    }
   },
   methods: {
     handleOccurrenceChange() {
@@ -197,6 +240,20 @@ export default {
 
       await this.sendTransformRequest(JSON.stringify(payload))
     },
+    copyToClipboard() {
+      const textarea = document.createElement("textarea");
+      textarea.value = this.mapping;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+
+      // Shortly show copy feedback message
+      this.showCopyFeedback = true;
+      setTimeout(() => {
+        this.showCopyFeedback = false;
+      }, 2000);
+    }
   },
 };
 </script>
@@ -208,7 +265,7 @@ export default {
     <div class="selection-group">
       <label class="title">Scope:</label>
       <select v-model="selectedScope" class="select-box">
-        <option v-for="scope in scopes" :key="scope">{{ scope }}</option>
+        <option v-for="scope in displayScopes" :key="scope.value" :value="scope.value">{{ scope.label }}</option>
       </select>
     </div>
 
@@ -229,14 +286,14 @@ export default {
     <div v-if="selectedPatternType === 'Occurrence'" class="selection-group">
       <label class="title">Pattern:</label>
       <select v-model="selectedOccurrence" @change="handleOccurrenceChange" class="select-box">
-        <option v-for="occurrence in occurrenceOptions" :key="occurrence">{{ occurrence }}</option>
+        <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value" :value="occurrence.value">{{ occurrence.label }}</option>
       </select>
     </div>
 
     <div v-if="selectedPatternType === 'Order'" class="selection-group">
       <label class="title">Pattern:</label>
       <select v-model="selectedOrder" @change="handleOccurrenceChange" class="select-box">
-        <option v-for="order in orderOptions" :key="order">{{ order }}</option>
+        <option v-for="order in displayOrderOptions" :key="order.value" :value="order.value">{{ order.label }}</option>
       </select>
     </div>
 
@@ -469,6 +526,8 @@ export default {
     <div class="message-container">
       <p>Specification in Target Logic:</p>
       <pre v-if="mapping" style="white-space: pre-wrap;">{{ mapping }}</pre>
+      <button @click="copyToClipboard" v-if="mapping" class="copy-button">Copy to Clipboard</button>
+      <div class="copy-feedback" v-if="showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
     </div>
 
     <br>
@@ -550,7 +609,7 @@ export default {
 }
 
 .button {
-  background-color: #ccc; /* Green */
+  background-color: #ccc;
   border: none;
   color: black;
   padding: 0.4vw 1vw;
@@ -565,7 +624,7 @@ export default {
 }
 
 .event-button {
-  background-color: #ccc; /* Green */
+  background-color: #ccc;
   border: none;
   color: black;
   padding: 0.7vw 1.4vw;
@@ -580,7 +639,7 @@ export default {
 }
 
 .commit-button {
-  background-color: #4CAF50; /* Green */
+  background-color: #4CAF50;
   border: none;
   color: white;
   padding: 0.7vw 1.4vw;
@@ -596,4 +655,41 @@ export default {
 .commit-button:hover {
   background-color: #45a049;
 }
+
+.copy-button {
+  background-color: #ccc;
+  border: none;
+  color: black;
+  padding: 0.3vw 0.4vw;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 0.5vw;
+  margin-top: 0.6vw;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.copy-button:hover {
+  background-color: #a1a1a1;
+}
+
+.copy-feedback {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #7a7a7a;
+  color: #ffffff;
+  padding: 8px;
+  margin: 10px;
+  border-radius: 4px;
+  //display: none;
+  animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; display: none; }
+}
+
 </style>
