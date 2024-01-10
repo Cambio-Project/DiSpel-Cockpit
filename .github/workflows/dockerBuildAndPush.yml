@@ -3,7 +3,7 @@ name: Docker build and publish to GHCR
 on:
   push:
     branches:
-      - Docker_integration
+      - main
   release:
     types: [published] # will use tag name regardless of naming
 
