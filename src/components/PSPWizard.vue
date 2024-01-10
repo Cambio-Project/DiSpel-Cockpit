@@ -175,7 +175,8 @@ export default {
       selectedTargetLogic: "SEG",
       mapping: null,
       checkedProbability: false,
-      checkedTime: false
+      checkedTime: false,
+      interval: ["Interval"]
     };
   },
   methods: {
@@ -317,7 +318,7 @@ export default {
       </div>
 
     <div class="selection-group">
-      <div v-show="checkedTime">
+      <div v-show="checkedTime && selectedOrder !== 'Precedence' && selectedOrder !== 'PrecedenceChain1N' && selectedOrder !== 'PrecedenceChainN1'">
         <select v-model="selectedTimeBound" @change="handleLimitChange" class="select-box">
           <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
         </select>
@@ -329,6 +330,20 @@ export default {
           <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="After">
           <input v-model="timeUnit" type="text">
         </div>
+        <div v-if="selectedTimeBound === 'Interval' ">
+          <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit">
+          <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit">
+          <input v-model="timeUnit" type="text">
+        </div>
+      </div>
+    </div>
+
+    <div class="selection-group">
+      <div v-show="checkedTime && (selectedOrder === 'Precedence' || selectedOrder === 'PrecedenceChain1N' || selectedOrder === 'PrecedenceChainN1')">
+        <select v-model="selectedTimeBound" @change="handleLimitChange" class="select-box">
+          <option v-for="time in interval" :key="time">{{ time }}</option>
+        </select>
+        
         <div v-if="selectedTimeBound === 'Interval' ">
           <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit">
           <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit">
@@ -451,6 +466,15 @@ export default {
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [eventually holds].
+        <div v-if="selectedTimeBound=== 'Lower' ">
+          after {{ lowerLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Upper' ">
+          within {{ upperLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Interval' ">
+          between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
+        </div>
       </div>
       <div v-if="selectedOrder=== 'ResponseChain1N'">
         if
@@ -462,13 +486,35 @@ export default {
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [eventually holds] //TODO
+        <div v-if="selectedTimeBound=== 'Lower' ">
+          after {{ lowerLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Upper' ">
+          within {{ upperLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Interval' ">
+          between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
+        </div>
       </div>
       <div v-if="selectedOrder=== 'ResponseChainN1'">
-        if
+        if //TODO
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        //TODO
+        [have occured] then in response
+        <select v-model="selectedEventS">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [eventually holds] //TODO
+        <div v-if="selectedTimeBound=== 'Lower' ">
+          after {{ lowerLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Upper' ">
+          within {{ upperLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Interval' ">
+          between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
+        </div>
       </div>
       <div v-if="selectedOrder=== 'ResponseInvariance'">
         if
@@ -480,6 +526,15 @@ export default {
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] continually.
+        <div v-if="selectedTimeBound=== 'Lower' ">
+          after {{ lowerLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Upper' ">
+          within {{ upperLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Interval' ">
+          between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
+        </div>
       </div>
       <div v-if="selectedOrder=== 'Precedence'">
         if
@@ -490,7 +545,11 @@ export default {
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [has occured] before
+        [has occured] 
+        <div v-if="selectedTimeBound=== 'Interval' ">
+          between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
+        </div>
+        before
         <select v-model="selectedEvent5">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
@@ -501,7 +560,10 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [holds] //TODO
+        [holds] then it must be the case that //TODO [has occurred]
+        <div v-if="selectedTimeBound=== 'Interval' ">
+          between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
+        </div>
       </div>
       <div v-if="selectedOrder=== 'PrecedenceChainN1'">
         if
@@ -512,7 +574,10 @@ export default {
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        //TODO
+        //TODO [have occurred] //TODO
+        <div v-if="selectedTimeBound=== 'Interval' ">
+          between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
+        </div>
       </div>
       <div v-if="selectedOrder=== 'Until'">
         <select v-model="selectedEventP">
@@ -522,19 +587,29 @@ export default {
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [holds].
+        [holds]
+        <div v-if="selectedTimeBound=== 'Lower' ">
+          after {{ lowerLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Upper' ">
+          within {{ upperLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Interval' ">
+          between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
+        </div>
       </div>
 
       <br>
-
-      <div v-if="selectedTimeBound=== 'Lower' ">
-        after {{ lowerLimit }} {{ timeUnit }}
-      </div>
-      <div v-if="selectedTimeBound=== 'Upper' ">
-        within {{ upperLimit }} {{ timeUnit }}
-      </div>
-      <div v-if="selectedTimeBound=== 'Interval' ">
-        between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
+      <div v-if="selectedPatternType=== 'Occurrence' ">
+        <div v-if="selectedTimeBound=== 'Lower' ">
+          after {{ lowerLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Upper' ">
+          within {{ upperLimit }} {{ timeUnit }}
+        </div>
+        <div v-if="selectedTimeBound=== 'Interval' ">
+          between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
+        </div>
       </div>
 
       <br>
