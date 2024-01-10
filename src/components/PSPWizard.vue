@@ -216,6 +216,26 @@ export default {
       this.upperLimit = null;
       this.lowerLimit = null;
     },
+    checkProbability(){
+      //Checks if probability is between 0 and 1
+      if(this.probability<0)
+      {
+        this.probability = 0;
+      }
+      else if(this.probability >1)
+      {
+        this.probability = 1;
+      }
+    },
+    checkTime(){
+      if(this.upperLimit != null && this.lowerLimit != null)
+      {
+        if(this.upperLimit < this.lowerLimit)
+        {
+          this.lowerLimit = this.upperLimit;
+        }
+      }
+    },
     async sendTransformRequest(payload) {
       try {
         // Perform the HTTP request with the input data
@@ -306,7 +326,7 @@ export default {
             <select v-model="selectedProbabilityBound" class="select-box">
               <option v-for="prob in probabilityBoundOptions" :key="prob">{{ prob }}</option>
             </select>
-            <input v-model="probability" :min="0" :max="1" step="0.1" type="number" placeholder="Enter Probability">
+            <input v-model="probability" :min="0" :max="1" step="0.1" type="number" placeholder="Enter Probability" @change="checkProbability">
       </div>
     </div>
       
@@ -331,8 +351,8 @@ export default {
           <input v-model="timeUnit" type="text">
         </div>
         <div v-if="selectedTimeBound === 'Interval' ">
-          <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit">
-          <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit">
+          <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime">
+          <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime">
           <input v-model="timeUnit" type="text">
         </div>
       </div>
@@ -343,10 +363,9 @@ export default {
         <select v-model="selectedTimeBound" @change="handleLimitChange" class="select-box">
           <option v-for="time in interval" :key="time">{{ time }}</option>
         </select>
-        
         <div v-if="selectedTimeBound === 'Interval' ">
-          <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit">
-          <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit">
+          <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime">
+          <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime">
           <input v-model="timeUnit" type="text">
         </div>
       </div>
