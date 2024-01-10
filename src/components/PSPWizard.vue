@@ -296,48 +296,47 @@ export default {
     </div>
 
     <div class="selection-group">
-      <div class="check-group">
         <input type="checkbox" id="checkboxProb" v-model="checkedProbability" @change="handleProbabilityChange">
         <label class="title" >Probability Bound</label>
-          <div v-show="checkedProbability">
+    </div>
+
+    <div class="selection-group">
+      <div v-show="checkedProbability">
             <select v-model="selectedProbabilityBound" class="select-box">
               <option v-for="prob in probabilityBoundOptions" :key="prob">{{ prob }}</option>
             </select>
             <input v-model="probability" :min="0" :max="1" step="0.1" type="number" placeholder="Enter Probability">
-          </div>
       </div>
-
+    </div>
+      
       <div class="selection-group">
-      <div class="check-group">
         <div v-if="selectedPatternType === 'Order' || selectedOccurrence === 'Universality' || selectedOccurrence === 'Absence' || selectedOccurrence === 'Existence' || selectedOccurrence === 'BoundedExistence' " class="selection-group">
             <input type="checkbox" id="checkboxTime" v-model="checkedTime" @change="handleTimeChange">
             <label class="title" >Time Bound</label>
-            <div v-show="checkedTime">
-              <select v-model="selectedTimeBound" @change="handleLimitChange" class="select-box">
-                <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
-              </select>
-              <div v-if="selectedTimeBound === 'Upper' ">
-                <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Within">
-                <input v-model="timeUnit" type="text">
-                
-              </div>
-              <div v-if="selectedTimeBound === 'Lower' ">
-                <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="After">
-                <input v-model="timeUnit" type="text">
-              </div>
-              <div v-if="selectedTimeBound === 'Interval' ">
-                <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit">
-                <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit">
-                <input v-model="timeUnit" type="text">
-              </div>
-            </div>
-          </div>
+        </div>
+      </div>
+
+    <div class="selection-group">
+      <div v-show="checkedTime">
+        <select v-model="selectedTimeBound" @change="handleLimitChange" class="select-box">
+          <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
+        </select>
+        <div v-if="selectedTimeBound === 'Upper' ">
+          <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Within">
+          <input v-model="timeUnit" type="text">
+        </div>
+        <div v-if="selectedTimeBound === 'Lower' ">
+          <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="After">
+          <input v-model="timeUnit" type="text">
+        </div>
+        <div v-if="selectedTimeBound === 'Interval' ">
+          <input v-model="lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit">
+          <input v-model="upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit">
+          <input v-model="timeUnit" type="text">
         </div>
       </div>
     </div>
-
     
-
     <div class="selection-group">
       <label class="title">Add Custom Event:</label>
       <input v-model="customEvent" type="text" class="select-event-box" />
@@ -606,11 +605,6 @@ export default {
 .radio-group {
   display: flex;
   justify-content: center;
-}
-
-.check-group {
-  display: flex;
-  justify-content: left;
 }
 
 .radio-group input {
