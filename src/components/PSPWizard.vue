@@ -174,20 +174,7 @@ export default {
       selectedEventP: null,
       selectedEventS: null,
       selectedEvent5: null,
-      selectedChainedEvents: [
-        {
-          event: {
-
-          },
-          constrain_event: {
-            name: "Constraint"
-          },
-          time_bound: {
-            type: "Upper",
-            time_unit: "time units"
-          }
-        }
-      ],
+      selectedChainedEvents: [],
       selectedConstraintEvent: "Constraint",
       selectedTime: null,
       selectedInterval: null,
