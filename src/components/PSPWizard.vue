@@ -41,7 +41,7 @@ function createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
  */
 
 // creates the pattern part of the payload
-function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent) {
+function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent) {
   const pattern = {
     type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
     p_event: createEvent(selectedEventP, "")
@@ -56,15 +56,18 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 
   // include chained_events if one exists
   //TODO correct check
-  if (test) {
-    pattern.chained_events = [
-      {
-        //TODO why is this required?
-        event: createEvent("", ""),
-        //time_bound: createTimeBound("", "", 0, 0),
-        //constrain_event = createConstraintEvent("", "");
-      }
-    ];
+  if (!test) {
+    pattern.chained_events = selectedChainedEvents.map(chainedEvent => {
+      return {
+        event: createEvent(chainedEvent.event.name, ""),
+        constrain_event: createEvent(chainedEvent.constrain_event.name, ""),
+        time_bound: {
+          type: chainedEvent.time_bound.type,
+          upper_limit: chainedEvent.time_bound.upper_limit,
+          time_unit: chainedEvent.time_bound.time_unit
+        }
+      };
+    });
   }
 
   // include pattern_specifications if one exists
@@ -107,10 +110,10 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 }
 
 // creates the payload
-function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic) {
+function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic) {
   return {
     scope: createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR),
-    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent),
+    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent),
     target_logic: selectedTargetLogic
   };
 }
@@ -133,6 +136,7 @@ export default {
       selectedEventP: null,
       selectedEventS: null,
       selectedEvent5: null,
+      selectedChainedEvents: [],
       selectedConstraintEvent: null,
       selectedTime: null,
       selectedInterval: null,
@@ -234,9 +238,10 @@ export default {
     },
     async transformToTemporalLogic() {
 
-      const payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedTime, this.selectedTimeUnitType, this.selectedInterval, this.selectedConstraintEvent, this.selectedTargetLogic);
+      const payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedChainedEvents, this.selectedTime, this.selectedTimeUnitType, this.selectedInterval, this.selectedConstraintEvent, this.selectedTargetLogic);
 
       console.log(payload)
+      console.log(this.selectedChainedEvents)
 
       await this.sendTransformRequest(JSON.stringify(payload))
     },
@@ -253,6 +258,22 @@ export default {
       setTimeout(() => {
         this.showCopyFeedback = false;
       }, 2000);
+    },
+    addChainedEvent() {
+      this.selectedChainedEvents.push({
+        event: {
+          //name: "",
+          //specification: ""
+        },
+        constrain_event: {
+          //name: "",
+          //specification: ""
+        },
+        time_bound: {
+          //time_unit: "",
+          //type: ""
+        }
+      });
     }
   },
 };
@@ -428,7 +449,12 @@ export default {
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [eventually holds].
+        [eventually holds]. <br>
+        <label class="title">Constraint Event:</label>
+        <select v-model="selectedConstraintEvent">
+          <option value="Constraint">Constraint</option>
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
       </div>
       <div v-if="selectedOrder=== 'ResponseChain1N'">
         if
@@ -439,14 +465,43 @@ export default {
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [eventually holds] //TODO
+        [eventually holds] <br>
+        <label class="title">Constraint Event:</label>
+        <select v-model="selectedConstraintEvent">
+          <option value="Constraint">Constraint</option>
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select> <br>
+
+        <div v-for="(chainedEvent, index) in selectedChainedEvents" :key="index">
+          <label class="title">followed by ({{ index + 1 }}):</label>
+          <!-- Select for Chained Event -->
+          <select v-model="chainedEvent.event.name">
+            <option v-for="event in events" :key="event">{{ event }}</option>
+          </select>
+          <!-- Time input for Chained Event -->
+          <input v-model="chainedEvent.time_bound.type" type="text" class="select-pattern-box" placeholder="Type" />
+          <input v-model="chainedEvent.time_bound.upper_limit" type="number" class="select-pattern-box" placeholder="Upper Limit" />
+          <input v-model="chainedEvent.time_bound.time_unit" type="text" class="select-pattern-box" placeholder="Time Unit" />
+          <!-- Constraint Event for Chained Event -->
+          <select v-model="chainedEvent.constrain_event.name">
+            <option value="Constraint">Constraint</option>
+            <option v-for="event in events" :key="event">{{ event }}</option>
+          </select>
+        </div>
+        <button class="button" @click="addChainedEvent">Add Chained Event</button>
+
       </div>
       <div v-if="selectedOrder=== 'ResponseChainN1'">
         if
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        //TODO
+        //TODO <br>
+        <label class="title">Constraint Event:</label>
+        <select v-model="selectedConstraintEvent">
+          <option value="Constraint">Constraint</option>
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
       </div>
       <div v-if="selectedOrder=== 'ResponseInvariance'">
         if
@@ -504,7 +559,7 @@ export default {
       </div>
     </div>
 
-    <div v-if="selectedOrder=== 'Response'" class="selection-group">
+    <div v-if="selectedOrder=== 'Response' " class="selection-group">
       <label class="title">Constraint Event:</label><br>
       <select v-model="selectedConstraintEvent">
         <option value="Constraint">Constraint</option>
