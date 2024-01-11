@@ -59,7 +59,6 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
   }
 
   // include chained_events if one exists
-  //TODO correct check
   if (!selectedChainedEvents.isEmpty) {
     pattern.chained_events = selectedChainedEvents.map(chainedEvent => {
       return {
@@ -67,6 +66,7 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
         constrain_event: createEvent(chainedEvent.constrain_event.name, ""),
         time_bound: {
           type: chainedEvent.time_bound.type,
+          lower_limit: chainedEvent.time_bound.lower_limit,
           upper_limit: chainedEvent.time_bound.upper_limit,
           time_unit: chainedEvent.time_bound.time_unit
         }
@@ -174,7 +174,20 @@ export default {
       selectedEventP: null,
       selectedEventS: null,
       selectedEvent5: null,
-      selectedChainedEvents: [],
+      selectedChainedEvents: [
+        {
+          event: {
+
+          },
+          constrain_event: {
+            name: "Constraint"
+          },
+          time_bound: {
+            type: "Upper",
+            time_unit: "time units"
+          }
+        }
+      ],
       selectedConstraintEvent: "Constraint",
       selectedTime: null,
       selectedInterval: null,
@@ -357,12 +370,13 @@ export default {
           //specification: ""
         },
         constrain_event: {
-          //name: "",
+          name: "Constraint"
           //specification: ""
         },
         time_bound: {
           //time_unit: "",
-          //type: ""
+          type: "Upper",
+          time_unit: "time units"
         }
       });
     }
@@ -633,31 +647,77 @@ export default {
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select> <br>
 
-        <div v-for="(chainedEvent, index) in selectedChainedEvents" :key="index">
-          <label class="title">followed by ({{ index + 1 }}):</label>
+        <div v-for="(chainedEvent, index) in selectedChainedEvents" :key="index" class="chained-event-section">
+          <label class="title">followed by </label>
           <select v-model="chainedEvent.event.name">
             <option v-for="event in events" :key="event">{{ event }}</option>
-          </select>
-          <input v-model="chainedEvent.time_bound.type" type="text" class="select-pattern-box" placeholder="Type" />
-          <input v-model="chainedEvent.time_bound.upper_limit" type="number" class="select-pattern-box" placeholder="Upper Limit" />
-          <input v-model="chainedEvent.time_bound.time_unit" type="text" class="select-pattern-box" placeholder="Time Unit" />
+          </select> <br>
+          <div>
+            <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" class="select-box">
+              <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
+            </select>
+            <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
+              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+            </div>
+            <div v-if="chainedEvent.time_bound.type === 'Lower' ">
+              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="After">
+              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+            </div>
+            <div v-if="chainedEvent.time_bound.type === 'Interval' ">
+              <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime">
+              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime">
+              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+            </div>
+          </div>
           <select v-model="chainedEvent.constrain_event.name">
             <option value="Constraint">Constraint</option>
             <option v-for="event in events" :key="event">{{ event }}</option>
           </select>
-        </div>
+        </div> <br>
+
         <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
         [eventually holds]
       </div>
       <div v-if="selectedOrder=== 'ResponseChainN1'">
         if
-        <select v-model="selectedEventP">
+        <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select> <br>
-        //TODO <br>
+
+        <div v-for="(chainedEvent, index) in selectedChainedEvents" :key="index" class="chained-event-section">
+          <label class="title">followed by </label>
+          <select v-model="chainedEvent.event.name">
+            <option v-for="event in events" :key="event">{{ event }}</option>
+          </select> <br>
+          <div>
+            <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" class="select-box">
+              <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
+            </select>
+            <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
+              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+            </div>
+            <div v-if="chainedEvent.time_bound.type === 'Lower' ">
+              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="After">
+              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+            </div>
+            <div v-if="chainedEvent.time_bound.type === 'Interval' ">
+              <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime">
+              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime">
+              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+            </div>
+          </div>
+          <select v-model="chainedEvent.constrain_event.name">
+            <option value="Constraint">Constraint</option>
+            <option v-for="event in events" :key="event">{{ event }}</option>
+          </select>
+        </div> <br>
+        <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
+
         [have occured] <br>
         then in response
-        <select v-model="selectedEventS">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [eventually holds] <br>
@@ -718,14 +778,33 @@ export default {
       </div>
       <div v-if="selectedOrder=== 'PrecedenceChain1N'">
         if
-        <select v-model="selectedEventP">
+        <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [has occurred] <br>
-        //TODO <br>
+
+        <div v-for="(chainedEvent, index) in selectedChainedEvents" :key="index" class="chained-event-section">
+          <label class="title">and afterwards </label>
+          <select v-model="chainedEvent.event.name">
+            <option v-for="event in events" :key="event">{{ event }}</option>
+          </select> <br>
+          <div>
+            <div>
+              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
+              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+            </div>
+          </div>
+          <select v-model="chainedEvent.constrain_event.name">
+            <option value="Constraint">Constraint</option>
+            <option v-for="event in events" :key="event">{{ event }}</option>
+          </select>
+        </div> <br>
+
+        <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
+
         [holds] <br>
         then it must be the case that
-        <select v-model="selectedEventS">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [has occured] <br>
@@ -733,7 +812,7 @@ export default {
           between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
         </div>
         before
-        <select v-model="selectedEvent5">
+        <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select> <br>
         [holds].
@@ -752,7 +831,26 @@ export default {
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select> <br>
-        //TODO <br>
+
+        <div v-for="(chainedEvent, index) in selectedChainedEvents" :key="index" class="chained-event-section">
+          <label class="title">and afterwards </label>
+          <select v-model="chainedEvent.event.name">
+            <option v-for="event in events" :key="event">{{ event }}</option>
+          </select> <br>
+          <div>
+            <div>
+              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
+              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+            </div>
+          </div>
+          <select v-model="chainedEvent.constrain_event.name">
+            <option value="Constraint">Constraint</option>
+            <option v-for="event in events" :key="event">{{ event }}</option>
+          </select>
+        </div> <br>
+
+        <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
+
         [have occurred] <br>
         <div v-if="selectedTimeBound=== 'Interval' ">
           between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
@@ -762,7 +860,7 @@ export default {
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select> <br>
         before
-        <select v-model="selectedEvent5">
+        <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
         [holds] <br>
@@ -885,6 +983,14 @@ export default {
 
 .radio {
   margin-right: 1vw;
+}
+
+.chained-event-section {
+  background-color: #dedede;
+  border: 1px solid #c5c5c5;
+  border-radius: 0.5vw;
+  padding: 1vw;
+  margin-bottom: 1vw;
 }
 
 .message-container {
