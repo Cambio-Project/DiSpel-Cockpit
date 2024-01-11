@@ -28,7 +28,6 @@ function createEvent(name, specification) {
   };
 }
 
-/*
 // creates the time_bound part of the payload
 function createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
   return {
@@ -38,7 +37,6 @@ function createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
     lower_limit: lowerLimit
   };
 }
- */
 
 // creates probability part of the payload
 function createProbabiltiyBound(type, probability){
@@ -55,8 +53,6 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
     p_event: createEvent(selectedEventP, "")
   };
 
-  var test = false
-
   // include s_event if exists
   if (selectedEventS && selectedEventS.trim() !== "") {
     pattern.s_event = createEvent(selectedEventS, "")
@@ -64,7 +60,7 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 
   // include chained_events if one exists
   //TODO correct check
-  if (!test) {
+  if (!selectedChainedEvents.isEmpty) {
     pattern.chained_events = selectedChainedEvents.map(chainedEvent => {
       return {
         event: createEvent(chainedEvent.event.name, ""),
@@ -97,51 +93,55 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
   }
 
   // include pattern_constrains if one exists (Response always needs constrainEvent) ((selectedConstraintEvent && selectedConstraintEvent != "Constraint") || )
-  if (selectedProbabilityBound !== null && probability !== null) {
-    if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !==null) {
-    pattern.pattern_constrains = {
+  if (selectedProbabilityBound || selectedTimeBound || (selectedConstraintEvent && selectedConstraintEvent !== "Constraint") ) {
+    pattern.pattern_constrains = {}
+
+    if (selectedProbabilityBound !== null && probability !== null) {
+      if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !==null) {
+        pattern.pattern_constrains = {
           time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
           probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
-      };
-    }
-    else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
-    pattern.pattern_constrains = {
+        };
+      }
+      else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
+        pattern.pattern_constrains = {
           time_bound: createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
           probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
-      };
-    }
-    else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
-    pattern.pattern_constrains = {
+        };
+      }
+      else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
+        pattern.pattern_constrains = {
           time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
           probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
-      };
-    }
-    else {
-      pattern.pattern_constrains = {
+        };
+      }
+      else {
+        pattern.pattern_constrains = {
           probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
-      };
+        };
+      }
     }
-  }
-  else if (selectedProbabilityBound === null || probability === null) {
-    if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !==null) {
-    pattern.pattern_constrains = {
+    else if (selectedProbabilityBound === null || probability === null) {
+      if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !==null) {
+        pattern.pattern_constrains = {
           time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
-    };
-  }
-    else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
-      pattern.pattern_constrains = {
-            time_bound: createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
-      };
+        };
+      }
+      else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
+        pattern.pattern_constrains = {
+          time_bound: createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
+        };
+      }
+      else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
+        pattern.pattern_constrains = {
+          time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
+        };
+      }
     }
-    else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
-      pattern.pattern_constrains = {
-            time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
-      };
+
+    if (selectedConstraintEvent && selectedConstraintEvent !== "Constraint") {
+      pattern.pattern_constrains.constrain_event = createEvent(selectedConstraintEvent, "")
     }
-  }
-  
-  if (selectedConstraintEvent) {
-    pattern.pattern_constrains.constrain_event = createEvent(selectedConstraintEvent, "")
   }
 
   return pattern;
@@ -163,7 +163,7 @@ export default {
       selectedPatternType: null,
       occurrenceOptions: ["SteadyState", "MinimumDuration", "MaximumDuration", "Recurrence", "Universality", "Absence", "Existence", "BoundedExistence", "TransientState"],
       orderOptions: ["Response", "ResponseChain1N", "ResponseChainN1", "ResponseInvariance", "Precedence", "PrecedenceChain1N", "PrecedenceChainN1", "Until"],
-      events: ["EventA"],
+      events: ["A(a)"],
       customEvent: "",
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       selectedScope: null,
@@ -175,13 +175,13 @@ export default {
       selectedEventS: null,
       selectedEvent5: null,
       selectedChainedEvents: [],
-      selectedConstraintEvent: null,
+      selectedConstraintEvent: "Constraint",
       selectedTime: null,
       selectedInterval: null,
       selectedTimeUnitType: "time units",
       selectedTargetLogic: "SEL",
       mapping: null,
-      showCopyFeedback: false
+      showCopyFeedback: false,
       selectedTimeBound: null,
       timeBoundOptions: ["Interval", "Lower", "Upper"],
       selectedProbabilityBound: null,
@@ -254,6 +254,9 @@ export default {
         // Clear the input field after adding the custom event
         this.customEvent = "";
       }
+    },
+    addSampleEvents() {
+      this.events.push("B(b)", "C(c)", "D(d)", "P", "S", "T")
     },
     addProbability() {
       // Add the custom probabilitiy
@@ -465,6 +468,7 @@ export default {
       <label class="title">Add Custom Event:</label>
       <input v-model="customEvent" type="text" class="select-event-box" />
       <button class="event-button" @click="addCustomEvent">Add Custom Event</button>
+      <button class="event-button" @click="addSampleEvents">Add Sample Events</button>
     </div>
 
     <div class="message-container">
@@ -518,7 +522,8 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [becomes satisfied] it remains so for at least
+        [becomes satisfied] <br>
+        it remains so for at least
         <input v-model="selectedTime" type="number" class="select-pattern-box" />
         <input v-model="selectedTimeUnitType" type="text" class="select-pattern-box" />
       </div>
@@ -527,7 +532,8 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [becomes satisfied] it remains so for less than
+        [becomes satisfied] <br>
+        it remains so for less than
         <input v-model="selectedTime" type="number" class="select-pattern-box" />
         <input v-model="selectedTimeUnitType" type="text" class="select-pattern-box" />
       </div>
@@ -535,7 +541,8 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [holds] repeatedly [every
+        [holds] repeatedly <br>
+        [every
         <input v-model="selectedTime" type="number" class="select-pattern-box" />
         <input v-model="selectedTimeUnitType" type="text" class="select-pattern-box" />
         ]
@@ -581,7 +588,8 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [has occurred] then in response
+        [has occurred] <br>
+        then in response
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
@@ -595,7 +603,6 @@ export default {
         <div v-if="selectedTimeBound=== 'Interval' ">
           between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
         </div>
-        <label class="title">Constraint Event:</label>
         <select v-model="selectedConstraintEvent">
           <option value="Constraint">Constraint</option>
           <option v-for="event in events" :key="event">{{ event }}</option>
@@ -606,7 +613,8 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [has occurred] then in response
+        [has occurred] <br>
+        then in response
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
@@ -620,7 +628,6 @@ export default {
         <div v-if="selectedTimeBound=== 'Interval' ">
           between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
         </div>
-        <label class="title">Constraint Event:</label>
         <select v-model="selectedConstraintEvent">
           <option value="Constraint">Constraint</option>
           <option v-for="event in events" :key="event">{{ event }}</option>
@@ -628,33 +635,32 @@ export default {
 
         <div v-for="(chainedEvent, index) in selectedChainedEvents" :key="index">
           <label class="title">followed by ({{ index + 1 }}):</label>
-          <!-- Select for Chained Event -->
           <select v-model="chainedEvent.event.name">
             <option v-for="event in events" :key="event">{{ event }}</option>
           </select>
-          <!-- Time input for Chained Event -->
           <input v-model="chainedEvent.time_bound.type" type="text" class="select-pattern-box" placeholder="Type" />
           <input v-model="chainedEvent.time_bound.upper_limit" type="number" class="select-pattern-box" placeholder="Upper Limit" />
           <input v-model="chainedEvent.time_bound.time_unit" type="text" class="select-pattern-box" placeholder="Time Unit" />
-          <!-- Constraint Event for Chained Event -->
           <select v-model="chainedEvent.constrain_event.name">
             <option value="Constraint">Constraint</option>
             <option v-for="event in events" :key="event">{{ event }}</option>
           </select>
         </div>
-        <button class="button" @click="addChainedEvent">Add Chained Event</button>
+        <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
+        [eventually holds]
       </div>
       <div v-if="selectedOrder=== 'ResponseChainN1'">
-        if //TODO
+        if
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
-        </select>
+        </select> <br>
         //TODO <br>
-        [have occured] then in response
+        [have occured] <br>
+        then in response
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [eventually holds] //TODO
+        [eventually holds] <br>
         <div v-if="selectedTimeBound=== 'Lower' ">
           after {{ lowerLimit }} {{ timeUnit }}
         </div>
@@ -664,7 +670,6 @@ export default {
         <div v-if="selectedTimeBound=== 'Interval' ">
           between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
         </div>
-        <label class="title">Constraint Event:</label>
         <select v-model="selectedConstraintEvent">
           <option value="Constraint">Constraint</option>
           <option v-for="event in events" :key="event">{{ event }}</option>
@@ -675,7 +680,8 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [has occurred] then in response
+        [has occurred] <br>
+        then in response
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
@@ -695,11 +701,12 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [holds] then it must have been the case that
+        [holds] then it must have been the case <br>
+        that
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [has occured] 
+        [has occured] <br>
         <div v-if="selectedTimeBound=== 'Interval' ">
           between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
         </div>
@@ -714,30 +721,57 @@ export default {
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [holds] then it must be the case that //TODO [has occurred]
+        [has occurred] <br>
+        //TODO <br>
+        [holds] <br>
+        then it must be the case that
+        <select v-model="selectedEventS">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [has occured] <br>
         <div v-if="selectedTimeBound=== 'Interval' ">
           between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
         </div>
+        before
+        <select v-model="selectedEvent5">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select> <br>
+        [holds].
+        <select v-model="selectedConstraintEvent">
+          <option value="Constraint">Constraint</option>
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
       </div>
       <div v-if="selectedOrder=== 'PrecedenceChainN1'">
         if
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [holds] then it must be the case that
+        [holds] <br>
+        then it must be the case that
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
-        </select>
-        //TODO [have occurred] //TODO
+        </select> <br>
+        //TODO <br>
+        [have occurred] <br>
         <div v-if="selectedTimeBound=== 'Interval' ">
           between {{ lowerLimit }} and {{ upperLimit }} {{ timeUnit }}
         </div>
+        <select v-model="selectedConstraintEvent">
+          <option value="Constraint">Constraint</option>
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select> <br>
+        before
+        <select v-model="selectedEvent5">
+          <option v-for="event in events" :key="event">{{ event }}</option>
+        </select>
+        [holds] <br>
       </div>
       <div v-if="selectedOrder=== 'Until'">
         <select v-model="selectedEventP">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
-        [holds] without interruption until
+        [holds] without interruption until <br>
         <select v-model="selectedEventS">
           <option v-for="event in events" :key="event">{{ event }}</option>
         </select>
@@ -782,14 +816,6 @@ export default {
       </div>
     </div>
 
-    <div v-if="selectedOrder=== 'Response' " class="selection-group">
-      <label class="title">Constraint Event:</label><br>
-      <select v-model="selectedConstraintEvent">
-        <option value="Constraint">Constraint</option>
-        <option v-for="event in events" :key="event">{{ event }}</option>
-      </select>
-    </div>
-
     <div class="selection-group">
       <label class="title">Target Logic:</label><br>
       <select v-model="selectedTargetLogic">
@@ -803,7 +829,7 @@ export default {
 
     <div class="message-container">
       <p>Specification in Target Logic:</p>
-      <pre v-if="mapping" style="white-space: pre-wrap;">{{ mapping }}</pre>
+      <pre v-if="mapping" style="white-space: normal;" >{{ mapping }}</pre>
       <button @click="copyToClipboard" v-if="mapping" class="copy-button">Copy to Clipboard</button>
       <div class="copy-feedback" v-if="showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
     </div>
