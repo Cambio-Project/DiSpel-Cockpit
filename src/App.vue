@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue'
 import Dashboard from '@/components/Dashboard.vue'
+import PSPWizard from "@/components/PSPWizard.vue";
 import Scenarios from "@/components/Scenarios.vue";
 
 const routes = {
   '/': Dashboard,
+  '/pspwizard': PSPWizard,
   '/scenarios': Scenarios
 }
 
@@ -23,6 +25,7 @@ const currentView = computed(() => {
 <template>
   <component :is="currentView" />
   <a href="#/">Dashboard</a> |
+  <a href="#/pspwizard">PSPWizard</a>
   <a href="#/scenarios">Scenarios</a>
 </template>
 
@@ -36,5 +39,3 @@ const currentView = computed(() => {
   margin-top: 60px;
 }
 </style>
-
-
