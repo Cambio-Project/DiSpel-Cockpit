@@ -2,10 +2,12 @@
 import { ref, computed } from 'vue'
 import Dashboard from '@/components/Dashboard.vue'
 import PSPWizard from "@/components/PSPWizard.vue";
+import Scenarios from "@/components/Scenarios.vue";
 
 const routes = {
   '/': Dashboard,
-  '/pspwizard': PSPWizard
+  '/pspwizard': PSPWizard,
+  '/scenarios': Scenarios
 }
 
 const currentPath = ref(window.location.hash)
@@ -17,12 +19,14 @@ window.addEventListener('hashchange', () => {
 const currentView = computed(() => {
   return routes[currentPath.value.slice(1) || '/']
 })
+
 </script>
 
 <template>
   <component :is="currentView" />
   <a href="#/">Dashboard</a> |
   <a href="#/pspwizard">PSPWizard</a>
+  <a href="#/scenarios">Scenarios</a>
 </template>
 
 <style>
