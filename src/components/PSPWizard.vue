@@ -61,16 +61,25 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
   // include chained_events if one exists
   if (!selectedChainedEvents.isEmpty) {
     pattern.chained_events = selectedChainedEvents.map(chainedEvent => {
-      return {
+
+      let ch_event = {
         event: createEvent(chainedEvent.event.name, ""),
         constrain_event: createEvent(chainedEvent.constrain_event.name, ""),
-        time_bound: {
+        //time_bound: time_bound(chainedEvent)
+      };
+
+      console.log("Here")
+      console.log(chainedEvent.time_bound.type)
+      if (chainedEvent.time_bound.type !== "none") {
+        ch_event.time_bound = {
           type: chainedEvent.time_bound.type,
           lower_limit: chainedEvent.time_bound.lower_limit,
           upper_limit: chainedEvent.time_bound.upper_limit,
           time_unit: chainedEvent.time_bound.time_unit
         }
-      };
+      }
+
+      return ch_event
     });
   }
 
@@ -256,7 +265,9 @@ export default {
       }
     },
     addSampleEvents() {
-      this.events.push("B(b)", "C(c)", "D(d)", "P", "S", "T")
+      if (!this.events.includes("B(b)")) {
+        this.events.push("B(b)", "C(c)", "D(d)", "P", "S", "T")
+      }
     },
     addProbability() {
       // Add the custom probabilitiy
@@ -362,13 +373,14 @@ export default {
         },
         time_bound: {
           //time_unit: "",
-          type: "Upper",
+          type: "none",
           time_unit: "time units"
         }
       });
     }
   },
 };
+
 </script>
 
 <template>
@@ -641,6 +653,7 @@ export default {
           </select> <br>
           <div>
             <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" class="select-box">
+              <option value="none">---</option>
               <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
             </select>
             <div v-if="chainedEvent.time_bound.type === 'Upper' ">
@@ -679,6 +692,7 @@ export default {
           </select> <br>
           <div>
             <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" class="select-box">
+              <option value="none">---</option>
               <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
             </select>
             <div v-if="chainedEvent.time_bound.type === 'Upper' ">
@@ -777,8 +791,14 @@ export default {
           </select> <br>
           <div>
             <div>
-              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
-              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+              <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" class="select-box">
+                <option value="none">---</option>
+                <option value="Upper">Upper</option>
+              </select>
+              <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
+                <input v-model="chainedEvent.time_bound.time_unit" type="text">
+              </div>
             </div>
           </div>
           <select v-model="chainedEvent.constrain_event.name">
@@ -826,8 +846,14 @@ export default {
           </select> <br>
           <div>
             <div>
-              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
-              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+              <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" class="select-box">
+                <option value="none">---</option>
+                <option value="Upper">Upper</option>
+              </select>
+              <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
+                <input v-model="chainedEvent.time_bound.time_unit" type="text">
+              </div>
             </div>
           </div>
           <select v-model="chainedEvent.constrain_event.name">
