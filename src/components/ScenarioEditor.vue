@@ -3,7 +3,11 @@
 export default {
   data() {
     return {
-      outputType: null
+      outputType: null,
+      name: null,
+      description: null,
+      categories: ["None", "UseCase", "Growth", "Exploratory"],
+      selectedCategory: null
     }
   },
   methods:{
@@ -34,7 +38,7 @@ export default {
     },
     responses(){
       return this.$store.state.responses
-    }
+    },
   }
   }
 
@@ -44,6 +48,23 @@ export default {
 <template>
   <h1>Scenario Editor</h1>
 
+    <div>
+      <h3>Name: 
+      <input v-model="name" type="text" placeholder="Enter name" class="small-text-field" />
+      </h3>
+      <h3>Category:
+        <select v-model="selectedCategory" class="select-box">
+        <option v-for="category in categories" :key="category">{{ category }}</option>
+      </select>
+    </h3>
+      
+
+      <div>
+      <h3>Description: 
+        <textarea v-model="description" type="text" placeholder="Enter description" class="larger-text-field"/>
+      </h3>
+    </div>
+    </div>
     <div>
       <div class="message-container">
       <p>Stimuli:</p>
@@ -124,4 +145,22 @@ body {
     max-height: 40vh;
     overflow-y: auto;
   }
+
+  .larger-text-field {
+  width: 800px;
+  height: 150px;
+  resize: vertical; 
+}
+
+.small-text-field {
+  width: 500px;
+  resize: vertical;
+}
+
+.select-box {
+  width: 300px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 </style>
