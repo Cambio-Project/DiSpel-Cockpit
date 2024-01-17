@@ -8,18 +8,20 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.2",
     "core-js": "^3.8.3",
-    "@popperjs/core": "^2.11.8",
-    "vue": "^3.2.13"
+    "vue": "^3.4.14",
+    "vue-router": "^4.2.5",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
+    "@vitejs/plugin-vue": "^4.2.3",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
-    "@vitejs/plugin-vue": "^4.2.3",
     "eslint": "^8.45.0",
     "eslint-plugin-vue": "^9.15.1",
     "sass": "^1.64.1",

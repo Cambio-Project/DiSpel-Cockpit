@@ -9,11 +9,6 @@ export default {
         { id: 1, label: "#1", highlighted: false },
         { id: 2, label: "#2", highlighted: false  },
         { id: 3, label: "#3", highlighted: false  },
-        { id: 4, label: "#4", highlighted: false  },
-        { id: 5, label: "#5", highlighted: false  },
-        { id: 6, label: "#6", highlighted: false  },
-        { id: 7, label: "#7", highlighted: false  },
-        { id: 8, label: "#8", highlighted: false  },
       ],
   };
 },
@@ -36,6 +31,10 @@ export default {
         listContent.scrollTop = listContent.scrollHeight;
       }
     },
+    // Open the ScenarioEditor
+    openEditor() {
+      this.$router.push('/scenarioEditor');
+    },
 }  
 };
 
@@ -43,10 +42,10 @@ export default {
 
 
 <template>
-  <h1>Scenarios</h1>
+  <h1>DiSpel Dashboard</h1>
   <div class="btn-group">
-    <button class="search-button" @click="test">Search</button>
-    <button class="new-button" @click="newScenario">New</button>
+    <button class="new-button" @click="openEditor">New</button>
+    
   </div>
   <div class="list-container">
     <div class="list-content" ref="listContent">
@@ -102,17 +101,17 @@ body {
     }
 
     .list-container {
-      max-width: 600px;
+      max-width: 1000px;
       margin: 20px auto;
       background-color: #fff;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
       overflow: hidden;
-      height: 370px; /* Set a fixed height for the container */
+      height: 500px; /* Set a fixed height for the container */
     }
 
     .list-item {
-      padding: 16px;
+      padding: 64px;
       border-bottom: 1px solid #e0e0e0;
       transition: background-color 0.3s;
     }
