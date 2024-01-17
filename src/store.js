@@ -17,6 +17,12 @@ const store = createStore({
     setOutputType(state, outputType) {
       state.outputType = outputType;
     },
+    removeStimulus(state, index) {
+      state.stimuli.splice(index, 1);
+    },
+    removeResponse(state, index) {
+      state.responses.splice(index, 1);
+    }
   },
 });
 
