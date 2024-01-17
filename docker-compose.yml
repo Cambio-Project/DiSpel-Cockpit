@@ -4,9 +4,14 @@ name: "dashboard-project"
 
 services:
   dashboard:
-    build: ./
+    image: ghcr.io/cambio-project/dashboard-vue-23:latest
     ports:
       - 8080:80
+  pspwizard:
+    image: ghcr.io/cambio-project/pspwizardextended:latest
+    container_name: pspwizard
+    ports:
+      - 8081:8080
 
 networks:
   dashboardNetwork:

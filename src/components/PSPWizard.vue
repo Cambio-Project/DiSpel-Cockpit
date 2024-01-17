@@ -311,7 +311,7 @@ export default {
     async sendTransformRequest(payload) {
       try {
         // Perform the HTTP request with the input data
-        const response = await fetch('http://localhost:8080/transformPattern', {
+        const response = await fetch(process.env.VUE_APP_PSPWIZARD_API_URL + '/transformPattern', {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
