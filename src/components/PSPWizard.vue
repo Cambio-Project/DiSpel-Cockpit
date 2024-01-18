@@ -1,5 +1,41 @@
 <script>
-//import axios from "core-js/internals/queue";
+
+const pspSpecification = {
+  scopes: ["Globally", "BeforeR", "AfterQ", "BetweenQandR", "AfterQUntilR"],
+  selectedPatternType: null,
+  occurrenceOptions: ["SteadyState", "MinimumDuration", "MaximumDuration", "Recurrence", "Universality", "Absence", "Existence", "BoundedExistence", "TransientState"],
+  orderOptions: ["Response", "ResponseChain1N", "ResponseChainN1", "ResponseInvariance", "Precedence", "PrecedenceChain1N", "PrecedenceChainN1", "Until"],
+  events: ["A(a)"],
+  customEvent: "",
+  targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
+  selectedScope: null,
+  selectedOccurrence: null,
+  selectedOrder: null,
+  selectedScopeEventQ: null,
+  selectedScopeEventR: null,
+  selectedEventP: null,
+  selectedEventS: null,
+  selectedEvent5: null,
+  selectedChainedEvents: [],
+  selectedConstraintEvent: "Constraint",
+  selectedTime: null,
+  selectedInterval: null,
+  selectedTimeUnitType: "time units",
+  selectedTargetLogic: "SEL",
+  mapping: null,
+  showCopyFeedback: false,
+  selectedTimeBound: null,
+  timeBoundOptions: ["Interval", "Lower", "Upper"],
+  selectedProbabilityBound: null,
+  upperLimit: null,
+  lowerLimit: null,
+  probabilityBoundOptions: ["GreaterEqual", "Greater", "LowerEqual", "Lower"],
+  probability: null,
+  timeUnit: "time units",
+  checkedProbability: false,
+  checkedTime: false,
+  interval: ["Interval"]
+}
 
 // creates the scope part of the payload
 function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR) {
@@ -377,6 +413,29 @@ export default {
           time_unit: "time units"
         }
       });
+    },
+    uploadFile() {
+      const fileInput = this.$refs.fileInput;
+      if (!fileInput.files.length) {
+        alert('Please select a file');
+        return;
+      }
+
+      const file = fileInput.files[0];
+
+      const fileReader = new FileReader();
+
+      fileReader.onload = () => {
+        try {
+          const jsonData = JSON.parse(fileReader.result);
+
+          this.selectedScope = jsonData.scope
+
+          console.log(jsonData);
+        } catch (error) {
+          console.error('Error parsing JSON:', error);
+        }
+      };
     }
   },
 };
@@ -386,6 +445,16 @@ export default {
 <template>
   <div class="selection-container">
     <h1>PSPWizard</h1>
+
+    <div>
+      <form @submit.prevent="uploadFile">
+        <label>
+          <span class="search-button" >Search locally</span>
+          <input type="file" ref="fileInput" style="display: none"/>
+        </label>
+        <button type="submit">Upload</button>
+      </form>
+    </div>
 
     <div class="selection-group">
       <label class="title">Scope:</label>
@@ -953,6 +1022,13 @@ export default {
 .selection-container {
   max-width: 50vh;
   margin: auto;
+}
+
+.search-button {
+  margin: 0.5vw;
+  background-color: #d3d2d2;
+  border: 1px solid #a1a1a1;
+  border-radius: 4px;
 }
 
 .selection-group {
