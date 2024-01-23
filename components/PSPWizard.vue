@@ -311,16 +311,12 @@ export default {
     async sendTransformRequest(payload) {
       try {
         // Perform the HTTP request with the input data
-        const response = await fetch("http://localhost:"+process.env.VUE_APP_PSPWIZARD_HOST_PORT + '/transformPattern', {
+        const response = await useFetch("/api/getPSPMapping", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
           body: payload
-        });
+        })
 
-        // Update the mapping property with the response
-        const responsePayload = await response.json();
+        const responsePayload = await response.data.value.result
 
         // if mapping is returned, display it, else display the error message
         if (responsePayload.payload.mapping) {
@@ -333,6 +329,7 @@ export default {
         console.log(responsePayload)
         console.log(this.mapping);
         console.log('Transformation successful!');
+
       } catch (error) {
         // Handle any errors that occur during the HTTP request
         console.error('Error transforming to temporal logic:', error);

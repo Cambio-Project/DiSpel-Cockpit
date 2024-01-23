@@ -1,4 +1,6 @@
 node_modules
+.nuxt
+.output
 
 # Log files
 npm-debug.log*
