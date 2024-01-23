@@ -9,6 +9,7 @@ services:
       - 8080:80
     networks:
       - dashboardNetwork
+    pull_policy: always
   pspwizard:
     image: ghcr.io/cambio-project/pspwizardextended:latest
     container_name: pspwizard
@@ -16,6 +17,7 @@ services:
       - ${VUE_APP_PSPWIZARD_HOST_PORT}:8080
     networks:
       - dashboardNetwork
+    pull_policy: always
 
 networks:
   dashboardNetwork:
