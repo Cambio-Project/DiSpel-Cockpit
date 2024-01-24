@@ -1,36 +1,13 @@
 <script>
-
 export default {
   name: "ScenarioList",
   el: '#app',
   data() {
     return{
-      items:[
-        { id: 1, label: "#1", highlighted: false },
-        { id: 2, label: "#2", highlighted: false  },
-        { id: 3, label: "#3", highlighted: false  },
-      ],
+      scenarioList: this.$store.state.scenarios
   };
 },
   methods:{
-    newScenario() {
-      // push a new item to the list
-      this.items.push({ id: this.items.length +1, label: "#"+ (this.items.length +1), highlighted: true});
-      this.$nextTick(() => {this.scrollToItem()});
-      // reset the highlighted coloar after 1 second
-      setTimeout(() => {
-          this.items.forEach(element => {
-            element.highlighted = false;
-          });
-          }, 1000);
-    },
-    // Scroll automaticly to the newly added item
-    scrollToItem(){ 
-      const listContent = this.$refs.listContent;
-      if (listContent){
-        listContent.scrollTop = listContent.scrollHeight;
-      }
-    },
     // Open the ScenarioEditor
     openEditor() {
       this.$router.push('/scenarioEditor');
@@ -44,22 +21,40 @@ computed:{
       scenarios(){
         return this.$store.state.scenarios
       },
-    }
+},
 };
-
 </script>
 
 
 <template>
   <h1>DiSpel Dashboard</h1>
   <div class="btn-group">
-    <button class="new-button" @click="openEditor">New</button>
+    <button class="new-button" @click="openEditor">New Scenario</button>
   </div>
   <div class="list-container">
     <div class="list-content" ref="listContent">
       <div v-if="scenarios">
-      <li v-for="(scenario, index) in scenarios" :key="scenario">{{ index +1}}. {{ scenario }}
+      <li v-for="(scenario, index) in scenarios" :key="index">
+        <div class="headline-frame">
+          {{ scenario[Object.keys(scenario)[1]] }}
+        <h3>
+          {{ index +1}}. {{ scenario[Object.keys(scenario)[0]] }}
+        </h3>
+        {{ scenario[Object.keys(scenario)[2]] }}
+        <h5 class="left">
+          Stimuli:
+        </h5>
+        <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" class="left">
+          {{ index +1}}. {{ stimulus }}
+        </li>
+        <h5 class="left">
+        Responses:
+        </h5 >
+        <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">
+          {{ index +1}}. {{ response }}
+        </li>
         <button class="remove-button" @click="removeScenario(index)">Remove</button>
+      </div>
       </li>
     </div>
     </div>
@@ -111,13 +106,13 @@ body {
     }
 
     .list-container {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 20px auto;
       background-color: #fff;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
       overflow: hidden;
-      height: 500px; /* Set a fixed height for the container */
+      height: 500px; 
     }
 
     .list-item {
@@ -131,8 +126,8 @@ body {
     }
 
     .list-content {
-      max-height: 100%; /* Ensure that the content can take full height */
-      overflow-y: scroll; /* Enable vertical scrollbar */
+      max-height: 100%; 
+      overflow-y: scroll; 
     }
 
     .highlighted {
@@ -140,19 +135,34 @@ body {
     }
 
     .remove-button {
-  background-color: rgb(219, 65, 65);
-  border: none;
-  color: white;
-  padding: 5px 10px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin-top: 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-.remove-button:hover {
-  background-color: rgb(160, 40, 40);
-}
+      background-color: rgb(219, 65, 65);
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .remove-button:hover {
+      background-color: rgb(160, 40, 40);
+    }
+
+    .headline-frame {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    .bold h5{
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .left{
+      text-align: left;
+      overflow: auto;
+    }
 </style>
