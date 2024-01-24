@@ -1,3 +1,12 @@
+<script>
+export default {
+  mounted() {
+    console.log(this.$store);
+  },
+};
+
+</script>
+
 <template>
   <div class="mainContainer">
     <NuxtPage />

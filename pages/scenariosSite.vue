@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+import Scenarios from "../components/Scenarios.vue";
 </script>
 
 <template>
