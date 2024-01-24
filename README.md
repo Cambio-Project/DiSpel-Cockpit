@@ -2,7 +2,11 @@
 
 Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
-## Setup
+## Setup locally
+
+If you want to test the Dashboard with the PSPWizard you need to change the ``PSP_WIZARD_DOMAINNAME``
+and ``PSP_WIZARD_PORT`` value in the ``.env`` file to the values on your machine.
+Example values for local development are provided in the file.
 
 Make sure to install the dependencies:
 
@@ -20,7 +24,7 @@ yarn install
 bun install
 ```
 
-## Development Server
+### Development Server
 
 Start the development server on `http://localhost:3000`:
 
@@ -38,7 +42,7 @@ yarn dev
 bun run dev
 ```
 
-## Production
+### Production
 
 Build the application for production:
 
@@ -56,29 +60,16 @@ yarn build
 bun run build
 ```
 
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
 
 ___
 
-[//]: # (TODO: CHECK IF STILL VALID)
+### Run via Docker
 
-## Run via Docker
+### Change the .env File
+If you want to test the Dashboard with the PSPWizard you need to change the ``PSP_WIZARD_DOMAINNAME``
+and ``PSP_WIZARD_PORT`` value in the ``.env`` file to the values on your machine. 
+Example values for local development are provided in the file.  
 
 ### Build the Docker Image
 
@@ -113,7 +104,7 @@ The following commands need to be executed in the folder of the docker compose f
 ```
 docker compose up -d
 ```
-- `-d`_ Starts the container in detached mode, so that you dont need to have the terminal open and running.
+- `-d`: Starts the container in detached mode, so that you dont need to have the terminal open and running.
 
 ### Access the Dashboard
 
