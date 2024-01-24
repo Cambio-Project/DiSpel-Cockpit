@@ -35,7 +35,16 @@ export default {
     openEditor() {
       this.$router.push('/scenarioEditor');
     },
-}  
+    // Remove one scenario 
+    removeScenario(index) {
+      this.$store.commit('removeScenario', index)
+    }
+},
+computed:{
+      scenarios(){
+        return this.$store.state.scenarios
+      },
+    }
 };
 
 </script>
@@ -45,13 +54,14 @@ export default {
   <h1>DiSpel Dashboard</h1>
   <div class="btn-group">
     <button class="new-button" @click="openEditor">New</button>
-    
   </div>
   <div class="list-container">
     <div class="list-content" ref="listContent">
-      <div v-for="item in items" :key="item.id" :class="{'list-item': true, 'highlighted': item.highlighted}">
-        {{ item.label }}
-      </div>
+      <div v-if="scenarios">
+      <li v-for="(scenario, index) in scenarios" :key="scenario">{{ index +1}}. {{ scenario }}
+        <button class="remove-button" @click="removeScenario(index)">Remove</button>
+      </li>
+    </div>
     </div>
   </div>
 </template>
@@ -128,4 +138,21 @@ body {
     .highlighted {
       background-color: #d8ffcf;
     }
+
+    .remove-button {
+  background-color: rgb(219, 65, 65);
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.remove-button:hover {
+  background-color: rgb(160, 40, 40);
+}
 </style>

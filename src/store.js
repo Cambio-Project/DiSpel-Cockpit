@@ -5,7 +5,12 @@ const store = createStore({
   state: {
     stimuli: [],
     responses: [],
-    outputType: null
+    outputType: null,
+    scenarios: [['test', 'none', 'a', ['def'], ['abc']]],
+    scenario: [],
+    name: null,
+    category: null,
+    description: null
   },
   mutations: {
     addStimulus(state, stimulus) {
@@ -22,6 +27,30 @@ const store = createStore({
     },
     removeResponse(state, index) {
       state.responses.splice(index, 1);
+    },
+    addScenario(state) {
+      state.scenario.push(state.name, state.category, state.description, state.stimuli, state.responses);
+      state.scenarios.push(state.scenario);
+      state.name = null;
+      state.category = null;
+      state.description = null;
+      state.scenario = [];
+    },
+
+    addName(state, name) {
+      state.name = name;
+    },
+
+    addCategory(state, category) {
+      state.category = category;
+    },
+
+    addDescription(state, description) {
+      state.description = description;
+    },
+
+    removeScenario(state, index) {
+      state.scenarios.splice(index, 1);
     }
   },
 });

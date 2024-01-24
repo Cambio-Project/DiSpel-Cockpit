@@ -4,32 +4,39 @@ export default {
   data() {
     return {
       outputType: null,
-      name: null,
-      description: null,
       categories: ["None", "UseCase", "Growth", "Exploratory"],
-      selectedCategory: null
+      name: this.$store.state.name,
+      category: this.$store.state.category,
+      description: this.$store.state.description,
     }
   },
   methods:{
     // create stimulus with pspwizard
     openPSPStimulus() {
       this.outputType= 'Stimulus';
-      this.$store.commit('setOutputType', this.outputType)
+      this.$store.commit('setOutputType', this.outputType);
       this.$router.push('/pspwizard');
     },
     // create response with pspwizard
     openPSPResponse() {
       this.outputType= 'Response';
-      this.$store.commit('setOutputType', this.outputType)
+      this.$store.commit('setOutputType', this.outputType);
       this.$router.push('/pspwizard');
     },
     // remove stiumulus
     removeStimulus(index) {
-      this.$store.commit('removeStimulus', index)
+      this.$store.commit('removeStimulus', index);
     },
     // remove response
     removeResponse(index) {
-      this.$store.commit('removeResponse', index)
+      this.$store.commit('removeResponse', index);
+    },
+    // add scenario with metadata and stimuli and responses
+    addScenario() {
+      this.$store.commit('addCategory', this.category);
+      this.$store.commit('addDescription', this.description);
+      this.$store.commit('addScenario')
+      this.$router.push('/scenarios')
     },
   },
   computed:{
@@ -39,6 +46,17 @@ export default {
     responses(){
       return this.$store.state.responses
     },
+  },
+  watch:{
+    name(newName) {
+      this.$store.commit('addName', newName);
+    },
+    category(newCategory) {
+      this.$store.commit('addCategory', newCategory);
+    },
+    description(newDescription) {
+      this.$store.commit('addDescription', newDescription);
+    }
   }
   }
 
@@ -50,10 +68,10 @@ export default {
 
     <div>
       <h3>Name: 
-      <input v-model="name" type="text" placeholder="Enter name" class="small-text-field" />
+      <input v-model="name" type="text" placeholder="Enter name" class="small-text-field"/>
       </h3>
       <h3>Category:
-        <select v-model="selectedCategory" class="select-box">
+        <select v-model="category" class="select-box">
         <option v-for="category in categories" :key="category">{{ category }}</option>
       </select>
     </h3>
@@ -68,7 +86,7 @@ export default {
     <div>
       <div class="message-container">
       <p>Stimuli:</p>
-      <li  v-for="(stimulus, index) in stimuli" :key="stimulus" >{{ index +1}}. {{ stimulus }}
+      <li v-for="(stimulus, index) in stimuli" :key="stimulus" >{{ index +1}}. {{ stimulus }}
         <button class="remove-button" @click="removeStimulus(index)">Remove</button>
       </li>
       <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>
@@ -85,6 +103,10 @@ export default {
     </div>
     </div>
     
+    <div v-if="stimuli !== null && response !== null">
+      <button class="new-button" @click="addScenario">Complete</button>
+    </div>
+
 </template>
 
 
