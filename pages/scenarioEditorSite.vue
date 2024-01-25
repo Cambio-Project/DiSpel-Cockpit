@@ -4,6 +4,12 @@ import ScenarioEditor from "../components/ScenarioEditor.vue";
 
 <template>
   <ScenarioEditor></ScenarioEditor>
+  <div>
+    <a href="/">Dashboard</a> |
+    <a href="/pspwizardSite">PSPWizard</a> |
+    <a href="/scenariosSite">Scenarios</a> |
+    <a href="/scenarioEditorSite">Scenario Editor</a>
+  </div>
 </template>
 
 <style scoped>
