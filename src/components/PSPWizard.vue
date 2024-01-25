@@ -474,7 +474,7 @@ export default {
 
               const timeBound = {};
               if (chEventJson.time_bound) {
-                timeBound.type = chEventJson.time_bound.type || "";
+                timeBound.type = chEventJson.time_bound.type || "none";
                 if (chEventJson.time_bound.upper_limit !== null && chEventJson.time_bound.upper_limit !== undefined) {
                   timeBound.upper_limit = chEventJson.time_bound.upper_limit;
                 }
@@ -482,9 +482,13 @@ export default {
                   timeBound.lower_limit = chEventJson.time_bound.lower_limit;
                 }
                 timeBound.time_unit = chEventJson.time_bound.time_unit || "";
+              } else {
+                timeBound.type = "none"
               }
 
-              this.pspSpecification.selectedChainedEvents.push({ event, constrain_event: constrainEvent, time_bound: timeBound });
+              console.log("Timeboundtype: " + timeBound.type)
+
+              this.pspSpecification.selectedChainedEvents.push({ event, constrainEvent, timeBound });
             }
           }
 
