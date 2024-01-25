@@ -4,7 +4,6 @@ export default {
   el: '#app',
   data() {
     return{
-      scenarioList: this.$store.state.scenarios
   };
 },
   methods:{
@@ -44,15 +43,17 @@ computed:{
         <h5 class="left">
           Stimuli:
         </h5>
-        <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" class="left">
+        <div class="left">
+          <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" >
           {{ index +1}}. {{ stimulus }}
         </li>
         <h5 class="left">
         Responses:
         </h5 >
-        <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">
+        <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" :class="left">
           {{ index +1}}. {{ response }}
         </li>
+      </div>
         <button class="remove-button" @click="removeScenario(index)">Remove</button>
       </div>
       </li>
@@ -138,7 +139,7 @@ body {
       background-color: rgb(219, 65, 65);
       border: none;
       color: white;
-      padding: 5px 10px;
+      padding: 10px 20px;
       text-align: center;
       text-decoration: none;
       display: inline-block;
