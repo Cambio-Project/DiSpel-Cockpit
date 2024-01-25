@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import Scenarios from "../components/Scenarios.vue";
+import ScenarioEditor from "../components/ScenarioEditor.vue";
 </script>
 
 <template>
-  <client-only>
-    <Scenarios></Scenarios>
-  </client-only>
+  <ScenarioEditor></ScenarioEditor>
   <div>
     <a href="/">Dashboard</a> |
     <a href="/pspwizardSite">PSPWizard</a> |

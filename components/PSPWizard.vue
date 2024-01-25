@@ -374,6 +374,17 @@ export default {
           time_unit: "time units"
         }
       });
+    },
+    // Save the mapping to the Vue store and direct to the Scenario Editor
+    confirm() {
+      if (this.$store.state.outputType === 'Stimulus') {
+        this.$store.commit('addStimulus', this.mapping)
+        this.$router.push('/scenarioeditorSite');
+      }
+      if (this.$store.state.outputType === 'Response') {
+        this.$store.commit('addResponse', this.mapping)
+        this.$router.push('/scenarioeditorSite');
+      }
     }
   },
 };
@@ -382,7 +393,7 @@ export default {
 
 <template>
   <div class="selection-container">
-    <h1>PSPWizard</h1>
+    <h1>PSPWizard as {{ outputType  }}</h1>
 
     <div class="selection-group">
       <label class="title">Scope:</label>
@@ -942,6 +953,9 @@ export default {
       <div class="copy-feedback" v-if="showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
     </div>
 
+    <div>
+      <button @click="confirm" v-if="mapping" class="commit-button">Confirm</button>
+    </div>
     <br>
   </div>
 </template>
@@ -1103,7 +1117,7 @@ export default {
   padding: 8px;
   margin: 10px;
   border-radius: 4px;
-  //display: none;
+  display: none;
   animation: fadeOut 2s forwards;
 }
 
