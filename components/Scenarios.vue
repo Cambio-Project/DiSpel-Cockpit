@@ -155,6 +155,8 @@ body {
     .headline-frame {
       border: 1px solid #ccc;
       padding: 10px;
+      width: 1150px; 
+      box-sizing: border-box;
     }
 
     .bold h5{

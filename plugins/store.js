@@ -42,6 +42,8 @@ const store = createStore({
       state.category = null;
       state.description = null;
       state.scenario = [];
+      state.stimuli = [];
+      state.responses = [];
     },
 
     addName(state, name) {
