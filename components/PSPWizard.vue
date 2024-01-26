@@ -669,7 +669,7 @@ export default {
               <input v-model="chainedEvent.time_bound.time_unit" type="text">
             </div>
             <div v-if="chainedEvent.time_bound.type === 'Lower' ">
-              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="After">
+              <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="After">
               <input v-model="chainedEvent.time_bound.time_unit" type="text">
             </div>
             <div v-if="chainedEvent.time_bound.type === 'Interval' ">
@@ -708,7 +708,7 @@ export default {
               <input v-model="chainedEvent.time_bound.time_unit" type="text">
             </div>
             <div v-if="chainedEvent.time_bound.type === 'Lower' ">
-              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="After">
+              <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="After">
               <input v-model="chainedEvent.time_bound.time_unit" type="text">
             </div>
             <div v-if="chainedEvent.time_bound.type === 'Interval' ">
