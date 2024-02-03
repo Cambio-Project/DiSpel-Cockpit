@@ -84,14 +84,14 @@ docker build -t <TagName> .
 ```
 docker run -p 8082:3000 --name <ContainerName> <TagName> -d
 ```
-- `-p 8082:3000`: Binds the host port 8080 to the container port 80.
+- `-p 8082:3000`: Binds the host port 8082 to the container port 82.
 - `--name <ContainerName>`: Names the Container with the given container name.
 - `<TagName>`: Replace this with the TagName you choose in the build process above.
 - `-d`: Use this flag if you want to start the container in the background.
 
 ### Access the Dashboard
 
-If you used the default host port `8082`, you can now access the dashboard via http://localhost:8080/
+If you used the default host port `8082`, you can now access the dashboard via http://localhost:8082/
 
 ___
 ## Run via Docker Compose
@@ -108,7 +108,7 @@ docker compose up -d
 
 ### Access the Dashboard
 
-If you used the default host port `8080`, you can now access the dashboard via http://localhost:8080/
+If you used the default host port `8082`, you can now access the dashboard via http://localhost:8082/
 
 
 ### Stop Everything with Docker Compose
@@ -122,6 +122,7 @@ docker compose down
 - `name: "dashboard-project"`: The name of the toplevel container group that contains all the containers.
 - `services:`: Here we describe all the services we want to start with the docker compose file.
 - `dashboard:`: Is the name of your first server (The dashboard).
-- `build: ./:`: Because we have no image registry we need to build the Dockerfile manually at the location `./` which is our Dockerfile.
-- `ports: - 8082:3000:`: Here we describe which ports we want to bind to our container. Our Dockerfile opens up port `3000`, and we now bind it to our system port `8082`.
-- `networks: dashboardNetwork`: We currently dont need this because we only have one service, but when we have more then one this is the network layer our services can communicate over.
+- `ports: - 8082:3000:`: Here we describe which ports we want to bind to our dashboard service. Our Dockerfile opens up port `3000`, and we now bind it to our system port `8082`.
+- `pspwizard:`: Is the name of the PSP Wizard server.
+- `ports: - 8080:8080:`: Here we describe which ports we want to bind to our pspwizard service. Our Dockerfile opens up port `8080`, and we now bind it to our system port `8080`.
+- `networks: dashboardNetwork`: This is the network layer our services can communicate over.
