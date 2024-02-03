@@ -6,7 +6,7 @@ services:
   dashboard:
     image: ghcr.io/cambio-project/dashboard-vue-23:latest
     ports:
-      - 8080:3000
+      - 8082:3000
     networks:
       - dashboardNetwork
     pull_policy: always
@@ -14,7 +14,7 @@ services:
     image: ghcr.io/cambio-project/pspwizardextended:latest
     container_name: pspwizard
     ports:
-      - ${VUE_APP_PSPWIZARD_HOST_PORT}:8080
+      - 8080:8080
     networks:
       - dashboardNetwork
     pull_policy: always
