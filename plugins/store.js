@@ -6,14 +6,100 @@ const store = createStore({
     stimuli: [],
     responses: [],
     outputType: null,
-    scenarios: [['Instance Failure followed by Load Peak', 'Explorative', 'After killing service and load peak response Time should be <1 s.', 
-    ['Globally, {kill 1 service instance of example-service} [holds] eventually between 20 and 20 time units.', 
-    'After service instance failure has occurred then in response {increase load exponentially to 5x base load over 20 time units} [eventually holds] after 2 time units.'], 
-    ['Globally, it is always the case that {ResponseTime < 1s} [holds].']],
-    ['Instance Failure followed by Load Peak', 'Explorative', 'After killing service and load peak response Time should be <1 s.', 
-    ['Globally, {kill 1 service instance of example-service} [holds] eventually between 20 and 20 time units.', 
-    'After service instance failure has occurred then in response {increase load exponentially to 5x base load over 20 time units} [eventually holds] after 2 time units.'], 
-    ['Globally, it is always the case that {ResponseTime < 1s} [holds].']]],
+    scenarios: [
+      //1.Szenario
+      [
+      //Name
+      'Instance Failure followed by Load Peak', 
+      //Category
+      'Explorative', 
+      //Description
+      'After killing service and load peak response Time should be <1 s.', 
+      [ //Stimuli in each logic
+        [//1.Stimulus
+          'Globally, {kill 1 service instance of example-service} [holds] eventually between 20 and 20 time units.', 
+          'LTL', 
+          'MTL', 
+          'Prism', 
+          'Qantitative Prism', 
+          'TBV (timed)', 
+          'TBV (untimed)',
+          //DisplayLogic
+          0
+        ], 
+        [//2.Stimulus
+          'After service instance failure has occurred then in response {increase load exponentially to 5x base load over 20 time units} [eventually holds] after 2 time units.',
+          'LTL', 
+          'MTL', 
+          'Prism', 
+          'Qantitative Prism', 
+          'TBV (timed)', 
+          'TBV (untimed)',
+          //DisplayLogic
+          1
+        ]
+      ], 
+      [ //Responses in each logic
+        [//1.Response
+          'Globally, it is always the case that {ResponseTime < 1s} [holds].', 
+          'LTL', 
+          'MTL', 
+          'Prism', 
+          'Qantitative Prism', 
+          'TBV (timed)', 
+          'TBV (untimed)',
+          //DisplayLogic
+          2
+        ]
+      ]
+    ],
+    //2.Szenario
+    [
+      //Name
+      'Instance Failure followed by Load Peak', 
+      //Category
+      'Explorative', 
+      //Description
+      'After killing service and load peak response Time should be <1 s.', 
+      [ //Stimuli in each logic
+        [//1.Stimulus
+          'Globally, {kill 1 service instance of example-service} [holds] eventually between 20 and 20 time units.', 
+          'LTL', 
+          'MTL', 
+          'Prism', 
+          'Qantitative Prism', 
+          'TBV (timed)', 
+          'TBV (untimed)',
+          //DisplayLogic
+          3
+        ], 
+        [//2.Stimulus
+          'After service instance failure has occurred then in response {increase load exponentially to 5x base load over 20 time units} [eventually holds] after 2 time units.',
+          'LTL', 
+          'MTL', 
+          'Prism', 
+          'Qantitative Prism', 
+          'TBV (timed)', 
+          'TBV (untimed)',
+          //DisplayLogic
+          4
+        ]
+      ], 
+      [ //Responses in each logic
+        [//1.Response
+          'Globally, it is always the case that {ResponseTime < 1s} [holds].', 
+          'LTL', 
+          'MTL', 
+          'Prism', 
+          'Qantitative Prism', 
+          'TBV (timed)', 
+          'TBV (untimed)',
+          //DisplayLogic
+          5
+        ]
+      ]
+    ]
+  ],
     scenario: [],
     name: null,
     category: null,
@@ -44,20 +130,17 @@ const store = createStore({
       state.scenario = [];
       state.stimuli = [];
       state.responses = [];
+      state.display_logic = null;
     },
-
     addName(state, name) {
       state.name = name;
     },
-
     addCategory(state, category) {
       state.category = category;
     },
-
     addDescription(state, description) {
       state.description = description;
     },
-
     removeScenario(state, index) {
       state.scenarios.splice(index, 1);
     }

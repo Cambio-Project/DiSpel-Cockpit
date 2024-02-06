@@ -86,7 +86,7 @@ export default {
     <div>
       <div class="message-container">
       <p>Stimuli:</p>
-      <li v-for="(stimulus, index) in stimuli" :key="stimulus" >{{ index +1}}. {{ stimulus }}
+      <li v-for="(stimulus, index) in stimuli" :key="stimulus" >{{ index +1}}. {{ stimulus[stimulus[7]] }}
         <button class="remove-button" @click="removeStimulus(index)">Remove</button>
       </li>
       <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>
@@ -96,7 +96,7 @@ export default {
     <div>
       <div class="message-container">
       <p>Responses:</p>
-      <li v-for="(response, index) in responses" :key="response" >{{ index +1}}. {{ response }}
+      <li v-for="(response, index) in responses" :key="response" >{{ index +1}}. {{ response[response[7]] }}
         <button class="remove-button" @click="removeResponse(index)">Remove</button>
       </li>
       <button class="new-button" @click="openPSPResponse">Add Response</button>

@@ -44,14 +44,14 @@ computed:{
           Stimuli:
         </h5>
         <div class="left">
-          <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" >
-          {{ index +1}}. {{ stimulus }}
+          <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" :class="left">
+            {{ index +1}}. {{ stimulus[stimulus[7]] }}
         </li>
         <h5 class="left">
         Responses:
         </h5 >
         <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" :class="left">
-          {{ index +1}}. {{ response }}
+          {{ index +1}}. {{ response[response[7]] }}
         </li>
       </div>
         <button class="remove-button" @click="removeScenario(index)">Remove</button>

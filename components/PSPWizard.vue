@@ -201,7 +201,8 @@ export default {
       timeUnit: "time units",
       checkedProbability: false,
       checkedTime: false,
-      interval: ["Interval"]
+      interval: ["Interval"],
+      formulas: [],
     };
   },
   computed: {
@@ -376,15 +377,38 @@ export default {
       });
     },
     // Save the mapping to the Vue store and direct to the Scenario Editor
-    confirm() {
+    async confirm() {
+      var index;
+      for(index in this.targetLogics) {
+        var payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedChainedEvents, this.selectedTime, this.selectedTimeUnitType, this.selectedInterval, this.selectedConstraintEvent, this.targetLogics[index], this.selectedTimeBound, this.selectedProbabilityBound, this.timeUnit, this.probability, this.upperLimit, this.lowerLimit);
+          
+        // Perform the HTTP request with the input data
+        const response = await useFetch("/api/getPSPMapping", {
+          method: "POST",
+          body: payload
+        })
+
+        const responsePayload = await response.data.value.result
+
+        // if mapping is returned, display it, else display the error message
+        if (responsePayload.payload.mapping) {
+          this.formulas.push(responsePayload.payload.mapping);
+        } else {
+          this.formulas.push("")
+        }
+      }
+      var number = this.targetLogics.indexOf(this.selectedTargetLogic)
+      this.formulas.push(number)
+
       if (this.$store.state.outputType === 'Stimulus') {
-        this.$store.commit('addStimulus', this.mapping)
-        this.$router.push('/scenarioeditorSite');
+        this.$store.commit('addStimulus', this.formulas)
       }
+
       if (this.$store.state.outputType === 'Response') {
-        this.$store.commit('addResponse', this.mapping)
-        this.$router.push('/scenarioeditorSite');
+        this.$store.commit('addResponse', this.formulas)
       }
+      
+      this.$router.push('/scenarioeditorSite');
     }
   },
 };
