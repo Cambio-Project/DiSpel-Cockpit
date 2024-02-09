@@ -4,6 +4,8 @@ export default {
   el: '#app',
   data() {
     return{
+      targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
+      target: null
   };
 },
   methods:{
@@ -46,15 +48,21 @@ computed:{
         <div class="left">
           <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" :class="left">
             {{ index +1}}. {{ stimulus[stimulus[7]] }}
+            <select v-model="stimulus[7]" class="select-box">
+              <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+            </select>
         </li>
         <h5 class="left">
         Responses:
         </h5 >
         <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" :class="left">
           {{ index +1}}. {{ response[response[7]] }}
+          <select v-model="response[7]" class="select-box">
+              <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+            </select>
         </li>
       </div>
-        <button class="remove-button" @click="removeScenario(index)">Remove</button>
+        <button class="remove-button" @click="removeScenario(index)">Remove Scenario</button>
       </div>
       </li>
     </div>
@@ -167,5 +175,12 @@ body {
     .left{
       text-align: left;
       overflow: auto;
+    }
+
+    .select-box {
+      width: 120px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
     }
 </style>

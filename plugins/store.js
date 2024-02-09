@@ -12,29 +12,29 @@ const store = createStore({
       //Name
       'Instance Failure followed by Load Peak', 
       //Category
-      'Explorative', 
+      'Exploratory', 
       //Description
       'After killing service and load peak response Time should be <1 s.', 
       [ //Stimuli in each logic
         [//1.Stimulus
           'Globally, {kill 1 service instance of example-service} [holds] eventually between 20 and 20 time units.', 
-          'LTL', 
-          'MTL', 
-          'Prism', 
-          'Qantitative Prism', 
-          'TBV (timed)', 
-          'TBV (untimed)',
+          '◇ (kill 1 service instance of example-service)', 
+          '◇[20,20] (kill 1 service instance of example-service)', 
+          '[ F[20,20] (kill 1 service instance of example-service) ]', 
+          'P=? [ F[20,20] (kill 1 service instance of example-service) ]', 
+          'once (kill 1 service instance of example-service)', 
+          'once[20,20] (kill 1 service instance of example-service)',
           //DisplayLogic
           0
         ], 
         [//2.Stimulus
-          'After service instance failure has occurred then in response {increase load exponentially to 5x base load over 20 time units} [eventually holds] after 2 time units.',
-          'LTL', 
-          'MTL', 
-          'Prism', 
-          'Qantitative Prism', 
-          'TBV (timed)', 
-          'TBV (untimed)',
+          'After {kill 1 service instance of example-service} if {service instance failure} [has occurred] then in response {increase load exponentially to 5x base load over 20 time units} [eventually holds] after 2 time units without {A(a)} [holding] in between.',
+          '☐((kill 1 service instance of example-service) → ☐((service instance failure) → (¬(A(a)) U (increase load exponentially to 5x base load over 20 time units))))', 
+          '☐((kill 1 service instance of example-service) → (☐((service instance failure) → ¬(A(a)) U[2,∞) (increase load exponentially to 5x base load over 20 time units))))', 
+          '[ G((kill 1 service instance of example-service) => G((service instance failure) => !(A(a)) U>=2 (increase load exponentially to 5x base load over 20 time units))) ]', 
+          'P=? [ G((kill 1 service instance of example-service) => G((service instance failure) => !(A(a)) U>=2 (increase load exponentially to 5x base load over 20 time units))) ]', 
+          'always((kill 1 service instance of example-service) -> always((service instance failure) -> ( not (A(a)) since (increase load exponentially to 5x base load over 20 time units))))', 
+          'always((kill 1 service instance of example-service) -> (always((service instance failure) -> not (A(a)) since[2,inf] (increase load exponentially to 5x base load over 20 time units))))',
           //DisplayLogic
           1
         ]
@@ -42,12 +42,12 @@ const store = createStore({
       [ //Responses in each logic
         [//1.Response
           'Globally, it is always the case that {ResponseTime < 1s} [holds].', 
-          'LTL', 
-          'MTL', 
-          'Prism', 
-          'Qantitative Prism', 
-          'TBV (timed)', 
-          'TBV (untimed)',
+          '☐ (ResponseTime < 1s)', 
+          '☐ (ResponseTime < 1s)', 
+          '[ G (ResponseTime < 1s) ]', 
+          'P=? [ G (ResponseTime < 1s) ]', 
+          'always (ResponseTime < 1s)', 
+          'always (ResponseTime < 1s)',
           //DisplayLogic
           2
         ]
@@ -58,42 +58,42 @@ const store = createStore({
       //Name
       'Instance Failure followed by Load Peak', 
       //Category
-      'Explorative', 
+      'Exploratory', 
       //Description
       'After killing service and load peak response Time should be <1 s.', 
       [ //Stimuli in each logic
         [//1.Stimulus
-          'Globally, {kill 1 service instance of example-service} [holds] eventually between 20 and 20 time units.', 
-          'LTL', 
-          'MTL', 
-          'Prism', 
-          'Qantitative Prism', 
-          'TBV (timed)', 
-          'TBV (untimed)',
+        'Globally, {kill 1 service instance of example-service} [holds] eventually between 20 and 20 time units.', 
+        '◇ (kill 1 service instance of example-service)', 
+        '◇[20,20] (kill 1 service instance of example-service)', 
+        '[ F[20,20] (kill 1 service instance of example-service) ]', 
+        'P=? [ F[20,20] (kill 1 service instance of example-service) ]', 
+        'once (kill 1 service instance of example-service)', 
+        'once[20,20] (kill 1 service instance of example-service)',
           //DisplayLogic
           3
         ], 
         [//2.Stimulus
-          'After service instance failure has occurred then in response {increase load exponentially to 5x base load over 20 time units} [eventually holds] after 2 time units.',
-          'LTL', 
-          'MTL', 
-          'Prism', 
-          'Qantitative Prism', 
-          'TBV (timed)', 
-          'TBV (untimed)',
+        'After {kill 1 service instance of example-service} if {service instance failure} [has occurred] then in response {increase load exponentially to 5x base load over 20 time units} [eventually holds] after 2 time units without {A(a)} [holding] in between.',
+        '☐((kill 1 service instance of example-service) → ☐((service instance failure) → (¬(A(a)) U (increase load exponentially to 5x base load over 20 time units))))', 
+        '☐((kill 1 service instance of example-service) → (☐((service instance failure) → ¬(A(a)) U[2,∞) (increase load exponentially to 5x base load over 20 time units))))', 
+        '[ G((kill 1 service instance of example-service) => G((service instance failure) => !(A(a)) U>=2 (increase load exponentially to 5x base load over 20 time units))) ]', 
+        'P=? [ G((kill 1 service instance of example-service) => G((service instance failure) => !(A(a)) U>=2 (increase load exponentially to 5x base load over 20 time units))) ]', 
+        'always((kill 1 service instance of example-service) -> always((service instance failure) -> ( not (A(a)) since (increase load exponentially to 5x base load over 20 time units))))', 
+        'always((kill 1 service instance of example-service) -> (always((service instance failure) -> not (A(a)) since[2,inf] (increase load exponentially to 5x base load over 20 time units))))',
           //DisplayLogic
           4
         ]
       ], 
       [ //Responses in each logic
         [//1.Response
-          'Globally, it is always the case that {ResponseTime < 1s} [holds].', 
-          'LTL', 
-          'MTL', 
-          'Prism', 
-          'Qantitative Prism', 
-          'TBV (timed)', 
-          'TBV (untimed)',
+        'Globally, it is always the case that {ResponseTime < 1s} [holds].', 
+        '☐ (ResponseTime < 1s)', 
+        '☐ (ResponseTime < 1s)', 
+        '[ G (ResponseTime < 1s) ]', 
+        'P=? [ G (ResponseTime < 1s) ]', 
+        'always (ResponseTime < 1s)', 
+        'always (ResponseTime < 1s)',
           //DisplayLogic
           5
         ]
