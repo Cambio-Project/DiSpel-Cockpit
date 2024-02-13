@@ -25,7 +25,7 @@ const currentView = computed(() => {
 <template>
   <component :is="currentView" />
   <a href="#/">Dashboard</a> |
-  <a href="#/pspwizard">PSPWizard</a>
+  <a href="#/pspwizard">PSPWizard</a> |
   <a href="#/scenarios">Scenarios</a>
 </template>
 
