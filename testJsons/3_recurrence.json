@@ -1,0 +1,23 @@
+{
+  "scope": {
+    "type": "BeforeR",
+    "r_event": {
+      "name": "A(a)",
+      "specification": ""
+    }
+  },
+  "pattern": {
+    "type": "Recurrence",
+    "p_event": {
+      "name": "B(b)",
+      "specification": ""
+    },
+    "chained_events": [],
+    "pattern_specifications": {
+      "time_unit": "time unit",
+      "upper_limit": 5,
+      "frequency": 0
+    }
+  },
+  "target_logic": "SEL"
+}

@@ -1,0 +1,39 @@
+{
+  "scope": {
+    "type": "Globally",
+    "q_event": {
+      "name": "A(a)",
+      "specification": ""
+    },
+    "r_event": {
+      "name": "B(b)",
+      "specification": ""
+    }
+  },
+  "pattern": {
+    "type": "Universality",
+    "p_event": {
+      "name": "A(a)",
+      "specification": ""
+    },
+    "chained_events": [],
+    "pattern_specifications": {
+      "time_unit": "hours",
+      "upper_limit": 4,
+      "frequency": 0
+    },
+    "pattern_constrains": {
+      "time_bound": {
+        "type": "Interval",
+        "time_unit": "seconds",
+        "upper_limit": 7,
+        "lower_limit": 3
+      },
+      "probability_bound": {
+        "type": "GreaterEqual",
+        "probability": 0.4
+      }
+    }
+  },
+  "target_logic": "Prism"
+}

@@ -1,0 +1,83 @@
+{
+  "scope": {
+    "type": "BetweenQandR",
+    "q_event": {
+      "name": "A(a)",
+      "specification": ""
+    },
+    "r_event": {
+      "name": "B(b)",
+      "specification": ""
+    }
+  },
+  "pattern": {
+    "type": "ResponseChain1N",
+    "p_event": {
+      "name": "C(c)",
+      "specification": ""
+    },
+    "s_event": {
+      "name": "D(d)",
+      "specification": ""
+    },
+    "chained_events": [
+      {
+        "event": {
+          "name": "P",
+          "specification": ""
+        },
+        "constrain_event": {
+          "name": "X",
+          "specification": ""
+        },
+        "time_bound": {
+          "type": "Interval",
+          "lower_limit": 2,
+          "upper_limit": 4,
+          "time_unit": "years"
+        }
+      },
+      {
+        "event": {
+          "name": "S",
+          "specification": ""
+        },
+        "constrain_event": {
+          "name": "Y",
+          "specification": ""
+        },
+        "time_bound": {
+          "type": "Lower",
+          "lower_limit": 60,
+          "time_unit": "nanoseconds"
+        }
+      },
+      {
+        "event": {
+          "name": "T",
+          "specification": ""
+        },
+        "constrain_event": {
+          "name": "Z",
+          "specification": ""
+        },
+        "time_bound": {
+          "type": "Upper",
+          "upper_limit": 1000,
+          "time_unit": "months"
+        }
+      }
+    ],
+    "pattern_constrains": {
+      "probability_bound": {
+        "type": "GreaterEqual",
+        "probability": 0.7
+      },
+      "constrain_event": {
+        "name": "E",
+        "specification": ""
+      }
+    }
+  },
+  "target_logic": "SEL"
+}

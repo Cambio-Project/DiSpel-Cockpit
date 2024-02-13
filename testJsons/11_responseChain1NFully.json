@@ -1,0 +1,56 @@
+{
+  "scope": {
+    "type": "Globally"
+  },
+  "pattern": {
+    "type": "ResponseChain1N",
+    "p_event": {
+      "name": "A(a)",
+      "specification": ""
+    },
+    "s_event": {
+      "name": "B(b)",
+      "specification": ""
+    },
+    "chained_events": [
+      {
+        "event": {
+          "name": "P",
+          "specification": ""
+        },
+        "constrain_event": {
+          "name": "Y",
+          "specification": ""
+        },
+        "time_bound": {
+          "type": "Interval",
+          "lower_limit": 4,
+          "upper_limit": 6,
+          "time_unit": "hours"
+        }
+      },
+      {
+        "event": {
+          "name": "T",
+          "specification": ""
+        },
+        "constrain_event": {
+          "name": "Z",
+          "specification": ""
+        },
+        "time_bound": {
+          "type": "Lower",
+          "lower_limit": 2,
+          "time_unit": "seconds"
+        }
+      }
+    ],
+    "pattern_constrains": {
+      "constrain_event": {
+        "name": "C(c)",
+        "specification": ""
+      }
+    }
+  },
+  "target_logic": "MTL"
+}

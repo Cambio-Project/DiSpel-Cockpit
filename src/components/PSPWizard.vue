@@ -1,7 +1,5 @@
 <script>
 
-import Vue from "core-js/internals/task";
-
 // creates the scope part of the payload
 function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR) {
   const scope = {
@@ -64,14 +62,19 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
     pattern.chained_events = selectedChainedEvents.map(chainedEvent => {
 
       let ch_event = {
+        // event is required
         event: createEvent(chainedEvent.event.name, ""),
-        constrain_event: createEvent(chainedEvent.constrain_event.name, ""),
+        //constrain_event: createEvent(chainedEvent.constrain_event.name, ""),
         //time_bound: time_bound(chainedEvent)
       };
 
-      console.log("Here")
-      console.log(chainedEvent.time_bound.type)
-      if (chainedEvent.time_bound.type !== "none") {
+      // constrain_event is optional
+      if (chainedEvent.constrain_event && chainedEvent.constrain_event.name !== "Constraint") {
+        ch_event.constrain_event = createEvent(chainedEvent.constrain_event.name, "")
+      }
+
+      // time_bound is optional
+      if (chainedEvent.time_bound && chainedEvent.time_bound.type !== "none") {
         ch_event.time_bound = {
           type: chainedEvent.time_bound.type,
           lower_limit: chainedEvent.time_bound.lower_limit,
@@ -387,6 +390,7 @@ export default {
       });
       this.forceRerender()
     },
+    // used for the specification import
     handleFileChange() {
       const fileInput = this.$refs.fileInput;
 
@@ -405,6 +409,7 @@ export default {
 
           console.log(jsonData);
 
+          // scope
           this.pspSpecification.selectedScope = jsonData.scope.type
           if (jsonData.scope.q_event && jsonData.scope.q_event.name) {
             this.events.push(jsonData.scope.q_event.name)
@@ -414,6 +419,7 @@ export default {
             this.events.push(jsonData.scope.r_event.name)
             this.pspSpecification.selectedScopeEventR = jsonData.scope.r_event.name
           }
+          // pattern type
           if (this.occurrenceOptions.includes(jsonData.pattern.type)) {
             this.pspSpecification.selectedPatternType = "Occurrence"
             this.pspSpecification.selectedOccurrence = jsonData.pattern.type
@@ -421,6 +427,7 @@ export default {
             this.pspSpecification.selectedPatternType = "Order"
             this.pspSpecification.selectedOrder = jsonData.pattern.type
           }
+          // main pattern events
           if (jsonData.pattern.p_event && jsonData.pattern.p_event.name) {
             this.events.push(jsonData.pattern.p_event.name)
             this.pspSpecification.selectedEventP = jsonData.pattern.p_event.name
@@ -429,6 +436,7 @@ export default {
             this.events.push(jsonData.pattern.s_event.name)
             this.pspSpecification.selectedEventS = jsonData.pattern.s_event.name
           }
+          // pattern specifications
           if (jsonData.pattern.pattern_specifications) {
             if (jsonData.pattern.pattern_specifications.time_unit) {
               this.pspSpecification.selectedTimeUnitType = jsonData.pattern.pattern_specifications.time_unit
@@ -440,6 +448,7 @@ export default {
               this.pspSpecification.selectedInterval = jsonData.pattern.pattern_specifications.frequency
             }
           }
+          // pattern constraints
           if (jsonData.pattern.pattern_constrains) {
             if (jsonData.pattern.pattern_constrains.time_bound) {
               this.checkedTime = true
@@ -460,18 +469,29 @@ export default {
               this.pspSpecification.selectedConstraintEvent = jsonData.pattern.pattern_constrains.constrain_event.name
             }
           }
+          // pattern chained events
           if (jsonData.pattern.chained_events && jsonData.pattern.chained_events.length > 0) {
+            // for every chained event in array "chained_events"
             for (const chEventJson of jsonData.pattern.chained_events) {
-              const event = {
+
+              const chainedEvent = {}
+
+              // event is required
+              this.events.push(chEventJson.event.name)
+              chainedEvent.event = {
                 name: chEventJson.event && chEventJson.event.name || "",
                 specification: chEventJson.event && chEventJson.event.specification || ""
-              };
+              }
+              // constrain_event is optional
+              if (chEventJson.constrain_event) {
+                this.events.push(chEventJson.constrain_event.name)
+                chainedEvent.constrain_event = {
+                  name: chEventJson.constrain_event && chEventJson.constrain_event.name || "",
+                  specification: chEventJson.constrain_event && chEventJson.constrain_event.specification || ""
+                }
+              }
 
-              const constrainEvent = {
-                name: chEventJson.constrain_event && chEventJson.constrain_event.name || "",
-                specification: chEventJson.constrain_event && chEventJson.constrain_event.specification || ""
-              };
-
+              // time_bound is optional
               const timeBound = {};
               if (chEventJson.time_bound) {
                 timeBound.type = chEventJson.time_bound.type || "none";
@@ -485,16 +505,18 @@ export default {
               } else {
                 timeBound.type = "none"
               }
-
-              console.log("Timeboundtype: " + timeBound.type)
-
-              this.pspSpecification.selectedChainedEvents.push({ event, constrainEvent, timeBound });
+              chainedEvent.time_bound = timeBound
+              this.pspSpecification.selectedChainedEvents.push(chainedEvent);
             }
           }
+          // target logic
+          this.pspSpecification.selectedTargetLogic = jsonData.target_logic
 
           this.transformToTemporalLogic()
 
         } catch (error) {
+          // mapping not valid
+          this.pspSpecification.mapping = `The imported mapping is not valid! Technical error message: \n `+error
           console.error('Error parsing JSON:', error);
         }
       };
@@ -793,7 +815,7 @@ export default {
               <input v-model="chainedEvent.time_bound.time_unit" type="text">
             </div>
             <div v-if="chainedEvent.time_bound.type === 'Lower' ">
-              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="After">
+              <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="After">
               <input v-model="chainedEvent.time_bound.time_unit" type="text">
             </div>
             <div v-if="chainedEvent.time_bound.type === 'Interval' ">
@@ -832,7 +854,7 @@ export default {
               <input v-model="chainedEvent.time_bound.time_unit" type="text">
             </div>
             <div v-if="chainedEvent.time_bound.type === 'Lower' ">
-              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="After">
+              <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="After">
               <input v-model="chainedEvent.time_bound.time_unit" type="text">
             </div>
             <div v-if="chainedEvent.time_bound.type === 'Interval' ">

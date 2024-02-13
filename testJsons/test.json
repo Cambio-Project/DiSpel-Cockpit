@@ -1,0 +1,64 @@
+{
+  "scope": {
+    "type": "Globally",
+    "q_event": {
+      "name": null,
+      "specification": ""
+    },
+    "r_event": {
+      "name": null,
+      "specification": ""
+    }
+  },
+  "pattern": {
+    "type": "Universality",
+    "event_p": {
+      "name": "EventA",
+      "specification": ""
+    },
+    "event_s": {
+      "name": null,
+      "specification": ""
+    },
+    "chained_events": [
+      {
+        "event": {
+          "name": "",
+          "specification": ""
+        },
+        "constrain_event": {
+          "name": "",
+          "specification": ""
+        },
+        "time_bound": {
+          "type": "",
+          "time_unit": "",
+          "upper_limit": 0,
+          "lower_limit": 0
+        }
+      }
+    ],
+    "pattern_specifications": {
+      "time_unit": "",
+      "upper_limit": 0,
+      "frequency": 0
+    },
+    "pattern_constrains": {
+      "time_bound": {
+        "type": "",
+        "time_unit": "",
+        "upper_limit": 9,
+        "lower_limit": 0
+      },
+      "probability_bound": {
+        "type": "",
+        "probability": 0
+      },
+      "event_constrain": {
+        "name": "",
+        "specification": ""
+      }
+    }
+  },
+  "target_logic": "LTL"
+}
