@@ -58,7 +58,7 @@ const store = createStore({
       //Name
       'Instance Failure followed by Load Peak', 
       //Category
-      'Exploratory', 
+      'Growth', 
       //Description
       'After killing service and load peak response Time should be <1 s.', 
       [ //Stimuli in each logic
