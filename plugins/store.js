@@ -5,7 +5,7 @@ const store = createStore({
   state: {
     stimuli: [],
     responses: [],
-    outputType: null,
+    outputType: "Stimulus",
     scenarios: [
       //1.Szenario
       [

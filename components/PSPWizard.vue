@@ -417,7 +417,7 @@ export default {
 
 <template>
   <div class="selection-container">
-    <h1>PSPWizard as {{ outputType  }}</h1>
+    <h1>PSPWizard as {{ this.$store.state.outputType  }}</h1>
 
     <div class="selection-group">
       <label class="title">Scope:</label>
