@@ -1,0 +1,50 @@
+{
+  "scope": {
+    "type": "Globally"
+  },
+  "pattern": {
+    "type": "PrecedenceChain1N",
+    "p_event": {
+      "name": "B(b)",
+      "specification": ""
+    },
+    "s_event": {
+      "name": "A(a)",
+      "specification": ""
+    },
+    "chained_events": [
+      {
+        "event": {
+          "name": "P",
+          "specification": ""
+        },
+        "constrain_event": {
+          "name": "Y",
+          "specification": ""
+        },
+        "time_bound": {
+          "type": "Upper",
+          "upper_limit": 5,
+          "time_unit": "secs"
+        }
+      },
+      {
+        "event": {
+          "name": "S",
+          "specification": ""
+        },
+        "constrain_event": {
+          "name": "Z",
+          "specification": ""
+        }
+      }
+    ],
+    "pattern_constrains": {
+      "constrain_event": {
+        "name": "C(c)",
+        "specification": ""
+      }
+    }
+  },
+  "target_logic": "TBV (timed)"
+}

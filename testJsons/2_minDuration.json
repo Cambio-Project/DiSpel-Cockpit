@@ -1,0 +1,27 @@
+{
+  "scope": {
+    "type": "BetweenQandR",
+    "q_event": {
+      "name": "A(a)",
+      "specification": ""
+    },
+    "r_event": {
+      "name": "B(b)",
+      "specification": ""
+    }
+  },
+  "pattern": {
+    "type": "MinimumDuration",
+    "p_event": {
+      "name": "C(c)",
+      "specification": ""
+    },
+    "chained_events": [],
+    "pattern_specifications": {
+      "time_unit": "seconds",
+      "upper_limit": 5,
+      "frequency": 0
+    }
+  },
+  "target_logic": "MTL"
+}
