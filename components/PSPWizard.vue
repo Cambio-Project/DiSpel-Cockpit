@@ -524,7 +524,17 @@ export default {
     },
     forceRerender() {
       this.componentKey += 1;
-    }
+    },
+    confirm() {
+      if (this.$store.state.outputType === 'Stimulus') {
+        this.$store.commit('addStimulus', this.pspSpecification.mapping)
+        this.$router.push('/scenarioeditorSite');
+      }
+      if (this.$store.state.outputType === 'Response') {
+        this.$store.commit('addResponse', this.pspSpecification.mapping)
+        this.$router.push('/scenarioeditorSite');
+      }
+    },
   },
 };
 
@@ -532,7 +542,7 @@ export default {
 
 <template :key="componentKey">
   <div class="selection-container">
-    <h1>PSPWizard</h1>
+    <h1>PSPWizard as {{ outputType }}</h1>
 
     <div>
       <input type="file" ref="fileInput" @change="handleFileChange">
@@ -1261,7 +1271,7 @@ export default {
   padding: 8px;
   margin: 10px;
   border-radius: 4px;
-//display: none;
+  display: none;
   animation: fadeOut 2s forwards;
 }
 
