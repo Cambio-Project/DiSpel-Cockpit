@@ -75,10 +75,10 @@ computed:{
               </h4>
 
               <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" class="left">
-                {{ index +1}}. {{ stimulus[stimulus[7]] }}
                 <select v-model="stimulus[7]" class="select-box">
                   <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                 </select>
+                {{ index +1}}. {{ stimulus[stimulus[7]] }}
               </li>
             
               <h4 class="left">
@@ -86,10 +86,10 @@ computed:{
               </h4 >
 
               <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">
-                {{ index +1}}. {{ response[response[7]] }}
                 <select v-model="response[7]" class="select-box">
                   <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                 </select>
+                {{ index +1}}. {{ response[response[7]] }}
               </li>
 
             <div>

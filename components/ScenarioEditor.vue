@@ -96,10 +96,10 @@ export default {
       <p>Stimuli:</p>
 
       <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">
-        {{ index +1}}. {{ stimulus[stimulus[7]] }}
         <select v-model="stimulus[7]" class="select-box">
           <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
+        {{ index +1}}. {{ stimulus[stimulus[7]] }}
         <button class="remove-button" @click="removeStimulus(index)">Remove</button>
       </li>
 
@@ -111,10 +111,10 @@ export default {
 
       <p>Responses:</p>
       <li v-for="(response, index) in responses" :key="response" class="left">
-        {{ index +1}}. {{ response[response[7]] }}
         <select v-model="response[7]" class="select-box">
           <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
+        {{ index +1}}. {{ response[response[7]] }}
         <button class="remove-button" @click="removeResponse(index)">Remove</button>
       </li>
 
@@ -210,7 +210,7 @@ overflow-y: auto;
 }
 
 .larger-text-field {
-  width: 200vh;
+  width: 195vh;
   height: 10vh;
   resize: vertical; 
   font-size: large;
