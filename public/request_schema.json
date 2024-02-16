@@ -1,0 +1,308 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JSON schema for the mapping request sent to the API.",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "Globally",
+            "AfterQ",
+            "AfterQUntilR",
+            "BeforeR",
+            "BetweenQandR",
+            null
+          ]
+        },
+        "q_event": {
+          "description": "An event",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "specification": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "specification"
+          ]
+        },
+        "r_event": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "specification": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "specification"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
+    "pattern": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "Universality",
+            "Absence",
+            "Existence",
+            "BoundedExistence",
+            "TransientState",
+            "SteadyState",
+            "MinimumDuration",
+            "MaximumDuration",
+            "Recurrence",
+            "Precedence",
+            "PrecedenceChain1N",
+            "PrecedenceChainN1",
+            "Until",
+            "Response",
+            "ResponseChain1N",
+            "ResponseChainN1",
+            "ResponseInvariance"
+          ]
+        },
+        "p_event": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "specification": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "specification"
+          ]
+        },
+        "s_event": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "specification": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "specification"
+          ]
+        },
+        "chained_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "specification": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "specification"
+                ]
+              },
+              "constrain_event": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "specification": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "specification"
+                ]
+              },
+              "time_bound": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "Interval",
+                      "Lower",
+                      "Upper"
+                    ]
+                  },
+                  "time_unit": {
+                    "type": "string"
+                  },
+                  "upper_limit": {
+                    "type": "integer"
+                  },
+                  "lower_limit": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "type",
+                  "time_unit"
+                ]
+              }
+            },
+            "required": [
+              "event"
+            ]
+          }
+        },
+        "pattern_specifications": {
+          "type": "object",
+          "properties": {
+            "time_unit": {
+              "type": "string"
+            },
+            "upper_limit": {
+              "type": "integer"
+            },
+            "frequency": {
+              "type": "integer"
+            }
+          }
+        },
+        "pattern_constrains": {
+          "type": "object",
+          "properties": {
+            "time_bound": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "Interval",
+                    "Lower",
+                    "Upper"
+                  ]
+                },
+                "time_unit": {
+                  "type": "string"
+                },
+                "upper_limit": {
+                  "type": "integer"
+                },
+                "lower_limit": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "type",
+                "time_unit"
+              ]
+            },
+            "probability_bound": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "Unconstrained",
+                    "GreaterEqual",
+                    "Greater",
+                    "LowerEqual",
+                    "Lower"
+                  ]
+                },
+                "probability": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "type",
+                "probability"
+              ]
+            },
+            "constrain_event": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "specification": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "name",
+                "specification"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "type",
+        "p_event"
+      ]
+    },
+    "target_logic": {
+      "type": "string",
+      "enum": [
+        "SEL",
+        "LTL",
+        "MTL",
+        "Prism",
+        "Quantitative Prism",
+        "TBV (timed)",
+        "TBV (untimed)"
+      ]
+    }
+  },
+  "required": [
+    "scope",
+    "pattern",
+    "target_logic"
+  ]
+}

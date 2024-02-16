@@ -209,7 +209,8 @@ export default {
       probabilityBoundOptions: ["GreaterEqual", "Greater", "LowerEqual", "Lower"],
       showCopyFeedback: false,
       componentKey: 0,
-      jsonData: null
+      jsonData: null,
+      importErrorMessage: null
     };
   },
   computed: {
@@ -255,6 +256,35 @@ export default {
     }
   },
   methods: {
+    resetAllFields() {
+      this.pspSpecification = {
+        selectedPatternType: null,
+        selectedScope: null,
+        selectedOccurrence: null,
+        selectedOrder: null,
+        selectedScopeEventQ: null,
+        selectedScopeEventR: null,
+        selectedEventP: null,
+        selectedEventS: null,
+        selectedChainedEvents: [],
+        selectedConstraintEvent: "Constraint",
+        selectedTime: null,
+        selectedInterval: null,
+        selectedTimeUnitType: "time units",
+        selectedTargetLogic: "SEL",
+        mapping: null,
+        selectedTimeBound: null,
+        selectedProbabilityBound: null,
+        upperLimit: null,
+        lowerLimit: null,
+        probability: null,
+        timeUnit: "time units",
+        interval: ["Interval"]
+      }
+      this.events = ["A(a)"]
+      this.checkedProbability = false
+      this.checkedTime = false
+    },
     handleOccurrenceChange() {
       // Reset selected event when occurrence changes
       this.pspSpecification.selectedEvent = null;
@@ -406,6 +436,9 @@ export default {
 
           console.log(jsonData);
 
+          // reset all fields
+          this.resetAllFields()
+
           // scope
           this.pspSpecification.selectedScope = jsonData.scope.type
           if (jsonData.scope.q_event && jsonData.scope.q_event.name) {
@@ -511,9 +544,11 @@ export default {
 
           this.transformToTemporalLogic()
 
+          this.importErrorMessage = null
+
         } catch (error) {
           // mapping not valid
-          this.pspSpecification.mapping = `The imported mapping is not valid! Technical error message: \n `+error
+          this.importErrorMessage = "The imported specification is not valid! \n Technical error message: \n "+error
           console.error('Error parsing JSON:', error);
         }
       };
@@ -544,8 +579,24 @@ export default {
   <div class="selection-container">
     <h1>PSPWizard as {{ outputType }}</h1>
 
-    <div>
-      <input type="file" ref="fileInput" @change="handleFileChange">
+    <div class="file-upload-container">
+      <div class="file-upload">
+        <div class="file-upload-button">
+          <label for="fileInput" class="custom-file-upload">Import Specification</label>
+          <input id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
+        </div>
+        <div class="info-icon">
+          <i>i</i>
+          <span class="info-text">Browse your local files to import a specification JSON matching the schema.</span>
+        </div>
+        <div class="download-schema">
+          <a href="/request_schema.json" download="">Download schema</a>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="this.importErrorMessage">
+      <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
     </div>
 
     <div class="selection-group">
@@ -1163,6 +1214,75 @@ export default {
   margin-right: 1vw;
 }
 
+.file-upload-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 2vh;
+}
+
+.file-upload {
+  margin: auto;
+  display: flex;
+}
+
+.file-upload-button {
+  cursor: pointer;
+  background-color: #aacbe9;
+  color: #000000;
+  padding: 0.5vh 0.7vh;
+  border-radius: 0.5vh;
+}
+
+.custom-file-upload {
+  cursor: pointer;
+}
+
+.info-icon {
+  margin: auto;
+  transform: translateX(1.2vh);
+  cursor: pointer;
+  color: #999;
+}
+
+.info-icon i {
+  border: 0.1vh solid #999;
+  border-radius: 50%;
+  width: 2vh;
+  height: 2vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5vh;
+}
+
+.info-text {
+  display: none;
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  padding: 8px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.download-schema {
+  margin: auto;
+  transform: translateX(2.5vh);
+  cursor: pointer;
+}
+
+.import-error-text {
+  font-size: 1.5vh;
+  color: red;
+}
+
+.info-icon:hover .info-text {
+  display: block;
+}
+
 .chained-event-section {
   background-color: #dedede;
   border: 1px solid #c5c5c5;
@@ -1185,15 +1305,6 @@ export default {
 
 .message-container p {
   font-weight: bold;
-}
-
-.selected-options {
-  margin-top: 20px;
-  font-weight: bold;
-}
-
-.button-group {
-  display: flex;
 }
 
 .button {
