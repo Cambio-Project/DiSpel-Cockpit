@@ -1,12 +1,38 @@
 <script setup lang="ts">
 
-import {html} from "ultrahtml";
+const file = ref("chaos-exp-1-trace.csv")
+const pattern = ref("Absence")
+
+let TQPropRefinerActive = ref(false);
+
+let src = computed(() => "http://localhost:4200/requirement-refinement/shortcut?file="+file.value+"&pattern="+pattern.value)
+
 </script>
 
 <template>
-  <iframe class="mainFrame"
-          src="http://localhost:4200/requirement-refinement/shortcut"
-          title="SimpleTest"></iframe>
+
+  <select v-model="file">
+    <option value="chaos-exp-1-trace.csv" selected>chaos-exp-1-trace.csv</option>
+    <option value="chaos-exp-2-trace.csv">chaos-exp-2-trace.csv</option>
+    <option value="chaos-exp-3-trace.csv">chaos-exp-3-trace.csv</option>
+  </select>
+
+  <select v-model="pattern">
+    <option value="Absence" selected>Absence</option>
+  </select>
+
+  <button v-if="!TQPropRefinerActive" @click="TQPropRefinerActive = true">Start TQPropRefiner</button>
+  <button v-else @click="TQPropRefinerActive = false">Stop TQPropRefiner</button>
+  <br>
+  <br>
+
+  <div v-if="TQPropRefinerActive">
+    <iframe class="mainFrame"
+            v-bind:src="src"
+            title="SimpleTest"></iframe>
+  </div>
+  <br> <br>
+
   <div>
     <a href="/">Dashboard</a> |
     <a href="/pspwizardSite">PSPWizard</a> |
