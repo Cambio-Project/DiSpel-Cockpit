@@ -205,6 +205,7 @@ export default {
       targetLogicOptions: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       checkedProbability: false,
       checkedTime: false,
+      formulas: [],
       timeBoundOptions: ["Interval", "Lower", "Upper"],
       probabilityBoundOptions: ["GreaterEqual", "Greater", "LowerEqual", "Lower"],
       showCopyFeedback: false,
@@ -557,19 +558,43 @@ export default {
 
       this.forceRerender()
     },
+    // Save the mapping to the Vue store and direct to the Scenario Editor
+    async confirm() {
+      var index;
+      for (index in this.targetLogicOptions) {
+        var payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
+
+        // Perform the HTTP request with the input data
+        const response = await useFetch("/api/getPSPMapping", {
+          method: "POST",
+          body: payload
+        })
+
+        const responsePayload = await response.data.value.result
+
+        // if mapping is returned, display it, else display the error message
+        if (responsePayload.payload.mapping) {
+          this.formulas.push(responsePayload.payload.mapping);
+        } else {
+          this.formulas.push("")
+        }
+      }
+      var number = this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic)
+      this.formulas.push(number)
+
+      if (this.$store.state.outputType === 'Stimulus') {
+        this.$store.commit('addStimulus', this.formulas)
+      }
+
+      if (this.$store.state.outputType === 'Response') {
+        this.$store.commit('addResponse', this.formulas)
+      }
+
+      this.$router.push('/scenarioeditorSite');
+    },
     forceRerender() {
       this.componentKey += 1;
-    },
-    confirm() {
-      if (this.$store.state.outputType === 'Stimulus') {
-        this.$store.commit('addStimulus', this.pspSpecification.mapping)
-        this.$router.push('/scenarioeditorSite');
-      }
-      if (this.$store.state.outputType === 'Response') {
-        this.$store.commit('addResponse', this.pspSpecification.mapping)
-        this.$router.push('/scenarioeditorSite');
-      }
-    },
+    }
   },
 };
 
@@ -577,7 +602,7 @@ export default {
 
 <template :key="componentKey">
   <div class="selection-container">
-    <h1>PSPWizard as {{ outputType }}</h1>
+    <h1>PSPWizard as {{ this.$store.state.outputType  }}</h1>
 
     <div class="file-upload-container">
       <div class="file-upload">
@@ -688,7 +713,7 @@ export default {
         </div>
       </div>
     </div>
-
+    
     <div class="selection-group">
       <label class="title">Add Custom Event:</label>
       <input v-model="customEvent" type="text" class="select-event-box" />
@@ -1158,6 +1183,7 @@ export default {
       </div>
       <div class="copy-feedback" v-if="showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
     </div>
+
     <div>
       <button @click="confirm" v-if="this.pspSpecification.mapping" class="commit-button">Confirm</button>
     </div>

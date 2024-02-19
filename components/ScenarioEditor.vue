@@ -5,6 +5,8 @@ export default {
     return {
       outputType: null,
       categories: ["None", "UseCase", "Growth", "Exploratory"],
+      targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
+      target: null,
       name: this.$store.state.name,
       category: this.$store.state.category,
       description: this.$store.state.description,
@@ -64,54 +66,95 @@ export default {
 
 
 <template>
-  <h1>Scenario Editor</h1>
 
+  <!--Headline-->
+  <h1 class ="headline-frame">
+    Scenario Editor
+  </h1>
+
+  <!--Main Frame-->
+  <div class="box-frame">
     <div>
-      <h3>Name: 
-      <input v-model="name" type="text" placeholder="Enter name" class="small-text-field"/>
-      </h3>
-      <h3>Category:
-        <select v-model="category" class="select-box">
-        <option v-for="category in categories" :key="category">{{ category }}</option>
-      </select>
-    </h3>
-      
 
-      <div>
-      <h3>Description: 
+        <h3 class="center">
+          Name: 
+          <input v-model="name" type="text" placeholder="Enter name" class="small-text-field"/>
+          Category:
+          <select v-model="category" class="select-box">
+            <option v-for="category in categories" :key="category">{{ category }}</option>
+          </select>
+           Description:
+        </h3>
+
         <textarea v-model="description" type="text" placeholder="Enter description" class="larger-text-field"/>
-      </h3>
+        
     </div>
-    </div>
-    <div>
-      <div class="message-container">
+
+    
+    <div class="message-container">
+
       <p>Stimuli:</p>
-      <li v-for="(stimulus, index) in stimuli" :key="stimulus" >{{ index +1}}. {{ stimulus }}
+
+      <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">
+        <select v-model="stimulus[7]" class="select-box">
+          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+        </select>
+        {{ index +1}}. {{ stimulus[stimulus[7]] }}
         <button class="remove-button" @click="removeStimulus(index)">Remove</button>
       </li>
-      <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>
-    </div>
-    </div>
 
-    <div>
-      <div class="message-container">
-      <p>Responses:</p>
-      <li v-for="(response, index) in responses" :key="response" >{{ index +1}}. {{ response }}
-        <button class="remove-button" @click="removeResponse(index)">Remove</button>
-      </li>
-      <button class="new-button" @click="openPSPResponse">Add Response</button>
-    </div>
+      <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>
+
     </div>
     
-    <div v-if="stimuli !== null && response !== null">
-      <button class="new-button" @click="addScenario">Complete</button>
+    <div class="message-container">
+
+      <p>Responses:</p>
+      <li v-for="(response, index) in responses" :key="response" class="left">
+        <select v-model="response[7]" class="select-box">
+          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+        </select>
+        {{ index +1}}. {{ response[response[7]] }}
+        <button class="remove-button" @click="removeResponse(index)">Remove</button>
+      </li>
+
+      <button class="new-button" @click="openPSPResponse">Add Response</button>
+
     </div>
+
+    <button class="new-button" @click="addScenario">Complete</button>
+    
+  </div>
 
 </template>
 
 
 <style scoped>
 
+.headline-frame {
+  background-color: #eaf6ff; 
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+  height: 100px; 
+  width: 100%;
+  margin-left: 0px;
+}
+.box-frame {
+  background-color: #d3d3d3;
+  display:block;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  width: 100%;
+  margin: -40px;
+  margin-left: 0px;
+}
+
+.center {
+  align-items: center;
+  justify-content: center;
+}
 .new-button {
   background-color: rgb(114, 214, 101);
   border: none;
@@ -138,7 +181,7 @@ export default {
   text-decoration: none;
   display: inline-block;
   font-size: 10px;
-  margin-top: 10px;
+  margin: 10px;
   cursor: pointer;
   border-radius: 4px;
 }
@@ -147,42 +190,50 @@ export default {
 }
 
 body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-    }
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f4;
+}
 
-    .message-container p {
-  font-weight: bold;
-    }
-  .message-container {
-    background-color: #f2f2f2;
-    border: 1px solid #ddd;
-    border-radius: 1vw;
-    padding-top: 0.5vw;
-    padding-bottom: 1.5vw;
-    margin: 2vw;
-    min-height: 6vw;
-    max-height: 40vh;
-    overflow-y: auto;
-  }
+.message-container p {
+font-weight: bold;
+}
 
-  .larger-text-field {
-  width: 800px;
-  height: 150px;
+.message-container {
+background-color: #f2f2f2;
+border: 1px solid #ddd;
+border-radius: 1vw;
+padding-top: 0.5vw;
+padding-bottom: 1.5vw;
+margin: 1vw;
+height: 20vh;
+overflow-y: auto;
+}
+
+.larger-text-field {
+  width: 195vh;
+  height: 10vh;
   resize: vertical; 
+  font-size: large;
 }
 
 .small-text-field {
-  width: 500px;
+  width: 40vh;
+  font-size: x-large;
   resize: vertical;
+  margin: 10px;
+}
+
+.left{
+  text-align: left;
+  overflow: auto;
+  display: block;
 }
 
 .select-box {
-  width: 300px;
+  width: text-align;
   padding: 8px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 8px;
 }
+
 </style>
