@@ -561,8 +561,8 @@ export default {
     // Save the mapping to the Vue store and direct to the Scenario Editor
     async confirm() {
       var index;
-      for (index in this.targetLogics) {
-        var payload = createPayload(this.selectedScope, this.selectedScopeEventQ, this.selectedScopeEventR, this.selectedPatternType, this.selectedOccurrence, this.selectedOrder, this.selectedEventP, this.selectedEventS, this.selectedChainedEvents, this.selectedTime, this.selectedTimeUnitType, this.selectedInterval, this.selectedConstraintEvent, this.targetLogics[index], this.selectedTimeBound, this.selectedProbabilityBound, this.timeUnit, this.probability, this.upperLimit, this.lowerLimit);
+      for (index in this.targetLogicOptions) {
+        var payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
 
         // Perform the HTTP request with the input data
         const response = await useFetch("/api/getPSPMapping", {
@@ -579,7 +579,7 @@ export default {
           this.formulas.push("")
         }
       }
-      var number = this.targetLogics.indexOf(this.selectedTargetLogic)
+      var number = this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic)
       this.formulas.push(number)
 
       if (this.$store.state.outputType === 'Stimulus') {
