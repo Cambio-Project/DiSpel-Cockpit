@@ -1227,7 +1227,6 @@ export default {
 }
 
 .file-upload-button {
-  cursor: pointer;
   background-color: #aacbe9;
   color: #000000;
   padding: 0.5vh 0.7vh;
