@@ -1,0 +1,28 @@
+{
+  "scope": {
+    "type": "BeforeR",
+    "r_event": {
+      "name": "A(a)",
+      "specification": ""
+    }
+  },
+  "pattern": {
+    "type": "Response",
+    "p_event": {
+      "name": "B(b)",
+      "specification": ""
+    },
+    "s_event": {
+      "name": "C(c)",
+      "specification": ""
+    },
+    "chained_events": [],
+    "pattern_constrains": {
+      "constrain_event": {
+        "name": "T",
+        "specification": ""
+      }
+    }
+  },
+  "target_logic": "MTL"
+}

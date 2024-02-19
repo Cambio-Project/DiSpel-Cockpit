@@ -1,0 +1,14 @@
+{
+  "scope": {
+    "type": "Globally"
+  },
+  "pattern": {
+    "type": "Universality",
+    "p_event": {
+      "name": "A(a)",
+      "specification": ""
+    },
+    "chained_events": []
+  },
+  "target_logic": "LTL"
+}

@@ -1,0 +1,27 @@
+{
+  "scope": {
+    "type": "AfterQUntilR",
+    "q_event": {
+      "name": "A(a)",
+      "specification": ""
+    },
+    "r_event": {
+      "name": "B(b)",
+      "specification": ""
+    }
+  },
+  "pattern": {
+    "type": "TransientState",
+    "p_event": {
+      "name": "C(c)",
+      "specification": ""
+    },
+    "chained_events": [],
+    "pattern_specifications": {
+      "time_unit": "hours",
+      "upper_limit": 4,
+      "frequency": 0
+    }
+  },
+  "target_logic": "SEL"
+}

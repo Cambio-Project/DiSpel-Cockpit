@@ -1,0 +1,18 @@
+{
+  "scope": {
+    "type": "Globally"
+  },
+  "pattern": {
+    "type": "ResponseChain1N",
+    "p_event": {
+      "name": "A(a)",
+      "specification": ""
+    },
+    "s_event": {
+      "name": "B(b)",
+      "specification": ""
+    },
+    "chained_events": []
+  },
+  "target_logic": "MTL"
+}
