@@ -1,0 +1,23 @@
+{
+  "scope": {
+    "type": "AfterQ",
+    "q_event": {
+      "name": "P",
+      "specification": ""
+    }
+  },
+  "pattern": {
+    "type": "BoundedExistence",
+    "p_event": {
+      "name": "S",
+      "specification": ""
+    },
+    "chained_events": [],
+    "pattern_specifications": {
+      "time_unit": "time units",
+      "upper_limit": 0,
+      "frequency": 21
+    }
+  },
+  "target_logic": "SEL"
+}
