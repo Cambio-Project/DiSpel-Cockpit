@@ -34,74 +34,79 @@ computed:{
     <h1 class="headline"> Scenarios </h1>
   </div>
 
-  <!--Tools-->
-  <div class="tool-frame">
-    <div class="btn-group"> 
-      <button class="new-button" @click="openEditor">New Scenario</button> 
-    </div> 
-  </div>
-  
-  <!--Scenario List-->
-  <div class="box-frame">
-    <div class="list-container">
-      <div class="list-content">
-        <div v-if="scenarios">
-          <li v-for="(scenario, index) in scenarios" :key="index" class="list-item">
-        
-            <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">
-              {{ 'None' }}
-            </div>
+  <!--Mainframe-->
+  <div class="main-frame">
+    <!--Tools-->
+    <div class="tool-frame">
+      <div> 
+        <button class="new-button" @click="openEditor">New Scenario</button> 
+      </div> 
+    </div>
+    
+    <!--Scenario List-->
+    
+      <div class="list-container">
+        <div class="list-content">
+          <div v-if="scenarios">
+            <li v-for="(scenario, index) in scenarios" :key="index" class="list-item">
+          
+              <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">
+                {{ 'None' }}
+              </div>
 
-            <div v-if="scenario[Object.keys(scenario)[1]] == 'Exploratory' " class="category-frame-1">
-              {{ 'Exploratory' }}
-            </div>
+              <div v-if="scenario[Object.keys(scenario)[1]] == 'Exploratory' " class="category-frame-1">
+                {{ 'Exploratory' }}
+              </div>
 
-            <div v-if="scenario[Object.keys(scenario)[1]] == 'Growth' " class="category-frame-2">
-              {{ 'Growth' }}
-            </div>
+              <div v-if="scenario[Object.keys(scenario)[1]] == 'Growth' " class="category-frame-2">
+                {{ 'Growth' }}
+              </div>
 
-            <div v-if="scenario[Object.keys(scenario)[1]] == 'UseCase' " class="category-frame-3">
-              {{ 'Use Case' }}
-            </div>
+              <div v-if="scenario[Object.keys(scenario)[1]] == 'UseCase' " class="category-frame-3">
+                {{ 'Use Case' }}
+              </div>
 
-            <h3>
-              {{ index +1}}. {{ scenario[Object.keys(scenario)[0]] }}
-            </h3>
+              <h3>
+                {{ index +1}}. {{ scenario[Object.keys(scenario)[0]] }}
+              </h3>
 
-            {{ scenario[Object.keys(scenario)[2]] }}
+              {{ scenario[Object.keys(scenario)[2]] }}
 
-              <h4 class="left">
-                Stimuli:
-              </h4>
+                <h4 class="left">
+                  Stimuli:
+                </h4>
 
-              <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" class="left">
-                <select v-model="stimulus[7]" class="select-box">
-                  <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-                </select>
-                {{ index +1}}. {{ stimulus[stimulus[7]] }}
-              </li>
-            
-              <h4 class="left">
-              Responses:
-              </h4 >
-
-              <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">
-                <select v-model="response[7]" class="select-box">
-                  <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-                </select>
-                {{ index +1}}. {{ response[response[7]] }}
-              </li>
-
-            <div>
-              <button class="remove-button" @click="removeScenario(index)">Remove Scenario</button>
-            </div>
+                <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" class="left">
+                  {{ index +1}}.
+                  <select v-model="stimulus[7]" class="select-box">
+                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+                  </select>
+                  {{ stimulus[stimulus[7]] }}
+                </li>
               
-          </li>
-              
+                <h4 class="left">
+                Responses:
+                </h4 >
+
+                <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">
+                  {{ index +1}}.
+                  <select v-model="response[7]" class="select-box">
+                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+                  </select>
+                  {{ response[response[7]] }}
+                </li>
+
+              <div>
+                <button class="remove-button" @click="removeScenario(index)">Remove Scenario</button>
+              </div>
+                
+            </li>
+                
+          </div>
         </div>
       </div>
-    </div>
-  </div> 
+     
+  </div>
           
 </template>
 
@@ -111,32 +116,29 @@ computed:{
 .headline-frame {
   background-color: #eaf6ff; 
   padding: 0px; 
-  display: flex;
+  display:flex;
   justify-content: center; 
-  align-items: center;
-  height: 100px; 
+  align-items: center; 
   width: 100%;
+  margin-top: -25px;
 }
 
 .headline {
   color: #333; 
 }
 
-.box-frame {
+.main-frame {
   background-color: #d3d3d3;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 70vh;
+  justify-content:center; 
+  align-items:center; 
+  display: block;
+  height: 90vh;
   width: 100%;
+  margin-top: -22px;
 }
 
 .tool-frame {
-  background-color: #d3d3d3;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: auto;
+  height: 10%;
   width: 100%;
 }
 
@@ -203,11 +205,12 @@ body {
 }
 
 .list-container {
-  width: 90%;
+  width: 95%;
   background-color: #fff;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  height: 60vh;
+  height: 85%;
+  margin-left: 2.5vw
 }
 
 .list-item {
