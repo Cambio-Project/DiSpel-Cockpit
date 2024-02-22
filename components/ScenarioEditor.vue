@@ -75,7 +75,6 @@ export default {
 
   <!--Main Frame-->
   <div class="box-frame">
-    <div>
 
         <h3 class="center">
           Name: 
@@ -88,9 +87,6 @@ export default {
         </h3>
 
         <textarea v-model="description" type="text" placeholder="Enter description" class="larger-text-field"/>
-        
-    </div>
-
     
     <div class="message-container">
 
@@ -162,7 +158,7 @@ export default {
   justify-content:center; 
   align-items:center; 
   display: block;
-  height: 90vh;
+  height: 87vh;
   width: 100%;
   margin-top: -22px;
 }
@@ -180,9 +176,9 @@ export default {
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
-  margin-top: 10px;
   cursor: pointer;
   border-radius: 4px;
+  margin-top: -1vh;
 }
 
 .new-button:hover {
@@ -198,7 +194,7 @@ export default {
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
-  margin-top: 10px;
+  margin-top: -1vh;
   border-radius: 4px;
   opacity: 70%
 }
@@ -252,7 +248,7 @@ padding-right: 2vw;
 padding-top: 0.5vw;
 padding-bottom: 1.5vw;
 margin: 1vw;
-height: 25vh;
+height: 25%;
 overflow-y: auto;
 }
 
