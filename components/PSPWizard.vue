@@ -424,6 +424,14 @@ export default {
       });
       this.forceRerender()
     },
+    deleteChainedEvent(index) {
+      if (index >= 0 && index < this.pspSpecification.selectedChainedEvents.length) {
+        this.pspSpecification.selectedChainedEvents.splice(index, 1);
+      } else {
+        console.log("Error deleting the chained event");
+      }
+      this.handleInputChange()
+    },
     // used for the specification import
     handleFileChange() {
       const fileInput = this.$refs.fileInput;
@@ -916,7 +924,8 @@ export default {
           <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
             <option v-for="event in this.events" :key="event">{{ event }}</option>
-          </select>
+          </select> <br>
+          <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
         </div> <br>
 
         <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
@@ -955,10 +964,10 @@ export default {
           <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
             <option v-for="event in this.events" :key="event">{{ event }}</option>
-          </select>
+          </select> <br>
+          <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
         </div> <br>
         <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
-
         [have occured] <br>
         then in response
         <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
@@ -1047,7 +1056,8 @@ export default {
           <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
             <option v-for="event in this.events" :key="event">{{ event }}</option>
-          </select>
+          </select> <br>
+          <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
         </div> <br>
 
         <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
@@ -1102,7 +1112,8 @@ export default {
           <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
             <option v-for="event in this.events" :key="event">{{ event }}</option>
-          </select>
+          </select> <br>
+          <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
         </div> <br>
 
         <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
@@ -1267,6 +1278,10 @@ export default {
   border-radius: 0.5vh;
 }
 
+.file-upload-button:hover {
+  background-color: #9bb8d3;
+}
+
 .custom-file-upload {
   cursor: pointer;
 }
@@ -1316,14 +1331,6 @@ export default {
   display: block;
 }
 
-.chained-event-section {
-  background-color: #dedede;
-  border: 1px solid #c5c5c5;
-  border-radius: 0.5vw;
-  padding: 1vw;
-  margin-bottom: 1vw;
-}
-
 .message-container {
   background-color: #f2f2f2;
   border: 1px solid #ddd;
@@ -1370,6 +1377,36 @@ export default {
   width: 10vw;
 }
 
+.event-button:hover {
+  background-color: #b9b9b9;
+}
+
+.chained-event-section {
+  background-color: #dedede;
+  border: 1px solid #c5c5c5;
+  border-radius: 0.5vw;
+  padding: 1vw;
+  margin-bottom: 1vw;
+}
+
+.delete-chainedevent-button {
+  background-color: rgba(164, 45, 45, 0.83);
+  border: none;
+  color: #e0e0e0;
+  padding: 0.2vw 0.3vw;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 0.6vw;
+  margin: 0.6vw;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.delete-chainedevent-button:hover {
+  background-color: rgba(130, 46, 46, 0.83);
+}
+
 .commit-button {
   background-color: #4CAF50;
   border: none;
@@ -1385,7 +1422,7 @@ export default {
 }
 
 .commit-button:hover {
-  background-color: #45a049;
+  background-color: #3d8d41;
 }
 
 .copy-button {
