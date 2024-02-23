@@ -1200,12 +1200,6 @@ export default {
       </select>
     </div>
 
-    <!-- Transform button isn't needed anymore
-    <div>
-      <button class="commit-button" @click="transformToTemporalLogic">Transform to {{ this.pspSpecification.selectedTargetLogic }}</button>
-    </div>
-    -->
-
     <div class="message-container">
       <p>Specification in Target Logic:</p>
       <div>
@@ -1215,8 +1209,14 @@ export default {
       <div class="copy-feedback" v-if="showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
     </div>
 
+    <!--
     <div>
       <button @click="confirm" v-if="this.pspSpecification.mapping" class="commit-button">Confirm</button>
+    </div>
+    -->
+
+    <div :class="{ 'grayed-out': !this.pspSpecification.mapping }">
+      <button @click="confirm" class="commit-button">Confirm</button>
     </div>
     <br>
   </div>
