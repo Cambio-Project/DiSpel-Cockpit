@@ -78,7 +78,8 @@ computed:{
                 <select v-model="stimulus[7]" class="select-box">
                   <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                 </select>
-                {{ index +1}}. {{ stimulus[stimulus[7]] }}
+                {{ index +1}}. {{ stimulus[stimulus[7]] }} <br>
+                <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>
               </li>
             
               <h4 class="left">
@@ -89,7 +90,8 @@ computed:{
                 <select v-model="response[7]" class="select-box">
                   <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                 </select>
-                {{ index +1}}. {{ response[response[7]] }}
+                {{ index +1}}. {{ response[response[7]] }} <br>
+                <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>
               </li>
 
             <div>
@@ -177,6 +179,10 @@ computed:{
   justify-content: center;
   align-items: center;
   border-radius: 32px;
+}
+
+.sel-line {
+  margin: 0.8vw;
 }
 
 .new-button {
