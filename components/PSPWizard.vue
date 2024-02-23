@@ -254,7 +254,14 @@ export default {
         "Until": "Until"
       };
       return this.orderOptions.map(option => ({ label: orderMap[option], value: option }));
-    }
+    },
+    timeboundShouldGrayOut() {
+      return !(this.pspSpecification.selectedPatternType === 'Order' ||
+          this.pspSpecification.selectedOccurrence === 'Universality' ||
+          this.pspSpecification.selectedOccurrence === 'Absence' ||
+          this.pspSpecification.selectedOccurrence === 'Existence' ||
+          this.pspSpecification.selectedOccurrence === 'BoundedExistence');
+    },
   },
   methods: {
     resetAllFields() {
@@ -659,6 +666,13 @@ export default {
       </div>
     </div>
 
+    <div v-if="this.pspSpecification.selectedPatternType !== 'Occurrence' && this.pspSpecification.selectedPatternType !== 'Order'" class="fake-selection-group">
+      <label class="title">Pattern:</label>
+      <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange" @input="handleInputChange" class="select-box">
+        <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value" :value="occurrence.value">{{ occurrence.label }}</option>
+      </select>
+    </div>
+
     <div v-if="this.pspSpecification.selectedPatternType === 'Occurrence'" class="selection-group">
       <label class="title">Pattern:</label>
       <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange" @input="handleInputChange" class="select-box">
@@ -687,11 +701,9 @@ export default {
       </div>
     </div>
 
-    <div class="selection-group">
-      <div v-if="this.pspSpecification.selectedPatternType === 'Order' || this.pspSpecification.selectedOccurrence === 'Universality' || this.pspSpecification.selectedOccurrence === 'Absence' || this.pspSpecification.selectedOccurrence === 'Existence' || this.pspSpecification.selectedOccurrence === 'BoundedExistence' " class="selection-group">
-        <input type="checkbox" id="checkboxTime" v-model="this.checkedTime" @change="handleTimeChange" @input="handleInputChange">
-        <label class="title" >Time Bound</label>
-      </div>
+    <div class="selection-group" :class="{ 'grayed-out': timeboundShouldGrayOut }">
+      <input type="checkbox" id="checkboxTime" v-model="this.checkedTime" @change="handleTimeChange" @input="handleInputChange">
+      <label class="title" >Time Bound</label>
     </div>
 
     <div class="selection-group">
@@ -1220,6 +1232,12 @@ export default {
   margin: 1vw;
 }
 
+.fake-selection-group {
+  margin: 1vw;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
 .selection-group .title {
   font-weight: bold;
 }
@@ -1459,6 +1477,11 @@ export default {
 @keyframes fadeOut {
   0% { opacity: 1; }
   100% { opacity: 0; display: none; }
+}
+
+.grayed-out {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 </style>
