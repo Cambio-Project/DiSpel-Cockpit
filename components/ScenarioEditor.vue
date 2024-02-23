@@ -41,6 +41,15 @@ export default {
       this.$store.commit('addScenario')
       this.$router.push('/scenariosSite')
     },
+    //Changes all target logics to the same one
+    changeAllTargets() {
+      this.stimuli.forEach(stimulus => {
+        stimulus[7]= this.target;
+      })
+      this.responses.forEach(response => {
+        response[7]= this.target;
+      })
+    }
   },
   computed:{
     stimuli(){
@@ -87,6 +96,13 @@ export default {
         </h3>
 
         <textarea v-model="description" type="text" placeholder="Enter description" class="larger-text-field"/>
+
+        <div>
+        {{ "Transform all Target Logics to " }}
+        <select class="select-box" @change="changeAllTargets" v-model="target">
+            <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+        </select>
+      </div>
     
     <div class="message-container">
 

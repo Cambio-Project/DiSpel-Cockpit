@@ -16,13 +16,24 @@ export default {
     // Remove one scenario 
     removeScenario(index) {
       this.$store.commit('removeScenario', index)
+    },
+    //Changes all target logics to the same one
+    changeAllTargets() {
+      this.scenarios.forEach(scenario => {
+        scenario[3].forEach(stimulus => {
+          stimulus[7]= this.target;
+        })
+        scenario[4].forEach(response => {
+          response[7]= this.target;
+        })
+      });
     }
-},
+  },
 computed:{
-      scenarios(){
-        return this.$store.state.scenarios
-      },
-},
+    scenarios(){
+      return this.$store.state.scenarios
+    },
+  },
 };
 </script>
 
@@ -38,9 +49,18 @@ computed:{
   <div class="main-frame">
     <!--Tools-->
     <div class="tool-frame">
+
       <div> 
         <button class="new-button" @click="openEditor">New Scenario</button> 
-      </div> 
+      </div>
+
+      <div>
+        {{ "Transform all Target Logics to " }}
+        <select class="select-box" @change="changeAllTargets" v-model="target">
+            <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+        </select>
+      </div>
+
     </div>
     
     <!--Scenario List-->
@@ -138,7 +158,7 @@ computed:{
 }
 
 .tool-frame {
-  height: 10%;
+  height: 15%;
   width: 100%;
 }
 
@@ -190,7 +210,7 @@ computed:{
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
-  margin-top: 20px;
+  margin: 20px;
   cursor: pointer;
   border-radius: 4px;
 }
@@ -209,7 +229,7 @@ body {
   background-color: #fff;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  height: 85%;
+  height: 80%;
   margin-left: 2.5vw
 }
 
