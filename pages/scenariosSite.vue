@@ -7,13 +7,8 @@ import Scenarios from "../components/Scenarios.vue";
     <Scenarios></Scenarios>
   </client-only>
   <div>
-    <a href="/">Dashboard</a> |
     <a href="/pspwizardSite">PSPWizard</a> |
     <a href="/scenariosSite">Scenarios</a> |
     <a href="/scenarioEditorSite">Scenario Editor</a>
   </div>
 </template>
-
-<style scoped>
-
-</style>

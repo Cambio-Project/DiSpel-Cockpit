@@ -101,8 +101,8 @@ const store = createStore({
     ]
   ],
     scenario: [],
-    name: null,
-    category: null,
+    name: "",
+    category: "None",
     description: null
   },
   mutations: {
