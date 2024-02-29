@@ -4,7 +4,8 @@ name: "dashboard-project"
 
 services:
   dashboard:
-    image: ghcr.io/cambio-project/dashboard-vue-23:latest
+#    image: ghcr.io/cambio-project/dashboard-vue-23:latest
+    build: .
     ports:
       - 8082:3000
     networks:
@@ -15,6 +16,14 @@ services:
     container_name: pspwizard
     ports:
       - 8080:8080
+    networks:
+      - dashboardNetwork
+    pull_policy: always
+  tqproprefiner:
+    image: ghcr.io/cambio-project/transient-behavior-requirement-refiner:latest
+    container_name: tqproprefiner
+    ports:
+      - 8084:80
     networks:
       - dashboardNetwork
     pull_policy: always
