@@ -254,7 +254,14 @@ export default {
         "Until": "Until"
       };
       return this.orderOptions.map(option => ({ label: orderMap[option], value: option }));
-    }
+    },
+    timeboundShouldGrayOut() {
+      return !(this.pspSpecification.selectedPatternType === 'Order' ||
+          this.pspSpecification.selectedOccurrence === 'Universality' ||
+          this.pspSpecification.selectedOccurrence === 'Absence' ||
+          this.pspSpecification.selectedOccurrence === 'Existence' ||
+          this.pspSpecification.selectedOccurrence === 'BoundedExistence');
+    },
   },
   methods: {
     resetAllFields() {
@@ -365,6 +372,9 @@ export default {
           this.pspSpecification.mapping = responsePayload.payload.error
         }
 
+        //TODO this doesn't seem to work
+        this.forceRerender()
+
         // Debug
         console.log(responsePayload)
         console.log(this.pspSpecification.mapping);
@@ -385,6 +395,9 @@ export default {
       await this.sendTransformRequest(JSON.stringify(payload))
 
       this.forceRerender()
+    },
+    handleInputChange() {
+      setTimeout(this.transformToTemporalLogic, 100)
     },
     copyToClipboard() {
       const textarea = document.createElement("textarea");
@@ -417,6 +430,14 @@ export default {
         }
       });
       this.forceRerender()
+    },
+    deleteChainedEvent(index) {
+      if (index >= 0 && index < this.pspSpecification.selectedChainedEvents.length) {
+        this.pspSpecification.selectedChainedEvents.splice(index, 1);
+      } else {
+        console.log("Error deleting the chained event");
+      }
+      this.handleInputChange()
     },
     // used for the specification import
     handleFileChange() {
@@ -601,612 +622,654 @@ export default {
 </script>
 
 <template :key="componentKey">
-  <div class="selection-container">
-    <h1>PSPWizard as {{ this.$store.state.outputType  }}</h1>
+  <h1>PSPWizard as {{ this.$store.state.outputType  }}</h1>
+  <div class="page-container">
+    <div class="selection-container">
 
-    <div class="file-upload-container">
-      <div class="file-upload">
-        <div class="file-upload-button">
-          <label for="fileInput" class="custom-file-upload">Import Specification</label>
-          <input id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
-        </div>
-        <div class="info-icon">
-          <i>i</i>
-          <span class="info-text">Browse your local files to import a specification JSON matching the schema.</span>
-        </div>
-        <div class="download-schema">
-          <a href="/request_schema.json" download="">Download schema</a>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="this.importErrorMessage">
-      <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
-    </div>
-
-    <div class="selection-group">
-      <label class="title">Scope:</label>
-      <select v-model="this.pspSpecification.selectedScope" class="select-box">
-        <option v-for="scope in displayScopes" :key="scope.value" :value="scope.value">{{ scope.label }}</option>
-      </select>
-    </div>
-
-    <div class="selection-group">
-      <label class="title">Pattern Type:</label>
-      <div class="radio-group">
-        <div class="radio">
-          <input type="radio" v-model="this.pspSpecification.selectedPatternType" value="Occurrence" id="occurrence" @change="handleTypeChange" />
-          <label for="occurrence">Occurrence</label>
-        </div>
-        <div class="radio">
-          <input type="radio" v-model="this.pspSpecification.selectedPatternType" value="Order" id="order" @change="handleTypeChange" />
-          <label for="order">Order</label>
+      <div class="file-upload-container">
+        <div class="file-upload">
+          <div class="file-upload-button">
+            <label for="fileInput" class="custom-file-upload">Import Specification</label>
+            <input id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
+          </div>
+          <div class="info-icon">
+            <i>i</i>
+            <span class="info-text">Browse your local files to import a specification JSON matching the schema.</span>
+          </div>
+          <div class="download-schema">
+            <a href="/request_schema.json" download="">Download schema</a>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div v-if="this.pspSpecification.selectedPatternType === 'Occurrence'" class="selection-group">
-      <label class="title">Pattern:</label>
-      <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange" class="select-box">
-        <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value" :value="occurrence.value">{{ occurrence.label }}</option>
-      </select>
-    </div>
-
-    <div v-if="this.pspSpecification.selectedPatternType === 'Order'" class="selection-group">
-      <label class="title">Pattern:</label>
-      <select v-model="this.pspSpecification.selectedOrder" @change="handleOccurrenceChange" class="select-box">
-        <option v-for="order in displayOrderOptions" :key="order.value" :value="order.value">{{ order.label }}</option>
-      </select>
-    </div>
-
-    <div class="selection-group">
-      <input type="checkbox" id="checkboxProb" v-model="this.checkedProbability" @change="handleProbabilityChange">
-      <label class="title" >Probability Bound</label>
-    </div>
-
-    <div class="selection-group">
-      <div v-show="this.checkedProbability">
-        <select v-model="this.pspSpecification.selectedProbabilityBound" class="select-box">
-          <option v-for="prob in probabilityBoundOptions" :key="prob">{{ prob }}</option>
-        </select>
-        <input v-model="this.pspSpecification.probability" :min="0" :max="1" step="0.1" type="number" placeholder="Enter Probability" @change="checkProbability">
+      <div v-if="this.importErrorMessage">
+        <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
       </div>
-    </div>
 
-    <div class="selection-group">
-      <div v-if="this.pspSpecification.selectedPatternType === 'Order' || this.pspSpecification.selectedOccurrence === 'Universality' || this.pspSpecification.selectedOccurrence === 'Absence' || this.pspSpecification.selectedOccurrence === 'Existence' || this.pspSpecification.selectedOccurrence === 'BoundedExistence' " class="selection-group">
-        <input type="checkbox" id="checkboxTime" v-model="this.checkedTime" @change="handleTimeChange">
-        <label class="title" >Time Bound</label>
-      </div>
-    </div>
-
-    <div class="selection-group">
-      <div v-show="this.checkedTime && this.pspSpecification.selectedOrder !== 'Precedence' && this.pspSpecification.selectedOrder !== 'PrecedenceChain1N' && this.pspSpecification.selectedOrder !== 'PrecedenceChainN1'">
-        <select v-model="this.pspSpecification.selectedTimeBound" @change="handleLimitChange" class="select-box">
-          <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
-        </select>
-        <div v-if="this.pspSpecification.selectedTimeBound === 'Upper' ">
-          <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number" placeholder="Within">
-          <input v-model="this.pspSpecification.timeUnit" type="text">
+      <div class="grouping-container">
+        <div class="selection-group">
+          <label class="title">Scope:</label><br>
+          <select v-model="this.pspSpecification.selectedScope" @input="handleInputChange" class="select-box">
+            <option v-for="scope in displayScopes" :key="scope.value" :value="scope.value">{{ scope.label }}</option>
+          </select>
         </div>
-        <div v-if="this.pspSpecification.selectedTimeBound === 'Lower' ">
-          <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number" placeholder="After">
-          <input v-model="this.pspSpecification.timeUnit" type="text">
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
-          <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime">
-          <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime">
-          <input v-model="this.pspSpecification.timeUnit" type="text">
-        </div>
-      </div>
-    </div>
 
-    <div class="selection-group">
-      <div v-show="this.checkedTime && (this.pspSpecification.selectedOrder === 'Precedence' || this.pspSpecification.selectedOrder === 'PrecedenceChain1N' || this.pspSpecification.selectedOrder === 'PrecedenceChainN1')">
-        <select v-model="this.pspSpecification.selectedTimeBound" @change="handleLimitChange" class="select-box">
-          <option v-for="time in this.pspSpecification.interval" :key="time">{{ time }}</option>
-        </select>
-        <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
-          <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime">
-          <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime">
-          <input v-model="this.pspSpecification.timeUnit" type="text">
-        </div>
-      </div>
-    </div>
-    
-    <div class="selection-group">
-      <label class="title">Add Custom Event:</label>
-      <input v-model="customEvent" type="text" class="select-event-box" />
-      <button class="event-button" @click="addCustomEvent">Add Custom Event</button>
-      <button class="event-button" @click="addSampleEvents">Add Sample Events</button>
-    </div>
-
-    <div class="message-container">
-      <p>Preview:</p>
-      <div v-if="this.pspSpecification.selectedScope === 'Globally'">
-        Globally
-      </div>
-      <div v-if="this.pspSpecification.selectedScope === 'BeforeR'">
-        Before
-        <select v-model="this.pspSpecification.selectedScopeEventR">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-      </div>
-      <div v-if="this.pspSpecification.selectedScope === 'AfterQ'">
-        After
-        <select v-model="this.pspSpecification.selectedScopeEventQ">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-      </div>
-      <div v-if="this.pspSpecification.selectedScope === 'BetweenQandR'">
-        Between
-        <select v-model="this.pspSpecification.selectedScopeEventQ">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        and
-        <select v-model="this.pspSpecification.selectedScopeEventR">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-      </div>
-      <div v-if="this.pspSpecification.selectedScope === 'AfterQUntilR'">
-        After
-        <select v-model="this.pspSpecification.selectedScopeEventQ">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        until
-        <select v-model="this.pspSpecification.selectedScopeEventR">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-      </div>
-
-      <br>
-
-      <div v-if="this.pspSpecification.selectedOccurrence === 'SteadyState'">
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds] in the long run.
-      </div>
-      <div v-if="this.pspSpecification.selectedOccurrence === 'MinimumDuration'">
-        once
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [becomes satisfied] <br>
-        it remains so for at least
-        <input v-model="this.pspSpecification.selectedTime" type="number" class="select-pattern-box" />
-        <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" class="select-pattern-box" />
-      </div>
-      <div v-if="this.pspSpecification.selectedOccurrence === 'MaximumDuration'">
-        once
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [becomes satisfied] <br>
-        it remains so for less than
-        <input v-model="this.pspSpecification.selectedTime" type="number" class="select-pattern-box" />
-        <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" class="select-pattern-box" />
-      </div>
-      <div v-if="this.pspSpecification.selectedOccurrence === 'Recurrence'">
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds] repeatedly <br>
-        [every
-        <input v-model="this.pspSpecification.selectedTime" type="number" class="select-pattern-box" />
-        <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" class="select-pattern-box" />
-        ]
-      </div>
-      <div v-if="this.pspSpecification.selectedOccurrence === 'Universality'">
-        it is always the case that
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        holds.
-      </div>
-      <div v-if="this.pspSpecification.selectedOccurrence === 'Absence'">
-        it is never the case that
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        holds.
-      </div>
-      <div v-if="this.pspSpecification.selectedOccurrence === 'Existence'">
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds] eventually.
-      </div>
-      <div v-if="this.pspSpecification.selectedOccurrence === 'BoundedExistence'">
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds] at most
-        <input v-model="this.pspSpecification.selectedInterval" type="number" class="select-pattern-box" />
-        times.
-      </div>
-      <div v-if="this.pspSpecification.selectedOccurrence === 'TransientState'">
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds] after
-        <input v-model="this.pspSpecification.selectedTime" type="number" class="select-pattern-box" />
-        <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" class="select-pattern-box" />
-      </div>
-      <div v-if="this.pspSpecification.selectedOrder=== 'Response'">
-        if
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [has occurred] <br>
-        then in response
-        <select v-model="this.pspSpecification.selectedEventS">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [eventually holds]. <br>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
-          after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
-          within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
-          between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <select v-model="this.pspSpecification.selectedConstraintEvent">
-          <option value="Constraint">Constraint</option>
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-      </div>
-      <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChain1N'">
-        if
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [has occurred] <br>
-        then in response
-        <select v-model="this.pspSpecification.selectedEventS">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [eventually holds] <br>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
-          after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
-          within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
-          between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <select v-model="this.pspSpecification.selectedConstraintEvent">
-          <option value="Constraint">Constraint</option>
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select> <br>
-
-        <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
-          <label class="title">followed by </label>
-          <select v-model="chainedEvent.event.name">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
-          </select> <br>
-          <div>
-            <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" class="select-box">
-              <option value="none">---</option>
-              <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
-            </select>
-            <div v-if="chainedEvent.time_bound.type === 'Upper' ">
-              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
-              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+        <div class="selection-group">
+          <label class="title">Pattern Type:</label>
+          <div class="radio-group">
+            <div class="radio">
+              <input type="radio" v-model="this.pspSpecification.selectedPatternType" value="Occurrence" id="occurrence" @change="handleTypeChange" @input="handleInputChange"/>
+              <label for="occurrence">Occurrence</label>
             </div>
-            <div v-if="chainedEvent.time_bound.type === 'Lower' ">
-              <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="After">
-              <input v-model="chainedEvent.time_bound.time_unit" type="text">
-            </div>
-            <div v-if="chainedEvent.time_bound.type === 'Interval' ">
-              <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime">
-              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime">
-              <input v-model="chainedEvent.time_bound.time_unit" type="text">
+            <div class="radio">
+              <input type="radio" v-model="this.pspSpecification.selectedPatternType" value="Order" id="order" @change="handleTypeChange" @input="handleInputChange"/>
+              <label for="order">Order</label>
             </div>
           </div>
-          <select v-model="chainedEvent.constrain_event.name">
+        </div>
+
+        <div v-if="this.pspSpecification.selectedPatternType !== 'Occurrence' && this.pspSpecification.selectedPatternType !== 'Order'" class="fake-selection-group">
+          <label class="title">Pattern:</label><br>
+          <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange" @input="handleInputChange" class="select-box">
+            <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value" :value="occurrence.value">{{ occurrence.label }}</option>
+          </select>
+        </div>
+
+        <div v-if="this.pspSpecification.selectedPatternType === 'Occurrence'" class="selection-group">
+          <label class="title">Pattern:</label><br>
+          <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange" @input="handleInputChange" class="select-box">
+            <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value" :value="occurrence.value">{{ occurrence.label }}</option>
+          </select>
+        </div>
+
+        <div v-if="this.pspSpecification.selectedPatternType === 'Order'" class="selection-group">
+          <label class="title">Pattern:</label><br>
+          <select v-model="this.pspSpecification.selectedOrder" @change="handleOccurrenceChange" @input="handleInputChange" class="select-box">
+            <option v-for="order in displayOrderOptions" :key="order.value" :value="order.value">{{ order.label }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grouping-container">
+        <div class="selection-group">
+          <input type="checkbox" id="checkboxProb" v-model="this.checkedProbability" @change="handleProbabilityChange" @input="handleInputChange">
+          <label class="title" >Probability Bound</label>
+        </div>
+
+        <div class="selection-group">
+          <div v-show="this.checkedProbability">
+            <select v-model="this.pspSpecification.selectedProbabilityBound" @input="handleInputChange" class="select-box">
+              <option v-for="prob in probabilityBoundOptions" :key="prob">{{ prob }}</option>
+            </select> <br><br>
+            <input v-model="this.pspSpecification.probability" :min="0" :max="1" step="0.1" type="number" placeholder="Enter Probability" @change="checkProbability" @input="handleInputChange">
+          </div>
+        </div>
+
+        <div class="selection-group" :class="{ 'grayed-out': timeboundShouldGrayOut }">
+          <input type="checkbox" id="checkboxTime" v-model="this.checkedTime" @change="handleTimeChange" @input="handleInputChange">
+          <label class="title" >Time Bound</label>
+        </div>
+
+        <div class="selection-group">
+          <div v-show="this.checkedTime && this.pspSpecification.selectedOrder !== 'Precedence' && this.pspSpecification.selectedOrder !== 'PrecedenceChain1N' && this.pspSpecification.selectedOrder !== 'PrecedenceChainN1'">
+            <select v-model="this.pspSpecification.selectedTimeBound" @change="handleLimitChange" @input="handleInputChange" class="select-box">
+              <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
+            </select> <br><br>
+            <div v-if="this.pspSpecification.selectedTimeBound === 'Upper' ">
+              <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number" placeholder="Within" @input="handleInputChange">
+              <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
+            </div>
+            <div v-if="this.pspSpecification.selectedTimeBound === 'Lower' ">
+              <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number" placeholder="After" @input="handleInputChange">
+              <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
+            </div>
+            <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
+              <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
+              <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
+              <input v-model="this.pspSpecification.timeUnit" type="text">
+            </div>
+          </div>
+        </div>
+
+        <div class="selection-group">
+          <div v-show="this.checkedTime && (this.pspSpecification.selectedOrder === 'Precedence' || this.pspSpecification.selectedOrder === 'PrecedenceChain1N' || this.pspSpecification.selectedOrder === 'PrecedenceChainN1')">
+            <select v-model="this.pspSpecification.selectedTimeBound" @change="handleLimitChange" @input="handleInputChange" class="select-box">
+              <option v-for="time in this.pspSpecification.interval" :key="time">{{ time }}</option>
+            </select>
+            <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
+              <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
+              <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
+              <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grouping-container">
+        <div class="selection-group">
+          <label class="title">Add Custom Event:</label>
+          <input v-model="customEvent" type="text" @input="handleInputChange" class="select-event-box" />
+          <button class="add-event-button event-button" @click="addCustomEvent">Add Custom Event</button>
+          <button class="event-button" @click="addSampleEvents">Add Sample Events</button>
+        </div>
+      </div>
+    </div>
+    <div class="selection-container">
+      <div class="message-container">
+        <p>Preview:</p>
+        <div v-if="this.pspSpecification.selectedScope === 'Globally'">
+          Globally
+        </div>
+        <div v-if="this.pspSpecification.selectedScope === 'BeforeR'">
+          Before
+          <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+        </div>
+        <div v-if="this.pspSpecification.selectedScope === 'AfterQ'">
+          After
+          <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+        </div>
+        <div v-if="this.pspSpecification.selectedScope === 'BetweenQandR'">
+          Between
+          <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          and
+          <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+        </div>
+        <div v-if="this.pspSpecification.selectedScope === 'AfterQUntilR'">
+          After
+          <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          until
+          <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+        </div>
+
+        <br>
+
+        <div v-if="this.pspSpecification.selectedOccurrence === 'SteadyState'">
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds] in the long run.
+        </div>
+        <div v-if="this.pspSpecification.selectedOccurrence === 'MinimumDuration'">
+          once
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [becomes satisfied] <br>
+          it remains so for at least
+          <input v-model="this.pspSpecification.selectedTime" type="number" @input="handleInputChange" class="select-pattern-box" />
+          <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" @input="handleInputChange" class="select-pattern-box" />
+        </div>
+        <div v-if="this.pspSpecification.selectedOccurrence === 'MaximumDuration'">
+          once
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [becomes satisfied] <br>
+          it remains so for less than
+          <input v-model="this.pspSpecification.selectedTime" type="number" @input="handleInputChange" class="select-pattern-box" />
+          <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" @input="handleInputChange" class="select-pattern-box" />
+        </div>
+        <div v-if="this.pspSpecification.selectedOccurrence === 'Recurrence'">
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds] repeatedly <br>
+          [every
+          <input v-model="this.pspSpecification.selectedTime" type="number" @input="handleInputChange" class="select-pattern-box" />
+          <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" @input="handleInputChange" class="select-pattern-box" />
+          ]
+        </div>
+        <div v-if="this.pspSpecification.selectedOccurrence === 'Universality'">
+          it is always the case that
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          holds.
+        </div>
+        <div v-if="this.pspSpecification.selectedOccurrence === 'Absence'">
+          it is never the case that
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          holds.
+        </div>
+        <div v-if="this.pspSpecification.selectedOccurrence === 'Existence'">
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds] eventually.
+        </div>
+        <div v-if="this.pspSpecification.selectedOccurrence === 'BoundedExistence'">
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds] at most
+          <input v-model="this.pspSpecification.selectedInterval" type="number" @input="handleInputChange" class="select-pattern-box" />
+          times.
+        </div>
+        <div v-if="this.pspSpecification.selectedOccurrence === 'TransientState'">
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds] after
+          <input v-model="this.pspSpecification.selectedTime" type="number" @input="handleInputChange" class="select-pattern-box" />
+          <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" @input="handleInputChange" class="select-pattern-box" />
+        </div>
+        <div v-if="this.pspSpecification.selectedOrder=== 'Response'">
+          if
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [has occurred] <br>
+          then in response
+          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [eventually holds]. <br>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+            after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+            within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
             <option v-for="event in this.events" :key="event">{{ event }}</option>
           </select>
-        </div> <br>
-
-        <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
-        [eventually holds]
-      </div>
-      <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChainN1'">
-        if
-        <select v-model="this.pspSpecification.selectedEventS">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select> <br>
-
-        <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
-          <label class="title">followed by </label>
-          <select v-model="chainedEvent.event.name">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
-          </select> <br>
-          <div>
-            <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" class="select-box">
-              <option value="none">---</option>
-              <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
-            </select>
-            <div v-if="chainedEvent.time_bound.type === 'Upper' ">
-              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
-              <input v-model="chainedEvent.time_bound.time_unit" type="text">
-            </div>
-            <div v-if="chainedEvent.time_bound.type === 'Lower' ">
-              <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="After">
-              <input v-model="chainedEvent.time_bound.time_unit" type="text">
-            </div>
-            <div v-if="chainedEvent.time_bound.type === 'Interval' ">
-              <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime">
-              <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime">
-              <input v-model="chainedEvent.time_bound.time_unit" type="text">
-            </div>
-          </div>
-          <select v-model="chainedEvent.constrain_event.name">
-            <option value="Constraint">Constraint</option>
+        </div>
+        <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChain1N'">
+          if
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
             <option v-for="event in this.events" :key="event">{{ event }}</option>
           </select>
-        </div> <br>
-        <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
-
-        [have occured] <br>
-        then in response
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [eventually holds] <br>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
-          after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
-          within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
-          between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <select v-model="this.pspSpecification.selectedConstraintEvent">
-          <option value="Constraint">Constraint</option>
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-      </div>
-      <div v-if="this.pspSpecification.selectedOrder=== 'ResponseInvariance'">
-        if
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [has occurred] <br>
-        then in response
-        <select v-model="this.pspSpecification.selectedEventS">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds] continually.
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
-          after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
-          within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
-          between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-      </div>
-      <div v-if="this.pspSpecification.selectedOrder=== 'Precedence'">
-        if
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds] then it must have been the case <br>
-        that
-        <select v-model="this.pspSpecification.selectedEventS">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [has occured] <br>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
-          between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        before
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds].
-      </div>
-      <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChain1N'">
-        if
-        <select v-model="this.pspSpecification.selectedEventS">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [has occurred] <br>
-
-        <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
-          <label class="title">and afterwards </label>
-          <select v-model="chainedEvent.event.name">
+          [has occurred] <br>
+          then in response
+          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [eventually holds] <br>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+            after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+            within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
+            <option value="Constraint">Constraint</option>
             <option v-for="event in this.events" :key="event">{{ event }}</option>
           </select> <br>
-          <div>
+
+          <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
+            <label class="title">followed by </label>
+            <select v-model="chainedEvent.event.name" @input="handleInputChange">
+              <option v-for="event in this.events" :key="event">{{ event }}</option>
+            </select> <br>
             <div>
-              <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" class="select-box">
+              <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" @input="handleInputChange" class="select-box">
                 <option value="none">---</option>
-                <option value="Upper">Upper</option>
+                <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
               </select>
               <div v-if="chainedEvent.time_bound.type === 'Upper' ">
-                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
-                <input v-model="chainedEvent.time_bound.time_unit" type="text">
+                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within" @input="handleInputChange">
+                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Lower' ">
+                <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="After" @input="handleInputChange">
+                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Interval' ">
+                <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
+                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
+                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
               </div>
             </div>
-          </div>
-          <select v-model="chainedEvent.constrain_event.name">
-            <option value="Constraint">Constraint</option>
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
-          </select>
-        </div> <br>
+            <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
+              <option value="Constraint">Constraint</option>
+              <option v-for="event in this.events" :key="event">{{ event }}</option>
+            </select> <br>
+            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
+          </div> <br>
 
-        <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
-
-        [holds] <br>
-        then it must be the case that
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [has occured] <br>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
-          between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
+          [eventually holds]
         </div>
-        before
-        <select v-model="this.pspSpecification.selectedEventS">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select> <br>
-        [holds].
-        <select v-model="this.pspSpecification.selectedConstraintEvent">
-          <option value="Constraint">Constraint</option>
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-      </div>
-      <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChainN1'">
-        if
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds] <br>
-        then it must be the case that
-        <select v-model="this.pspSpecification.selectedEventS">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select> <br>
-
-        <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
-          <label class="title">and afterwards </label>
-          <select v-model="chainedEvent.event.name">
+        <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChainN1'">
+          if
+          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
             <option v-for="event in this.events" :key="event">{{ event }}</option>
           </select> <br>
-          <div>
+
+          <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
+            <label class="title">followed by </label>
+            <select v-model="chainedEvent.event.name" @input="handleInputChange">
+              <option v-for="event in this.events" :key="event">{{ event }}</option>
+            </select> <br>
             <div>
-              <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" class="select-box">
+              <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" @input="handleInputChange" class="select-box">
                 <option value="none">---</option>
-                <option value="Upper">Upper</option>
+                <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
               </select>
               <div v-if="chainedEvent.time_bound.type === 'Upper' ">
-                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within">
-                <input v-model="chainedEvent.time_bound.time_unit" type="text">
+                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within" @input="handleInputChange">
+                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Lower' ">
+                <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="After" @input="handleInputChange">
+                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Interval' ">
+                <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
+                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
+                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
               </div>
             </div>
+            <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
+              <option value="Constraint">Constraint</option>
+              <option v-for="event in this.events" :key="event">{{ event }}</option>
+            </select> <br>
+            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
+          </div> <br>
+          <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
+          [have occured] <br>
+          then in response
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [eventually holds] <br>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+            after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <select v-model="chainedEvent.constrain_event.name">
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+            within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
             <option v-for="event in this.events" :key="event">{{ event }}</option>
           </select>
-        </div> <br>
-
-        <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
-
-        [have occurred] <br>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
-          between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
         </div>
-        <select v-model="this.pspSpecification.selectedConstraintEvent">
-          <option value="Constraint">Constraint</option>
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select> <br>
-        before
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds] <br>
+        <div v-if="this.pspSpecification.selectedOrder=== 'ResponseInvariance'">
+          if
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [has occurred] <br>
+          then in response
+          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds] continually.
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+            after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+            within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+        </div>
+        <div v-if="this.pspSpecification.selectedOrder=== 'Precedence'">
+          if
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds] then it must have been the case <br>
+          that
+          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [has occured] <br>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          before
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds].
+        </div>
+        <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChain1N'">
+          if
+          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [has occurred] <br>
+
+          <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
+            <label class="title">and afterwards </label>
+            <select v-model="chainedEvent.event.name" @input="handleInputChange">
+              <option v-for="event in this.events" :key="event">{{ event }}</option>
+            </select> <br>
+            <div>
+              <div>
+                <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" @input="handleInputChange" class="select-box">
+                  <option value="none">---</option>
+                  <option value="Upper">Upper</option>
+                </select>
+                <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+                  <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within" @input="handleInputChange">
+                  <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
+                </div>
+              </div>
+            </div>
+            <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
+              <option value="Constraint">Constraint</option>
+              <option v-for="event in this.events" :key="event">{{ event }}</option>
+            </select> <br>
+            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
+          </div> <br>
+
+          <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
+
+          [holds] <br>
+          then it must be the case that
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [has occured] <br>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          before
+          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select> <br>
+          [holds].
+          <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
+            <option value="Constraint">Constraint</option>
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+        </div>
+        <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChainN1'">
+          if
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds] <br>
+          then it must be the case that
+          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select> <br>
+
+          <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
+            <label class="title">and afterwards </label>
+            <select v-model="chainedEvent.event.name" @input="handleInputChange">
+              <option v-for="event in this.events" :key="event">{{ event }}</option>
+            </select> <br>
+            <div>
+              <div>
+                <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" @input="handleInputChange" class="select-box">
+                  <option value="none">---</option>
+                  <option value="Upper">Upper</option>
+                </select>
+                <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+                  <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number" placeholder="Within" @input="handleInputChange">
+                  <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
+                </div>
+              </div>
+            </div>
+            <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
+              <option value="Constraint">Constraint</option>
+              <option v-for="event in this.events" :key="event">{{ event }}</option>
+            </select> <br>
+            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
+          </div> <br>
+
+          <button class="button" @click="addChainedEvent">Add Chained Event</button> <br>
+
+          [have occurred] <br>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
+            <option value="Constraint">Constraint</option>
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select> <br>
+          before
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds] <br>
+        </div>
+        <div v-if="this.pspSpecification.selectedOrder=== 'Until'">
+          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds] without interruption until <br>
+          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
+            <option v-for="event in this.events" :key="event">{{ event }}</option>
+          </select>
+          [holds]
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+            after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+            within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+        </div>
+
+        <br>
+        <div v-if="this.pspSpecification.selectedPatternType=== 'Occurrence' ">
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+            after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+            within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+        </div>
+
+        <br>
+
+        <div v-if="this.pspSpecification.selectedProbabilityBound=== 'Lower' && this.pspSpecification.probability !== null" >
+          with a probability lower than {{ this.pspSpecification.probability }}
+        </div>
+        <div v-if="this.pspSpecification.selectedProbabilityBound=== 'LowerEqual' && this.pspSpecification.probability !== null">
+          with a probability lower or equal than {{ this.pspSpecification.probability }}
+        </div>
+        <div v-if="this.pspSpecification.selectedProbabilityBound=== 'Greater' && this.pspSpecification.probability !== null">
+          with a probability greater than {{ this.pspSpecification.probability }}
+        </div>
+        <div v-if="this.pspSpecification.selectedProbabilityBound=== 'GreaterEqual' && this.pspSpecification.probability !== null">
+          with a probability greater or equal than {{ this.pspSpecification.probability }}
+        </div>
       </div>
-      <div v-if="this.pspSpecification.selectedOrder=== 'Until'">
-        <select v-model="this.pspSpecification.selectedEventP">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
+
+      <div class="selection-group">
+        <label class="title">Target Logic:</label><br>
+        <select v-model="this.pspSpecification.selectedTargetLogic" @input="handleInputChange">
+          <option v-for="targetLogic in targetLogicOptions" :key="targetLogic">{{ targetLogic }}</option>
         </select>
-        [holds] without interruption until <br>
-        <select v-model="this.pspSpecification.selectedEventS">
-          <option v-for="event in this.events" :key="event">{{ event }}</option>
-        </select>
-        [holds]
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
-          after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
-          within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
-          between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
       </div>
 
+      <div class="message-container">
+        <p>Specification in Target Logic:</p>
+        <div>
+          <pre v-if="this.pspSpecification.mapping" style="white-space: normal;" >{{ this.pspSpecification.mapping }}</pre>
+          <button @click="copyToClipboard" v-if="this.pspSpecification.mapping" class="copy-button">Copy to Clipboard</button>
+        </div>
+        <div class="copy-feedback" v-if="showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
+      </div>
+
+      <!--
+      <div>
+        <button @click="confirm" v-if="this.pspSpecification.mapping" class="commit-button">Confirm</button>
+      </div>
+      -->
+
+      <div :class="{ 'grayed-out': !this.pspSpecification.mapping }">
+        <button @click="confirm" class="commit-button">Confirm</button>
+      </div>
       <br>
-      <div v-if="this.pspSpecification.selectedPatternType=== 'Occurrence' ">
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
-          after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
-          within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-        <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
-          between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
-        </div>
-      </div>
-
-      <br>
-
-      <div v-if="this.pspSpecification.selectedProbabilityBound=== 'Lower' && this.pspSpecification.probability !== null" >
-        with a probability lower than {{ this.pspSpecification.probability }}
-      </div>
-      <div v-if="this.pspSpecification.selectedProbabilityBound=== 'LowerEqual' && this.pspSpecification.probability !== null">
-        with a probability lower or equal than {{ this.pspSpecification.probability }}
-      </div>
-      <div v-if="this.pspSpecification.selectedProbabilityBound=== 'Greater' && this.pspSpecification.probability !== null">
-        with a probability greater than {{ this.pspSpecification.probability }}
-      </div>
-      <div v-if="this.pspSpecification.selectedProbabilityBound=== 'GreaterEqual' && this.pspSpecification.probability !== null">
-        with a probability greater or equal than {{ this.pspSpecification.probability }}
-      </div>
     </div>
-
-    <div class="selection-group">
-      <label class="title">Target Logic:</label><br>
-      <select v-model="this.pspSpecification.selectedTargetLogic">
-        <option v-for="targetLogic in targetLogicOptions" :key="targetLogic">{{ targetLogic }}</option>
-      </select>
-    </div>
-
-    <div>
-      <button class="commit-button" @click="transformToTemporalLogic">Transform to {{ this.pspSpecification.selectedTargetLogic }}</button>
-    </div>
-
-    <div class="message-container">
-      <p>Specification in Target Logic:</p>
-      <div :key="componentKey">
-        <pre v-if="this.pspSpecification.mapping" style="white-space: normal;" >{{ this.pspSpecification.mapping }}</pre>
-        <button @click="copyToClipboard" v-if="this.pspSpecification.mapping" class="copy-button">Copy to Clipboard</button>
-      </div>
-      <div class="copy-feedback" v-if="showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
-    </div>
-
-    <div>
-      <button @click="confirm" v-if="this.pspSpecification.mapping" class="commit-button">Confirm</button>
-    </div>
-    <br>
   </div>
 </template>
 
 <style scoped>
+
+.page-container {
+  display: flex;
+  margin: 2vw;
+}
+
 .selection-container {
-  max-width: 50vh;
-  margin: auto;
+  //max-width: 100vh;
+  //margin: auto;
+  flex: 1;
+  //border: 1px solid black;
 }
 
 .selection-group {
   margin: 1vw;
 }
 
+.fake-selection-group {
+  margin: 1vw;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
 .selection-group .title {
   font-weight: bold;
 }
 
+.grouping-container {
+  border: 1px solid #ddd;
+  border-radius: 1vw;
+  padding-top: 0.5vw;
+  padding-bottom: 1.5vw;
+  margin: 1vw;
+  overflow-y: auto;
+}
+
 .select-box {
-  width: 100%;
+  width: 15vw;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -1220,7 +1283,7 @@ export default {
 }
 
 .select-event-box {
-  width: 50%;
+  width: 30%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -1257,6 +1320,10 @@ export default {
   color: #000000;
   padding: 0.5vh 0.7vh;
   border-radius: 0.5vh;
+}
+
+.file-upload-button:hover {
+  background-color: #9bb8d3;
 }
 
 .custom-file-upload {
@@ -1308,14 +1375,6 @@ export default {
   display: block;
 }
 
-.chained-event-section {
-  background-color: #dedede;
-  border: 1px solid #c5c5c5;
-  border-radius: 0.5vw;
-  padding: 1vw;
-  margin-bottom: 1vw;
-}
-
 .message-container {
   background-color: #f2f2f2;
   border: 1px solid #ddd;
@@ -1351,15 +1410,54 @@ export default {
   background-color: #ccc;
   border: none;
   color: black;
-  padding: 0.7vw 1.4vw;
+  padding: 0.5vw 0.5vw;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 0.8vw;
+  font-size: 0.6vw;
+  margin: 1vw;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 8vw;
+}
+
+.event-button:hover {
+  background-color: #b9b9b9;
+}
+
+.add-event-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.add-event-button:hover {
+  background-color: #3d8d41;
+}
+
+.chained-event-section {
+  background-color: #dedede;
+  border: 1px solid #c5c5c5;
+  border-radius: 0.5vw;
+  padding: 1vw;
+  margin-bottom: 1vw;
+}
+
+.delete-chainedevent-button {
+  background-color: rgba(164, 45, 45, 0.83);
+  border: none;
+  color: #e0e0e0;
+  padding: 0.2vw 0.3vw;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 0.6vw;
   margin: 0.6vw;
   cursor: pointer;
   border-radius: 4px;
-  width: 10vw;
+}
+
+.delete-chainedevent-button:hover {
+  background-color: rgba(130, 46, 46, 0.83);
 }
 
 .commit-button {
@@ -1377,7 +1475,7 @@ export default {
 }
 
 .commit-button:hover {
-  background-color: #45a049;
+  background-color: #3d8d41;
 }
 
 .copy-button {
@@ -1414,6 +1512,11 @@ export default {
 @keyframes fadeOut {
   0% { opacity: 1; }
   100% { opacity: 0; display: none; }
+}
+
+.grayed-out {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 </style>

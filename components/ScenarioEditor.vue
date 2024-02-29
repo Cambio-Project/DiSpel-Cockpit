@@ -113,8 +113,11 @@ export default {
         <select v-model="stimulus[7]" class="select-box">
           <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
-        {{ stimulus[stimulus[7]] }}
-        <button class="remove-button" @click="removeStimulus(index)">Remove</button>
+
+        {{ index +1}}. {{ stimulus[stimulus[7]] }}
+        <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>
+        <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>
+
       </li>
 
       <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>
@@ -129,8 +132,11 @@ export default {
         <select v-model="response[7]" class="select-box">
           <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
-        {{ response[response[7]] }}
-        <button class="remove-button" @click="removeResponse(index)">Remove</button>
+
+        {{ index +1}}. {{ response[response[7]] }}
+        <button class="remove-button" @click="removeResponse(index)">Remove</button> <br>
+        <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>
+
       </li>
 
       <button class="new-button" @click="openPSPResponse">Add Response</button>
@@ -293,6 +299,10 @@ overflow-y: auto;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 8px;
+}
+
+.sel-line {
+  margin: 0.8vw;
 }
 
 </style>
