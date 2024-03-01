@@ -15,6 +15,7 @@
     "vue-router": "^4.2.5"
   },
   "dependencies": {
+    "jszip": "^3.10.1",
     "vuex": "^4.0.2"
   }
 }

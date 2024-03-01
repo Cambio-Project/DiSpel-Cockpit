@@ -1,4 +1,6 @@
 <script>
+import JSZip from 'jszip';
+
 // creates all target_logics for one PSPItem (Stumulus or Response)
 function createPSPItem(item) {
   return {
@@ -63,6 +65,7 @@ export default {
         })
       });
     },
+    //Download a single scenario as json
     downloadJSON(index) {
       const jsonData = createSchema(this.scenarios[index]);
       const jsonStr = JSON.stringify(jsonData, null, 2);
@@ -76,6 +79,39 @@ export default {
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
+
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    },
+    //Download all scenarios as zip file
+    async downloadZip() {
+      const zip = new JSZip();
+      var names = [];
+      var c = 1;
+      this.scenarios.forEach((scenario, index) => {
+        var name = this.scenarios[index][0];
+        if(names.includes(name)) {
+          name = name + " (" + c + ")";
+        }
+        else {
+          c = 1;
+          names.push(name);
+        }
+        
+        const jsonData = createSchema(this.scenarios[index]);
+        zip.file('Scenario_' + name + '.json', JSON.stringify(jsonData, null, 2));
+      });
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = window.URL.createObjectURL(content);
+
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = 'Scenarios.zip';
+      document.body.appendChild(a);
+      a.click();
+
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     }
@@ -103,6 +139,7 @@ computed:{
 
       <div> 
         <button class="new-button" @click="openEditor">New Scenario</button> 
+        <button class="all-file-download-button" @click="downloadZip(index)">Download all Scenarios</button>
       </div>
 
       <div>
@@ -232,6 +269,24 @@ computed:{
 }
 
 .file-download-button:hover {
+  background-color: #9bb8d3;
+}
+
+.all-file-download-button {
+  background-color: #aacbe9;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.all-file-download-button:hover {
   background-color: #9bb8d3;
 }
 
