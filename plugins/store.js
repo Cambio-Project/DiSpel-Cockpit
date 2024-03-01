@@ -124,8 +124,8 @@ const store = createStore({
     addScenario(state) {
       state.scenario.push(state.name, state.category, state.description, state.stimuli, state.responses);
       state.scenarios.push(state.scenario);
-      state.name = null;
-      state.category = null;
+      state.name = "";
+      state.category = "None";
       state.description = null;
       state.scenario = [];
       state.stimuli = [];
