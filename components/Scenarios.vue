@@ -86,20 +86,12 @@ export default {
     //Download all scenarios as zip file
     async downloadZip() {
       const zip = new JSZip();
-      var names = [];
-      var c = 1;
+      var c = 1
       this.scenarios.forEach((scenario, index) => {
-        var name = this.scenarios[index][0];
-        if(names.includes(name)) {
-          name = name + " (" + c + ")";
-        }
-        else {
-          c = 1;
-          names.push(name);
-        }
-        
+        var name = c + " - " + this.scenarios[index][0];
         const jsonData = createSchema(this.scenarios[index]);
         zip.file('Scenario_' + name + '.json', JSON.stringify(jsonData, null, 2));
+        c++;
       });
 
       const content = await zip.generateAsync({ type: 'blob' });
