@@ -109,8 +109,14 @@ const store = createStore({
     addStimulus(state, stimulus) {
       state.stimuli.push(stimulus);
     },
+    setStimuli(state, stimuli) {
+      state.stimuli = stimuli;
+    },
     addResponse(state, response) {
       state.responses.push(response);
+    },
+    setResponses(state, responses) {
+      state.responses = responses;
     },
     setOutputType(state, outputType) {
       state.outputType = outputType;

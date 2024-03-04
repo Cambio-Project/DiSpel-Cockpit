@@ -10,7 +10,10 @@ export default {
       name: this.$store.state.name,
       category: this.$store.state.category,
       description: this.$store.state.description,
-      showTooltip: false
+      showTooltip: false,
+      stimuli: this.$store.state.stimuli,
+      responses: this.$store.state.responses,
+      importErrorMessage: null
     }
   },
   methods:{
@@ -38,8 +41,10 @@ export default {
     addScenario() {
       this.$store.commit('addCategory', this.category);
       this.$store.commit('addDescription', this.description);
-      this.$store.commit('addScenario')
-      this.$router.push('/scenariosSite')
+      this.$store.commit('setStimuli', this.stimuli);
+      this.$store.commit('setResponses', this.responses);
+      this.$store.commit('addScenario');
+      this.$router.push('/scenariosSite');
     },
     //Changes all target logics to the same one
     changeAllTargets() {
@@ -49,14 +54,89 @@ export default {
       this.responses.forEach(response => {
         response[7]= this.target;
       })
-    }
-  },
-  computed:{
-    stimuli(){
-      return this.$store.state.stimuli
     },
-    responses(){
-      return this.$store.state.responses
+    //imports a scenario 
+    handleFileChange() {
+    console.log("test")
+      const fileInput = this.$refs.fileInput;
+
+      if (!fileInput.files.length) {
+        console.warn('No file selected');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const fileReader = new FileReader();
+
+      fileReader.onload = () => {
+        try {
+          const jsonData = JSON.parse(fileReader.result);
+          this.jsonData = JSON.stringify(jsonData, null, 2);
+
+          console.log(jsonData);
+
+          // reset all fields
+          this.resetAllFields()
+
+          // name
+          this.name = jsonData.name
+          
+          // category
+          this.category = jsonData.category
+
+          // description
+          this.description = jsonData.description
+
+          var jsonlist = [];
+          // stimuli
+          jsonData.stimuli.forEach(element => {
+            jsonlist.push(element.SEL)
+            jsonlist.push(element.LTL)
+            jsonlist.push(element.MTL)
+            jsonlist.push(element.Prism)
+            jsonlist.push(element.Quantitative_Prism)
+            jsonlist.push(element.TBV_timed)
+            jsonlist.push(element.TBV_untimed)
+            jsonlist.push(element.display_logic)
+            this.stimuli.push(jsonlist);
+            jsonlist = [];
+          });
+          
+          
+          // responses
+          jsonData.responses.forEach(element => {
+            jsonlist.push(element.SEL)
+            jsonlist.push(element.LTL)
+            jsonlist.push(element.MTL)
+            jsonlist.push(element.Prism)
+            jsonlist.push(element.Quantitative_Prism)
+            jsonlist.push(element.TBV_timed)
+            jsonlist.push(element.TBV_untimed)
+            jsonlist.push(element.display_logic)
+            this.responses.push(jsonlist);
+            jsonlist = [];
+          });
+
+          this.importErrorMessage = null
+
+        } catch (error) {
+          // mapping not valid
+          this.importErrorMessage = "The imported scenario is not valid! Technical error message: \n "+error
+          console.error('Error parsing JSON:', error);
+        }
+      };
+
+      fileReader.readAsText(file);
+    },
+    resetAllFields() {
+      this.outputType = null,
+      this.target= null,
+      this.name= "",
+      this.category= "None",
+      this.description= null,
+      this.stimuli= [],
+      this.responses= [],
+      this.showTooltip= false
     },
   },
   watch:{
@@ -68,6 +148,12 @@ export default {
     },
     description(newDescription) {
       this.$store.commit('addDescription', newDescription);
+    },
+    stimuli(newStimuli) {
+      this.$store.commit('setStimuli', newStimuli);
+    },
+    responses(newResponses) {
+      this.$store.commit('setResponses', newResponses);
     }
   }
   }
@@ -85,7 +171,17 @@ export default {
   <!--Main Frame-->
   <div class="box-frame">
 
+        <div v-if="this.importErrorMessage">
+          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
+        </div>
+            
         <h3 class="center">
+
+          <div class="file-upload-label">
+            <label for="fileInput" class="custom-file-upload">Import Scenario</label>
+            <input id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
+          </div>
+
           Name: 
           <input v-model="name" type="text" placeholder="Enter name" class="small-text-field"/>
           Category:
@@ -143,7 +239,7 @@ export default {
 
     </div>
 
-    <div v-if="this.name.length !== 0 && stimuli.length !== 0 && responses.length !== 0">
+    <div v-if="this.name.length !== 0 && this.stimuli.length !== 0 && this.responses.length !== 0">
       <button class="new-button" @click="addScenario">Complete</button>
     </div>
 
@@ -188,6 +284,25 @@ export default {
 .center {
   align-items: center;
   justify-content: center;
+}
+
+.file-upload-label {
+  background-color: #aacbe9;
+  border: none;
+  color: white;
+  padding: 0.5vh 0.5vh;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: normal;
+  margin: 2px;
+  margin-top: 20px;
+  border-radius: 4px;
+}
+
+.file-upload-label:hover {
+  background-color: #9bb8d3;
 }
 .new-button {
   background-color: rgb(114, 214, 101);
@@ -305,4 +420,13 @@ overflow-y: auto;
   margin: 0.8vw;
 }
 
+.import-error-text {
+  font-size: 1.5vh;
+  color: red;
+  max-height: 0.5vh;
+}
+
+.custom-file-upload {
+  cursor: pointer;
+}
 </style>
