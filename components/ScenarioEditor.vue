@@ -210,7 +210,7 @@ export default {
           <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
 
-        {{ index +1}}. {{ stimulus[stimulus[7]] }}
+        {{ stimulus[stimulus[7]] }}
         <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>
         <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>
 
@@ -229,7 +229,7 @@ export default {
           <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
 
-        {{ index +1}}. {{ response[response[7]] }}
+        {{ response[response[7]] }}
         <button class="remove-button" @click="removeResponse(index)">Remove</button> <br>
         <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>
 
