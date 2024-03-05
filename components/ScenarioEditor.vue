@@ -55,9 +55,8 @@ export default {
         response[7]= this.target;
       })
     },
-    //imports a scenario 
+    //imports a scenario
     handleFileChange() {
-    console.log("test")
       const fileInput = this.$refs.fileInput;
 
       if (!fileInput.files.length) {
@@ -75,47 +74,148 @@ export default {
 
           console.log(jsonData);
 
+          // check if at least one field for a scenario is available
+          if(jsonData.name==null && jsonData.category==null && jsonData.description==null && jsonData.stimuli==null && jsonData.responses==null) {
+            this.importErrorMessage = "The imported scenario has no valid field. Define either one or more of the fields name, category, description, stimuli and responses.";
+            return;
+          }
+
           // reset all fields
-          this.resetAllFields()
+          this.resetAllFields();
 
           // name
-          this.name = jsonData.name
-          
+          if(jsonData.name != null) {
+            this.name = jsonData.name;
+          }
+
           // category
-          this.category = jsonData.category
+          if(jsonData.category != null) {
+            this.category = jsonData.category;
+          }
 
           // description
-          this.description = jsonData.description
+          if(jsonData.description != null) {
+            this.description = jsonData.description;
+          }
 
           var jsonlist = [];
+          
           // stimuli
-          jsonData.stimuli.forEach(element => {
-            jsonlist.push(element.SEL)
-            jsonlist.push(element.LTL)
-            jsonlist.push(element.MTL)
-            jsonlist.push(element.Prism)
-            jsonlist.push(element.Quantitative_Prism)
-            jsonlist.push(element.TBV_timed)
-            jsonlist.push(element.TBV_untimed)
-            jsonlist.push(element.display_logic)
-            this.stimuli.push(jsonlist);
-            jsonlist = [];
-          });
-          
-          
+          if(jsonData.stimuli != null) {
+            jsonData.stimuli.forEach(element => {
+              if(element.SEL == null) {
+                this.importErrorMessage = "SEL in each stimulus need to be defined.";
+                console.warn(this.importErrorMessage);
+                return;
+              }
+              else {
+                jsonlist.push(element.SEL);
+              }
+              if(element.LTL == null) {
+                jsonlist.push("LTL not defined");
+              }
+              else {
+                jsonlist.push(element.LTL);
+              }
+              if(element.MTL == null) {
+                jsonlist.push("MTL not defined");
+              }
+              else {
+                jsonlist.push(element.MTL);
+              }
+              if(element.Prism == null) {
+                jsonlist.push("Prism not defined");
+              }
+              else {
+                jsonlist.push(element.Prism);
+              }
+              if(element.Quantitative_Prism == null) {
+                jsonlist.push("Quantitative_Prism not defined");
+              }
+              else {
+                jsonlist.push(element.Quantitative_Prism);
+              }
+              if(element.TBV_timed == null) {
+                jsonlist.push("TBV_timed not defined");
+              }
+              else {
+                jsonlist.push(element.TBV_timed);
+              }
+              if(element.TBV_untimed == null) {
+                jsonlist.push("TBV_untimed not defined");
+              }
+              else {
+                jsonlist.push(element.TBV_untimed);
+              }
+              if(element.display_logic == null) {
+                jsonlist.push(0);
+              }
+              else {
+                jsonlist.push(element.display_logic);
+              }
+              this.stimuli.push(jsonlist);
+              jsonlist = [];
+              
+            });
+          }
+
           // responses
-          jsonData.responses.forEach(element => {
-            jsonlist.push(element.SEL)
-            jsonlist.push(element.LTL)
-            jsonlist.push(element.MTL)
-            jsonlist.push(element.Prism)
-            jsonlist.push(element.Quantitative_Prism)
-            jsonlist.push(element.TBV_timed)
-            jsonlist.push(element.TBV_untimed)
-            jsonlist.push(element.display_logic)
-            this.responses.push(jsonlist);
-            jsonlist = [];
-          });
+          if(jsonData.responses != null) {
+            jsonData.responses.forEach(element => {
+              if(element.SEL == null) {
+                this.importErrorMessage = "SEL in each response need to be defined.";
+                console.warn(this.importErrorMessage);
+                return;
+              }
+              else {
+                jsonlist.push(element.SEL);
+              }
+              if(element.LTL == null) {
+                jsonlist.push("LTL not defined");
+              }
+              else {
+                jsonlist.push(element.LTL);
+              }
+              if(element.MTL == null) {
+                jsonlist.push("MTL not defined");
+              }
+              else {
+                jsonlist.push(element.MTL);
+              }
+              if(element.Prism == null) {
+                jsonlist.push("Prism not defined");
+              }
+              else {
+                jsonlist.push(element.Prism);
+              }
+              if(element.Quantitative_Prism == null) {
+                jsonlist.push("Quantitative_Prism not defined");
+              }
+              else {
+                jsonlist.push(element.Quantitative_Prism);
+              }
+              if(element.TBV_timed == null) {
+                jsonlist.push("TBV_timed not defined");
+              }
+              else {
+                jsonlist.push(element.TBV_timed);
+              }
+              if(element.TBV_untimed == null) {
+                jsonlist.push("TBV_untimed not defined");
+              }
+              else {
+                jsonlist.push(element.TBV_untimed);
+              }
+              if(element.display_logic == null) {
+                jsonlist.push(0);
+              }
+              else {
+                jsonlist.push(element.display_logic);
+              }
+              this.responses.push(jsonlist);
+              jsonlist = [];
+            });
+          }
 
           this.importErrorMessage = null
 
@@ -174,7 +274,7 @@ export default {
         <div v-if="this.importErrorMessage">
           <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
         </div>
-            
+
         <h3 class="center">
 
           <div class="file-upload-label">
@@ -182,7 +282,7 @@ export default {
             <input id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
           </div>
 
-          Name: 
+          Name:
           <input v-model="name" type="text" placeholder="Enter name" class="small-text-field"/>
           Category:
           <select v-model="category" class="select-box">
@@ -199,7 +299,7 @@ export default {
             <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
       </div>
-    
+
     <div class="message-container">
 
       <p>Stimuli:</p>
@@ -219,7 +319,7 @@ export default {
       <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>
 
     </div>
-    
+
     <div class="message-container">
 
       <p>Responses:</p>
@@ -248,9 +348,9 @@ export default {
         <button class="not-ready-button" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</button>
         <span v-if="showTooltip" class="info-text">A Name and at least one Stimulus and one Response is mandatory</span>
       </div>
-      
+
     </div>
-    
+
   </div>
 
 </template>
@@ -259,22 +359,22 @@ export default {
 <style scoped>
 
 .headline-frame {
-  background-color: #eaf6ff; 
-  padding: 0px; 
+  background-color: #eaf6ff;
+  padding: 0px;
   display:flex;
-  justify-content: center; 
-  align-items: center; 
+  justify-content: center;
+  align-items: center;
   width: 100%;
   margin-top: -25px;
 }
 
 .headline {
-  color: #333; 
+  color: #333;
 }
 .box-frame {
   background-color: #d3d3d3;
-  justify-content:center; 
-  align-items:center; 
+  justify-content:center;
+  align-items:center;
   display: block;
   height: 87vh;
   width: 100%;
@@ -392,7 +492,7 @@ overflow-y: auto;
 .larger-text-field {
   width: 195vh;
   height: 10vh;
-  resize: vertical; 
+  resize: vertical;
   font-size: large;
 }
 
