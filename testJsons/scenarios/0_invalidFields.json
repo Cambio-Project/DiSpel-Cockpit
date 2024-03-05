@@ -1,0 +1,38 @@
+{
+  "scope": {
+    "type": "BetweenQandR",
+    "q_event": {
+      "name": "A(a)",
+      "specification": ""
+    },
+    "r_event": {
+      "name": "B(b)",
+      "specification": ""
+    }
+  },
+  "pattern": {
+    "type": "ResponseInvariance",
+    "p_event": {
+      "name": "S",
+      "specification": ""
+    },
+    "s_event": {
+      "name": "T",
+      "specification": ""
+    },
+    "chained_events": [],
+    "pattern_constrains": {
+      "time_bound": {
+        "type": "Interval",
+        "time_unit": "years",
+        "upper_limit": 20,
+        "lower_limit": 10
+      },
+      "probability_bound": {
+        "type": "Lower",
+        "probability": 0.1
+      }
+    }
+  },
+  "target_logic": "TBV (untimed)"
+}

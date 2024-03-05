@@ -1,0 +1,29 @@
+{
+  "name": "Beispiel",
+  "category": "None",
+  "description": null,
+  "stimuli": [
+    {
+      "Globally, if {A(a)} [has occurred] then in response {B(b)} [eventually holds] without {C(c)} [holding] in between followed by {P} between 4 and 6 hours without {Y} [holding] in between followed by {T} after 2 seconds without {Z} [holding] in between [eventually hold].",
+      "☐((A(a)) → (¬(C(c)) U ((B(b)) ∧ ¬(Y) ∧ (○(¬(Y) U ((P) ∧ ¬(Z) ∧ (○(¬(Z) U ((T))))))))",
+      "☐((A(a)) → (¬(C(c)) U ((B(b)) ∧ ¬(Y) ∧ ○(¬(Y) U[0,6] ((P) ∧ ¬(Z) ∧ ○(¬(Z) U[0,∞] ((T))))))))",
+      "[ G((A(a)) => (!(C(c)) U ((B(b)) & !(Y) & X(!(Y) U<=6 ((P) & !(Z) & X(!(Z) U<=null ((T)))))))) ]",
+      "P=? [ G((A(a)) => (!(C(c)) U ((B(b)) & !(Y) & X(!(Y) U<=6 ((P) & !(Z) & X(!(Z) U<=null ((T)))))))) ]",
+      "always((A(a)) -> ( not (C(c)) since ((B(b)) and not (Y) and (pre( not (Y) since ((P) and not (Z) and (pre( not (Z) since ((T))))))))",
+      "always((A(a)) -> ( not (C(c)) since ((B(b)) and not (Y) and pre( not (Y) since[0,6] ((P) and not (Z) and pre( not (Z) since[0,inf] ((T))))))))",
+      "display_logic": 2
+    }
+  ],
+  "responses": [
+    {
+      "Before {A(a)}, {B(b)} [holds] repeatedly every 5 time unit.",
+      "(◇(A(a))) → ((◇ ((B(b)) ∨ (A(a)))) U (A(a)))",
+      "(◇(A(a))) → ((◇[0,5] ((B(b)) ∨ (A(a)))) U (A(a)))",
+      "[ F(A(a)) => ((F<=5 ((B(b)) | (A(a)))) U (A(a))) ]",
+      "P=? [ F(A(a)) => ((F<=5 ((B(b)) | (A(a)))) U (A(a))) ]",
+      "(once(A(a))) -> ((once ((B(b)) or (A(a)))) since (A(a)))",
+      "(once(A(a))) -> ((once[0,5] ((B(b)) or (A(a)))) since (A(a)))",
+      "display_logic": 0
+    }
+  ]
+}
