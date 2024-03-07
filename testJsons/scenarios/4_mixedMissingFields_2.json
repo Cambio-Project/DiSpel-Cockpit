@@ -1,0 +1,18 @@
+{
+  "name": "Instance Failure followed by Load Peak",
+  "category": "Growth",
+  "stimuli": [
+    {
+      "LTL": "◇ (kill 1 service instance of example-service)",
+      "MTL": "◇[20,20] (kill 1 service instance of example-service)",
+      "TBV_untimed": "once[20,20] (kill 1 service instance of example-service)",
+      "display_logic": 0
+    },
+    {
+      "SEL": "After {kill 1 service instance of example-service} if {service instance failure} [has occurred] then in response {increase load exponentially to 5x base load over 20 time units} [eventually holds] after 2 time units without {A(a)} [holding] in between.",
+      "TBV_timed": "always((kill 1 service instance of example-service) -> always((service instance failure) -> ( not (A(a)) since (increase load exponentially to 5x base load over 20 time units))))",
+      "TBV_untimed": "always((kill 1 service instance of example-service) -> (always((service instance failure) -> not (A(a)) since[2,inf] (increase load exponentially to 5x base load over 20 time units))))",
+      "display_logic": 0
+    }
+  ]
+}

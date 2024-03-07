@@ -1,0 +1,5 @@
+{
+  "name": "Instance Failure followed by Load Peak",
+  "category": "Exploratory",
+  "description": "After killing service and load peak response Time should be <1 s."
+}

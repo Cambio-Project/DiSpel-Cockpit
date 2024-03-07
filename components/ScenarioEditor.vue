@@ -10,7 +10,10 @@ export default {
       name: this.$store.state.name,
       category: this.$store.state.category,
       description: this.$store.state.description,
-      showTooltip: false
+      showTooltip: false,
+      stimuli: this.$store.state.stimuli,
+      responses: this.$store.state.responses,
+      importErrorMessage: null
     }
   },
   methods:{
@@ -38,8 +41,10 @@ export default {
     addScenario() {
       this.$store.commit('addCategory', this.category);
       this.$store.commit('addDescription', this.description);
-      this.$store.commit('addScenario')
-      this.$router.push('/scenariosSite')
+      this.$store.commit('setStimuli', this.stimuli);
+      this.$store.commit('setResponses', this.responses);
+      this.$store.commit('addScenario');
+      this.$router.push('/scenariosSite');
     },
     //Changes all target logics to the same one
     changeAllTargets() {
@@ -49,14 +54,189 @@ export default {
       this.responses.forEach(response => {
         response[7]= this.target;
       })
-    }
-  },
-  computed:{
-    stimuli(){
-      return this.$store.state.stimuli
     },
-    responses(){
-      return this.$store.state.responses
+    //imports a scenario
+    handleFileChange() {
+      const fileInput = this.$refs.fileInput;
+
+      if (!fileInput.files.length) {
+        console.warn('No file selected');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const fileReader = new FileReader();
+
+      fileReader.onload = () => {
+        try {
+          const jsonData = JSON.parse(fileReader.result);
+          this.jsonData = JSON.stringify(jsonData, null, 2);
+
+          console.log(jsonData);
+
+          // check if at least one field for a scenario is available
+          if(jsonData.name==null && jsonData.category==null && jsonData.description==null && jsonData.stimuli==null && jsonData.responses==null) {
+            this.importErrorMessage = "The imported scenario has no valid field. Define either one or more of the fields name, category, description, stimuli and responses.";
+            return;
+          }
+
+          // reset all fields
+          this.resetAllFields();
+
+          // name
+          if(jsonData.name != null) {
+            this.name = jsonData.name;
+          }
+
+          // category
+          if(jsonData.category != null) {
+            this.category = jsonData.category;
+          }
+
+          // description
+          if(jsonData.description != null) {
+            this.description = jsonData.description;
+          }
+
+          var jsonlist = [];
+          
+          // stimuli
+          if(jsonData.stimuli != null) {
+            jsonData.stimuli.forEach(element => {
+              if(element.SEL == null) {
+                this.importErrorMessage = "SEL in each stimulus need to be defined.";
+                console.warn(this.importErrorMessage);
+                return;
+              }
+              else {
+                jsonlist.push(element.SEL);
+              }
+              if(element.LTL == null) {
+                jsonlist.push("LTL not defined");
+              }
+              else {
+                jsonlist.push(element.LTL);
+              }
+              if(element.MTL == null) {
+                jsonlist.push("MTL not defined");
+              }
+              else {
+                jsonlist.push(element.MTL);
+              }
+              if(element.Prism == null) {
+                jsonlist.push("Prism not defined");
+              }
+              else {
+                jsonlist.push(element.Prism);
+              }
+              if(element.Quantitative_Prism == null) {
+                jsonlist.push("Quantitative_Prism not defined");
+              }
+              else {
+                jsonlist.push(element.Quantitative_Prism);
+              }
+              if(element.TBV_timed == null) {
+                jsonlist.push("TBV_timed not defined");
+              }
+              else {
+                jsonlist.push(element.TBV_timed);
+              }
+              if(element.TBV_untimed == null) {
+                jsonlist.push("TBV_untimed not defined");
+              }
+              else {
+                jsonlist.push(element.TBV_untimed);
+              }
+              if(element.display_logic == null) {
+                jsonlist.push(0);
+              }
+              else {
+                jsonlist.push(element.display_logic);
+              }
+              this.stimuli.push(jsonlist);
+              jsonlist = [];
+              
+            });
+          }
+
+          // responses
+          if(jsonData.responses != null) {
+            jsonData.responses.forEach(element => {
+              if(element.SEL == null) {
+                this.importErrorMessage = "SEL in each response need to be defined.";
+                console.warn(this.importErrorMessage);
+                return;
+              }
+              else {
+                jsonlist.push(element.SEL);
+              }
+              if(element.LTL == null) {
+                jsonlist.push("LTL not defined");
+              }
+              else {
+                jsonlist.push(element.LTL);
+              }
+              if(element.MTL == null) {
+                jsonlist.push("MTL not defined");
+              }
+              else {
+                jsonlist.push(element.MTL);
+              }
+              if(element.Prism == null) {
+                jsonlist.push("Prism not defined");
+              }
+              else {
+                jsonlist.push(element.Prism);
+              }
+              if(element.Quantitative_Prism == null) {
+                jsonlist.push("Quantitative_Prism not defined");
+              }
+              else {
+                jsonlist.push(element.Quantitative_Prism);
+              }
+              if(element.TBV_timed == null) {
+                jsonlist.push("TBV_timed not defined");
+              }
+              else {
+                jsonlist.push(element.TBV_timed);
+              }
+              if(element.TBV_untimed == null) {
+                jsonlist.push("TBV_untimed not defined");
+              }
+              else {
+                jsonlist.push(element.TBV_untimed);
+              }
+              if(element.display_logic == null) {
+                jsonlist.push(0);
+              }
+              else {
+                jsonlist.push(element.display_logic);
+              }
+              this.responses.push(jsonlist);
+              jsonlist = [];
+            });
+          }
+
+          this.importErrorMessage = null
+
+        } catch (error) {
+          // mapping not valid
+          this.importErrorMessage = "The imported scenario is not valid! Technical error message: \n "+error
+          console.error('Error parsing JSON:', error);
+        }
+      };
+
+      fileReader.readAsText(file);
+    },
+    resetAllFields() {
+      this.outputType = null,
+      this.target= null,
+      this.name= "",
+      this.category= "None",
+      this.description= null,
+      this.stimuli= [],
+      this.responses= [],
+      this.showTooltip= false
     },
   },
   watch:{
@@ -68,6 +248,12 @@ export default {
     },
     description(newDescription) {
       this.$store.commit('addDescription', newDescription);
+    },
+    stimuli(newStimuli) {
+      this.$store.commit('setStimuli', newStimuli);
+    },
+    responses(newResponses) {
+      this.$store.commit('setResponses', newResponses);
     }
   }
   }
@@ -85,8 +271,18 @@ export default {
   <!--Main Frame-->
   <div class="box-frame">
 
+        <div v-if="this.importErrorMessage">
+          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
+        </div>
+
         <h3 class="center">
-          Name: 
+
+          <div class="file-upload-label">
+            <label for="fileInput" class="custom-file-upload">Import Scenario</label>
+            <input id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
+          </div>
+
+          Name:
           <input v-model="name" type="text" placeholder="Enter name" class="small-text-field"/>
           Category:
           <select v-model="category" class="select-box">
@@ -103,7 +299,7 @@ export default {
             <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
       </div>
-    
+
     <div class="message-container">
 
       <p>Stimuli:</p>
@@ -114,7 +310,7 @@ export default {
           <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
 
-        {{ index +1}}. {{ stimulus[stimulus[7]] }}
+        {{ stimulus[stimulus[7]] }}
         <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>
         <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>
 
@@ -123,7 +319,7 @@ export default {
       <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>
 
     </div>
-    
+
     <div class="message-container">
 
       <p>Responses:</p>
@@ -133,7 +329,7 @@ export default {
           <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
 
-        {{ index +1}}. {{ response[response[7]] }}
+        {{ response[response[7]] }}
         <button class="remove-button" @click="removeResponse(index)">Remove</button> <br>
         <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>
 
@@ -143,7 +339,7 @@ export default {
 
     </div>
 
-    <div v-if="this.name.length !== 0 && stimuli.length !== 0 && responses.length !== 0">
+    <div v-if="this.name.length !== 0 && this.stimuli.length !== 0 && this.responses.length !== 0">
       <button class="new-button" @click="addScenario">Complete</button>
     </div>
 
@@ -152,9 +348,9 @@ export default {
         <button class="not-ready-button" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</button>
         <span v-if="showTooltip" class="info-text">A Name and at least one Stimulus and one Response is mandatory</span>
       </div>
-      
+
     </div>
-    
+
   </div>
 
 </template>
@@ -163,22 +359,22 @@ export default {
 <style scoped>
 
 .headline-frame {
-  background-color: #eaf6ff; 
-  padding: 0px; 
+  background-color: #eaf6ff;
+  padding: 0px;
   display:flex;
-  justify-content: center; 
-  align-items: center; 
+  justify-content: center;
+  align-items: center;
   width: 100%;
   margin-top: -25px;
 }
 
 .headline {
-  color: #333; 
+  color: #333;
 }
 .box-frame {
   background-color: #d3d3d3;
-  justify-content:center; 
-  align-items:center; 
+  justify-content:center;
+  align-items:center;
   display: block;
   height: 87vh;
   width: 100%;
@@ -188,6 +384,25 @@ export default {
 .center {
   align-items: center;
   justify-content: center;
+}
+
+.file-upload-label {
+  background-color: #aacbe9;
+  border: none;
+  color: white;
+  padding: 0.5vh 0.5vh;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: normal;
+  margin: 2px;
+  margin-top: 20px;
+  border-radius: 4px;
+}
+
+.file-upload-label:hover {
+  background-color: #9bb8d3;
 }
 .new-button {
   background-color: rgb(114, 214, 101);
@@ -277,7 +492,7 @@ overflow-y: auto;
 .larger-text-field {
   width: 195vh;
   height: 10vh;
-  resize: vertical; 
+  resize: vertical;
   font-size: large;
 }
 
@@ -305,4 +520,13 @@ overflow-y: auto;
   margin: 0.8vw;
 }
 
+.import-error-text {
+  font-size: 1.5vh;
+  color: red;
+  max-height: 0.5vh;
+}
+
+.custom-file-upload {
+  cursor: pointer;
+}
 </style>

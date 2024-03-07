@@ -1,0 +1,91 @@
+{
+  "title": "JSON schema for a scenario",
+  "type": "object",
+  "properties": {
+	  
+		"name": {
+			"type": "string"
+		},
+		
+		"category": {
+			"type": "string",
+			"enum": [
+				"None",
+				"Exploratory",
+				"Growth",
+				"Use Case"
+		]
+		},
+		
+		"description": {
+			"type": "string"
+			
+		},
+		
+		"stimuli": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"SEL": {
+						"type": "string"
+					},
+					"LTL": {
+						"type": "string"
+					},
+					"MTL": {
+						"type": "string"
+					},
+					"Prism": {
+						"type": "string"
+					},
+					"Quantitative_Prism": {
+						"type": "string"
+					},
+					"TBV_timed": {
+						"type": "string"
+					},
+					"TBV_untimed": {
+						"type": "string"
+					},
+					"display_logic": {
+						"type": "integer"
+					}
+				}
+			}
+		},
+			
+		"responses": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"SEL": {
+						"type": "string"
+					},
+					"LTL": {
+						"type": "string"
+					},
+					"MTL": {
+						"type": "string"
+					},
+					"Prism": {
+						"type": "string"
+					},
+					"Quantitative Prism": {
+						"type": "string"
+					},
+					"TBV (timed)": {
+						"type": "string"
+					},
+					"TBV (untimed)": {
+						"type": "string"
+					},
+					"display_logic": {
+						"type": "integer"
+					}
+				}
+			}	
+		}  
+  	}
+}

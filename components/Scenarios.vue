@@ -1,4 +1,41 @@
 <script>
+import JSZip from 'jszip';
+
+// creates all target_logics for one PSPItem (Stumulus or Response)
+function createPSPItem(item) {
+  return {
+    SEL: item[0],
+    LTL: item[1],
+    MTL: item[2],
+    Prism: item[3],
+    Quantitative_Prism: item[4],
+    TBV_timed: item[5],
+    TBV_untimed: item[6],
+    display_logic: item[7],
+  };
+} 
+
+// creates a list of all target_logics for PSPItems (Stumuli or Responses)
+function createPSPList(coll) {
+  var list = [];
+  coll.forEach((item, index) => {
+    list.push(createPSPItem(coll[index]));
+  });
+  return list;
+}
+
+// creates the scenario schema
+function createSchema(scenario) {
+  const jsonData = {
+    name: scenario[0],
+    category: scenario[1],
+    description: scenario[2],
+    stimuli: createPSPList(scenario[3]),
+    responses: createPSPList(scenario[4])
+  }
+    return jsonData;
+  };
+
 export default {
   name: "ScenarioList",
   el: '#app',
@@ -27,6 +64,48 @@ export default {
           response[7]= this.target;
         })
       });
+    },
+    //Download a single scenario as json
+    downloadJSON(index) {
+      const jsonData = createSchema(this.scenarios[index]);
+      const jsonStr = JSON.stringify(jsonData, null, 2);
+      const blob = new Blob([jsonStr], {type: 'application/json'})
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      const fileName = 'Scenario_' + this.scenarios[index][0] + '.json';
+      a.style.display = 'none';
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    },
+    //Download all scenarios as zip file
+    async downloadZip() {
+      const zip = new JSZip();
+      var c = 1
+      this.scenarios.forEach((scenario, index) => {
+        var name = c + " - " + this.scenarios[index][0];
+        const jsonData = createSchema(this.scenarios[index]);
+        zip.file('Scenario_' + name + '.json', JSON.stringify(jsonData, null, 2));
+        c++;
+      });
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = window.URL.createObjectURL(content);
+
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = 'Scenarios.zip';
+      document.body.appendChild(a);
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     }
   },
 computed:{
@@ -52,6 +131,7 @@ computed:{
 
       <div> 
         <button class="new-button" @click="openEditor">New Scenario</button> 
+        <button class="all-file-download-button" @click="downloadZip(index)">Download all Scenarios</button>
       </div>
 
       <div>
@@ -101,7 +181,7 @@ computed:{
                   <select v-model="stimulus[7]" class="select-box">
                     <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                   </select>
-                  {{ index +1}}. {{ stimulus[stimulus[7]] }} <br>
+                  {{ stimulus[stimulus[7]] }} <br>
                   <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>
                 </li>
               
@@ -114,12 +194,13 @@ computed:{
                   <select v-model="response[7]" class="select-box">
                     <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                   </select>
-                  {{ index +1}}. {{ response[response[7]] }} <br>
+                  {{ response[response[7]] }} <br>
                   <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>
                 </li>
 
               <div>
                 <button class="remove-button" @click="removeScenario(index)">Remove Scenario</button>
+                <button class="file-download-button" @click="downloadJSON(index)">Download as JSON</button>
               </div>
                 
             </li>
@@ -162,6 +243,43 @@ computed:{
 .tool-frame {
   height: 15%;
   width: 100%;
+}
+
+.file-download-button {
+  background-color: #aacbe9;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin: 5px;
+  margin-top: 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.file-download-button:hover {
+  background-color: #9bb8d3;
+}
+
+.all-file-download-button {
+  background-color: #aacbe9;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.all-file-download-button:hover {
+  background-color: #9bb8d3;
 }
 
 .category-frame-0 {

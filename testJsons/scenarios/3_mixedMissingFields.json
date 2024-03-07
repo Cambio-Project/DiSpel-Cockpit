@@ -1,0 +1,11 @@
+{
+  "name": "",
+  "description": "After killing service and load peak response Time should be <1 s.",
+  "responses": [
+    {
+      "LTL": "☐ (ResponseTime < 1s)",
+      "Prism": "[ G (ResponseTime < 1s) ]",
+      "TBV_timed": "always (ResponseTime < 1s)"
+    }
+  ]
+}
