@@ -11,11 +11,13 @@
   },
   "devDependencies": {
     "nuxt": "^3.9.3",
+    "nuxt-mongoose": "^1.0.5",
     "vue": "^3.4.14",
     "vue-router": "^4.2.5"
   },
   "dependencies": {
     "jszip": "^3.10.1",
+    "mongoose": "^8.2.1",
     "vuex": "^4.0.2"
   }
 }
