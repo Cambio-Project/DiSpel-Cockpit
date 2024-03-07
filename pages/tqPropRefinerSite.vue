@@ -5,7 +5,7 @@ const pattern = ref("Absence")
 
 let TQPropRefinerActive = ref(false);
 
-let src = computed(() => "http://localhost:8084/requirement-refinement/shortcut?file="+file.value+"&pattern="+pattern.value)
+let src = computed(() => "/tqPropRefinerContainer/requirement-refinement/shortcut?file="+file.value+"&pattern="+pattern.value)
 
 </script>
 
