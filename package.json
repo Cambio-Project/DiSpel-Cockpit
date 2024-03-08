@@ -1,21 +1,6 @@
 {
-  "name": "nuxt-app",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
-  },
-  "devDependencies": {
-    "nuxt": "^3.9.3",
-    "vue": "^3.4.14",
-    "vue-router": "^4.2.5"
-  },
-  "dependencies": {
-    "jszip": "^3.10.1",
-    "vuex": "^4.0.2"
+  "type": "BeforeR",
+  "r_event": {
+    "name": "large_workload(example-service_1_I0_CPU_Utilization)"
   }
 }

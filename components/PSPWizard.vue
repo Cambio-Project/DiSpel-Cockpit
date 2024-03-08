@@ -4,29 +4,36 @@
 // creates the scope part of the payload
 import * as events from "events";
 
-function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR) {
+function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events) {
   const scope = {
     type: selectedScope
   };
 
   // include q_event if it exists
   if (selectedScopeEventQ && selectedScopeEventQ.trim() !== "") {
-    scope.q_event = createEvent(selectedScopeEventQ, {a: "jo"});
+    scope.q_event = createEvent(selectedScopeEventQ, events);
   }
 
   // include r_event if it exists
   if (selectedScopeEventR && selectedScopeEventR.trim() !== "") {
-    scope.r_event = createEvent(selectedScopeEventR, "");
+    scope.r_event = createEvent(selectedScopeEventR, events);
   }
 
   return scope;
 }
 
-// creates the event part of the payload
-function createEvent(name, specification) {
+// creates the event part of the payload. Takes the predicate from the events-array based on the event name
+function createEvent(name, events) {
+  const event = events.find(event => event.eventName === name);
   return {
     name: name,
-    specification: specification
+    //specification: event.predicate
+    specification: {
+      predicateName: event.predicate.predicateName,
+      predicateLogic: event.predicate.predicateLogic,
+      predicateComparisonValue: event.predicate.predicateComparisonValue,
+      measurementSource: event.predicate.measurementSource
+    }
   };
 }
 
@@ -49,15 +56,15 @@ function createProbabiltiyBound(type, probability){
 }
 
 // creates the pattern part of the payload
-function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit) {
+function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
   const pattern = {
     type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
-    p_event: createEvent(selectedEventP, "")
+    p_event: createEvent(selectedEventP, events)
   };
 
   // include s_event if exists
   if (selectedEventS && selectedEventS.trim() !== "") {
-    pattern.s_event = createEvent(selectedEventS, "")
+    pattern.s_event = createEvent(selectedEventS, events)
   }
 
   // include chained_events if one exists
@@ -66,14 +73,14 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 
       let ch_event = {
         // event is required
-        event: createEvent(chainedEvent.event.name, ""),
-        //constrain_event: createEvent(chainedEvent.constrain_event.name, ""),
+        event: createEvent(chainedEvent.event.name, events),
+        //constrain_event: createEvent(chainedEvent.constrain_event.name, events),
         //time_bound: time_bound(chainedEvent)
       };
 
       // constrain_event is optional
       if (chainedEvent.constrain_event && chainedEvent.constrain_event.name !== "Constraint") {
-        ch_event.constrain_event = createEvent(chainedEvent.constrain_event.name, "")
+        ch_event.constrain_event = createEvent(chainedEvent.constrain_event.name, events)
       }
 
       // time_bound is optional
@@ -156,7 +163,7 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
     }
 
     if (selectedConstraintEvent && selectedConstraintEvent !== "Constraint") {
-      pattern.pattern_constrains.constrain_event = createEvent(selectedConstraintEvent, "")
+      pattern.pattern_constrains.constrain_event = createEvent(selectedConstraintEvent, events)
     }
   }
 
@@ -164,10 +171,10 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 }
 
 // creates the payload
-function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit) {
+function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
   return {
-    scope: createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR),
-    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit),
+    scope: createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events),
+    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events),
     target_logic: selectedTargetLogic
   };
 }
@@ -484,7 +491,7 @@ export default {
     },
     async transformToTemporalLogic() {
 
-      const payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
+      const payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.events);
 
       console.log(payload)
       console.log(this.pspSpecification.selectedChainedEvents)
@@ -561,11 +568,27 @@ export default {
           // scope
           this.pspSpecification.selectedScope = jsonData.scope.type
           if (jsonData.scope.q_event && jsonData.scope.q_event.name) {
-            this.events.push(jsonData.scope.q_event.name)
+            this.events.push({
+              eventName: jsonData.scope.q_event.name,
+              predicate: {
+                predicateName: jsonData.scope.q_event.specification.predicateName,
+                predicateLogic: jsonData.scope.q_event.specification.predicateLogic,
+                predicateComparisonValue: jsonData.scope.q_event.specification.predicateComparisonValue,
+                measurementSource: jsonData.scope.q_event.specification.measurementSource
+              }
+            })
             this.pspSpecification.selectedScopeEventQ = jsonData.scope.q_event.name
           }
           if (jsonData.scope.r_event && jsonData.scope.r_event.name) {
-            this.events.push(jsonData.scope.r_event.name)
+            this.events.push({
+              eventName: jsonData.scope.r_event.name,
+              predicate: {
+                predicateName: jsonData.scope.r_event.specification.predicateName,
+                predicateLogic: jsonData.scope.r_event.specification.predicateLogic,
+                predicateComparisonValue: jsonData.scope.r_event.specification.predicateComparisonValue,
+                measurementSource: jsonData.scope.r_event.specification.measurementSource
+              }
+            })
             this.pspSpecification.selectedScopeEventR = jsonData.scope.r_event.name
           }
           // pattern type
@@ -578,11 +601,27 @@ export default {
           }
           // main pattern events
           if (jsonData.pattern.p_event && jsonData.pattern.p_event.name) {
-            this.events.push(jsonData.pattern.p_event.name)
+            this.events.push({
+              eventName: jsonData.pattern.p_event.name,
+              predicate: {
+                predicateName: jsonData.pattern.p_event.specification.predicateName,
+                predicateLogic: jsonData.pattern.p_event.specification.predicateLogic,
+                predicateComparisonValue: jsonData.pattern.p_event.specification.predicateComparisonValue,
+                measurementSource: jsonData.pattern.p_event.specification.measurementSource
+              }
+            })
             this.pspSpecification.selectedEventP = jsonData.pattern.p_event.name
           }
           if (jsonData.pattern.s_event && jsonData.pattern.s_event.name) {
-            this.events.push(jsonData.pattern.s_event.name)
+            this.events.push({
+              eventName: jsonData.pattern.s_event.name,
+              predicate: {
+                predicateName: jsonData.pattern.s_event.specification.predicateName,
+                predicateLogic: jsonData.pattern.s_event.specification.predicateLogic,
+                predicateComparisonValue: jsonData.pattern.s_event.specification.predicateComparisonValue,
+                measurementSource: jsonData.pattern.s_event.specification.measurementSource
+              }
+            })
             this.pspSpecification.selectedEventS = jsonData.pattern.s_event.name
           }
           // pattern specifications
@@ -614,7 +653,15 @@ export default {
               this.pspSpecification.probability = jsonData.pattern.pattern_constrains.probability_bound.probability
             }
             if (jsonData.pattern.pattern_constrains.constrain_event) {
-              this.events.push(jsonData.pattern.pattern_constrains.constrain_event.name)
+              this.events.push({
+                eventName: jsonData.pattern.pattern_constrains.constrain_event.name,
+                predicate: {
+                  predicateName: jsonData.pattern.pattern_constrains.constrain_event.specification.predicateName,
+                  predicateLogic: jsonData.pattern.pattern_constrains.constrain_event.specification.predicateLogic,
+                  predicateComparisonValue: jsonData.pattern.pattern_constrains.constrain_event.specification.predicateComparisonValue,
+                  measurementSource: jsonData.pattern.pattern_constrains.constrain_event.specification.measurementSource
+                }
+              })
               this.pspSpecification.selectedConstraintEvent = jsonData.pattern.pattern_constrains.constrain_event.name
             }
           }
@@ -626,14 +673,30 @@ export default {
               const chainedEvent = {}
 
               // event is required
-              this.events.push(chEventJson.event.name)
+              this.events.push({
+                eventName: chEventJson.event.name,
+                predicate: {
+                  predicateName: chEventJson.event.specification.predicateName,
+                  predicateLogic: chEventJson.event.specification.predicateLogic,
+                  predicateComparisonValue: chEventJson.event.specification.predicateComparisonValue,
+                  measurementSource: chEventJson.event.specification.measurementSource
+                }
+              })
               chainedEvent.event = {
                 name: chEventJson.event && chEventJson.event.name || "",
                 specification: chEventJson.event && chEventJson.event.specification || ""
               }
               // constrain_event is optional
               if (chEventJson.constrain_event) {
-                this.events.push(chEventJson.constrain_event.name)
+                this.events.push({
+                  eventName: chEventJson.constrain_event.name,
+                  predicate: {
+                    predicateName: chEventJson.constrain_event.specification.predicateName,
+                    predicateLogic: chEventJson.constrain_event.specification.predicateLogic,
+                    predicateComparisonValue: chEventJson.constrain_event.specification.predicateComparisonValue,
+                    measurementSource: chEventJson.constrain_event.specification.measurementSource
+                  }
+                })
                 chainedEvent.constrain_event = {
                   name: chEventJson.constrain_event && chEventJson.constrain_event.name || "",
                   specification: chEventJson.constrain_event && chEventJson.constrain_event.specification || ""
@@ -682,7 +745,7 @@ export default {
 
       // add all mappings to the commit
       for (index in this.targetLogicOptions) {
-        var payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
+        var payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.events);
 
         // Perform the HTTP request with the input data
         const response = await useFetch("/api/getPSPMapping", {

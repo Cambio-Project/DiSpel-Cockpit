@@ -29,9 +29,23 @@
             },
             "specification": {
               "type": [
-                "string",
+                "object",
                 "null"
-              ]
+              ],
+              "properties": {
+                "predicate_name" :  {
+                  "type": "string"
+                },
+                "predicate_logic" :  {
+                  "type": "string"
+                },
+                "measurement_source" :  {
+                  "type": "string"
+                },
+                "predicate_comparison_value" :  {
+                  "type": "string"
+                }
+              }
             }
           },
           "required": [
@@ -47,9 +61,23 @@
             },
             "specification": {
               "type": [
-                "string",
+                "object",
                 "null"
-              ]
+              ],
+              "properties": {
+                "predicate_name" :  {
+                  "type": "string"
+                },
+                "predicate_logic" :  {
+                  "type": "string"
+                },
+                "measurement_source" :  {
+                  "type": "string"
+                },
+                "predicate_comparison_value" :  {
+                  "type": "string"
+                }
+              }
             }
           },
           "required": [
@@ -95,9 +123,23 @@
             },
             "specification": {
               "type": [
-                "string",
+                "object",
                 "null"
-              ]
+              ],
+              "properties": {
+                "predicate_name" :  {
+                  "type": "string"
+                },
+                "predicate_logic" :  {
+                  "type": "string"
+                },
+                "measurement_source" :  {
+                  "type": "string"
+                },
+                "predicate_comparison_value" :  {
+                  "type": "string"
+                }
+              }
             }
           },
           "required": [
@@ -113,9 +155,23 @@
             },
             "specification": {
               "type": [
-                "string",
+                "object",
                 "null"
-              ]
+              ],
+              "properties": {
+                "predicate_name" :  {
+                  "type": "string"
+                },
+                "predicate_logic" :  {
+                  "type": "string"
+                },
+                "measurement_source" :  {
+                  "type": "string"
+                },
+                "predicate_comparison_value" :  {
+                  "type": "string"
+                }
+              }
             }
           },
           "required": [
@@ -136,9 +192,23 @@
                   },
                   "specification": {
                     "type": [
-                      "string",
+                      "object",
                       "null"
-                    ]
+                    ],
+                    "properties": {
+                      "predicate_name" :  {
+                        "type": "string"
+                      },
+                      "predicate_logic" :  {
+                        "type": "string"
+                      },
+                      "measurement_source" :  {
+                        "type": "string"
+                      },
+                      "predicate_comparison_value" :  {
+                        "type": "string"
+                      }
+                    }
                   }
                 },
                 "required": [
@@ -154,9 +224,23 @@
                   },
                   "specification": {
                     "type": [
-                      "string",
+                      "object",
                       "null"
-                    ]
+                    ],
+                    "properties": {
+                      "predicate_name" :  {
+                        "type": "string"
+                      },
+                      "predicate_logic" :  {
+                        "type": "string"
+                      },
+                      "measurement_source" :  {
+                        "type": "string"
+                      },
+                      "predicate_comparison_value" :  {
+                        "type": "string"
+                      }
+                    }
                   }
                 },
                 "required": [
@@ -269,9 +353,23 @@
                 },
                 "specification": {
                   "type": [
-                    "string",
+                    "object",
                     "null"
-                  ]
+                  ],
+                  "properties": {
+                    "predicate_name" :  {
+                      "type": "string"
+                    },
+                    "predicate_logic" :  {
+                      "type": "string"
+                    },
+                    "measurement_source" :  {
+                      "type": "string"
+                    },
+                    "predicate_comparison_value" :  {
+                      "type": "string"
+                    }
+                  }
                 }
               },
               "required": [
