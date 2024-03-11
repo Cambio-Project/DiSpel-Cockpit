@@ -1,10 +1,9 @@
-<script>
+<script setup lang="ts">
 
-export default {
-  created() {
-    this.$router.push('/scenariosSite')
-  },
-}
+const response = await useFetch("/api/verifySimulation", {
+  method: "POST",
+  //body: payload
+})
 </script>
 
 <template>
