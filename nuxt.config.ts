@@ -5,9 +5,11 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public:{
       pspDomain: process.env.PSP_WIZARD_DOMAINNAME || "localhost",
-      pspPort: process.env.PSP_WIZARD_PORT || 8080,
+      pspPort: process.env.PSP_WIZARD_PORT || "8080",
       tqPropRefinerDomain: process.env.TQ_PROP_REFINER_DOMAINNAME || "localhost",
-      tqPropRefinerPort: process.env.TQ_PROP_REFINER_PORT || 8084
+      tqPropRefinerPort: process.env.TQ_PROP_REFINER_PORT || "8084",
+      miSimDomain: process.env.MI_SIM_DOMAINNAME || "localhost",
+      miSimPort: process.env.MI_SIM_PORT || "8084"
     }
   },
   devtools: { enabled: true },

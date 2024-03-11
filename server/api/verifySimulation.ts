@@ -1,13 +1,14 @@
 import { MeasurementPoint } from "~/models/measurement-point";
 import { Predicate } from "~/models/predicate";
 import { ResponseSpecification } from "~/models/response-specification";
+import {id} from "postcss-selector-parser";
 
-const TBVERIFIER_URL = 'http://localhost:5000/monitor';
+const TBVERIFIER_URL = 'http://localhost:8083/monitor';
 
 
 export default defineEventHandler(async (event) => {
+    const body = await readBody(event)
 
-    console.log('Verify Specification');
    /*  const body = await readBody(event)
     const simulationPath = '/path';
     
@@ -28,6 +29,33 @@ export default defineEventHandler(async (event) => {
 
     // Create Request
     var formdata = new FormData();
+    let simulationID = body.simulationID
+
+    const DEMO_SPECIFICATION = {
+        "specification": " always(instance_dead(instance_count) since[0,3] instance_alive(instance_count)) ",
+        "specification_type":"mtl",
+        "predicates_info": [
+            {
+                "predicate_name":"instance_alive",
+                "predicate_comparison_value":"0",
+                "predicate_logic":"biggerEqual"
+            },
+            {
+                "predicate_name":"instance_dead",
+                "predicate_comparison_value":"0",
+                "predicate_logic":"biggerEqual"
+            }
+        ],
+        "measurement_source": "misim",
+        "remote-misim-address": "/app/simulationResults/"+simulationID,
+        "measurement_points": [
+            {
+                "measurement_name":"instance_count",
+                "measurement_column":"gateway_InstanceCount"
+            }
+        ]
+    };
+
     formdata.append("formula_json", JSON.stringify(DEMO_SPECIFICATION));
     var requestOptions: RequestInit = {
         method: 'POST',
@@ -41,7 +69,7 @@ export default defineEventHandler(async (event) => {
     console.log(verificationResult);
 
     return {
-        result: "pspResponse"
+        result: verificationResult
     }
 })
 
@@ -57,31 +85,3 @@ const getMeasurementPointsFromPredicates = (predicates: Predicate[]) => {
         return measurementPoint;
     });
 }
-
-
-
-
-const DEMO_SPECIFICATION = {
-    "specification": " always(instance_dead(instance_count) since[0,3] instance_alive(instance_count)) ",
-    "specification_type":"mtl",
-    "predicates_info": [
-        {
-          "predicate_name":"instance_alive",
-          "predicate_comparison_value":"0",
-          "predicate_logic":"biggerEqual"
-       },
-       {
-          "predicate_name":"instance_dead",
-          "predicate_comparison_value":"0",
-          "predicate_logic":"biggerEqual"
-       }
-    ],
-     "measurement_source": "misim",
-     "remote-misim-address": "/app/simulations_results/69",
-     "measurement_points": [
-       {
-          "measurement_name":"instance_count",
-          "measurement_column":"gateway_InstanceCount"
-       }
-    ]
- };

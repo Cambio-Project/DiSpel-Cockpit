@@ -1,6 +1,13 @@
 <script>
 
+import * as domain from "domain";
+
 export default {
+  computed: {
+    domain() {
+      return domain
+    }
+  },
   data() {
     return {
       outputType: null,
@@ -38,13 +45,24 @@ export default {
       this.$store.commit('removeResponse', index);
     },
     // add scenario with metadata and stimuli and responses
-    addScenario() {
-      this.$store.commit('addCategory', this.category);
-      this.$store.commit('addDescription', this.description);
-      this.$store.commit('setStimuli', this.stimuli);
-      this.$store.commit('setResponses', this.responses);
-      this.$store.commit('addScenario');
-      this.$router.push('/scenariosSite');
+    async addScenario() {
+      // this.$store.commit('addCategory', this.category);
+      // this.$store.commit('addDescription', this.description);
+      // this.$store.commit('setStimuli', this.stimuli);
+      // this.$store.commit('setResponses', this.responses);
+      // this.$store.commit('addScenario');
+      // this.$router.push('/scenariosSite');
+      const body = {
+        category: this.category,
+        description: this.description,
+        stimuli: this.stimuli,
+        setResponses: this.responses
+      }
+
+      const res = await fetch("", {
+        body: JSON.stringify(body)
+      })
+
     },
     //Changes all target logics to the same one
     changeAllTargets() {
@@ -99,7 +117,7 @@ export default {
           }
 
           var jsonlist = [];
-          
+
           // stimuli
           if(jsonData.stimuli != null) {
             jsonData.stimuli.forEach(element => {
@@ -155,7 +173,7 @@ export default {
               }
               this.stimuli.push(jsonlist);
               jsonlist = [];
-              
+
             });
           }
 
@@ -258,8 +276,15 @@ export default {
   }
   }
 
+
+
 </script>
 
+<script setup>
+const config = useRuntimeConfig()
+const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"/simulate/upload"
+
+</script>
 
 <template>
 
@@ -317,6 +342,19 @@ export default {
       </li>
 
       <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>
+
+<!--TODO Here is my stuff-->
+<!--      <form method="post" :action="domain" enctype="multipart/form-data">-->
+<!--        <label>Simulation ID: </label>-->
+<!--        <input type="text" name="simulation_id">-->
+<!--        <br>-->
+<!--        <br>-->
+<!--        <label>MiSim Files: </label>-->
+<!--        <input type="file" name="files" multiple="multiple">-->
+<!--        <br>-->
+<!--        <br>-->
+<!--        <input type="submit">-->
+<!--      </form>-->
 
     </div>
 
