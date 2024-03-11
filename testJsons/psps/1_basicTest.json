@@ -5,8 +5,13 @@
   "pattern": {
     "type": "Universality",
     "p_event": {
-      "name": "A(a)",
-      "specification": ""
+      "name": "large_workload(example-service_1_I0_CPU_Utilization)",
+      "specification": {
+        "predicateName": "large_workload",
+        "predicateLogic": "biggerEqual",
+        "predicateComparisonValue": "100",
+        "measurementSource": "example-service_1_I0_CPU_Utilization"
+      }
     },
     "chained_events": []
   },

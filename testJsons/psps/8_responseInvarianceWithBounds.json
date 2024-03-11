@@ -2,23 +2,43 @@
   "scope": {
     "type": "BetweenQandR",
     "q_event": {
-      "name": "A(a)",
-      "specification": ""
+      "name": "third_request(example-service_1_I2_Requests_InSystem)",
+      "specification": {
+        "predicateName": "third_request",
+        "predicateLogic": "equal",
+        "predicateComparisonValue": "3",
+        "measurementSource": "example-service_1_I2_Requests_InSystem"
+      }
     },
     "r_event": {
-      "name": "B(b)",
-      "specification": ""
+      "name": "low_power(example-service_1_I0_CPU_Utilization)",
+      "specification": {
+        "predicateName": "low_power",
+        "predicateLogic": "smaller",
+        "predicateComparisonValue": "400",
+        "measurementSource": "example-service_1_I0_CPU_Utilization"
+      }
     }
   },
   "pattern": {
     "type": "ResponseInvariance",
     "p_event": {
-      "name": "S",
-      "specification": ""
+      "name": "large_workload(example-service_1_I0_CPU_Utilization)",
+      "specification": {
+        "predicateName": "large_workload",
+        "predicateLogic": "biggerEqual",
+        "predicateComparisonValue": "100",
+        "measurementSource": "example-service_1_I0_CPU_Utilization"
+      }
     },
     "s_event": {
-      "name": "T",
-      "specification": ""
+      "name": "cpu_temperature_rises(example-service_1_I1_CPU_Utilization)",
+      "specification": {
+        "predicateName": "cpu_temperature_rises",
+        "predicateLogic": "trendUpwardStrict",
+        "predicateComparisonValue": "200",
+        "measurementSource": "example-service_1_I1_CPU_Utilization"
+      }
     },
     "chained_events": [],
     "pattern_constrains": {

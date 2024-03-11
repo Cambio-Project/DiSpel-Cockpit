@@ -2,29 +2,38 @@
 //import axios from "core-js/internals/queue";
 
 // creates the scope part of the payload
-function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR) {
+import * as events from "events";
+
+function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events) {
   const scope = {
     type: selectedScope
   };
 
   // include q_event if it exists
   if (selectedScopeEventQ && selectedScopeEventQ.trim() !== "") {
-    scope.q_event = createEvent(selectedScopeEventQ, "");
+    scope.q_event = createEvent(selectedScopeEventQ, events);
   }
 
   // include r_event if it exists
   if (selectedScopeEventR && selectedScopeEventR.trim() !== "") {
-    scope.r_event = createEvent(selectedScopeEventR, "");
+    scope.r_event = createEvent(selectedScopeEventR, events);
   }
 
   return scope;
 }
 
-// creates the event part of the payload
-function createEvent(name, specification) {
+// creates the event part of the payload. Takes the predicate from the events-array based on the event name
+function createEvent(name, events) {
+  const event = events.find(event => event.eventName === name);
   return {
     name: name,
-    specification: specification
+    //specification: event.predicate
+    specification: {
+      predicateName: event.predicate.predicateName,
+      predicateLogic: event.predicate.predicateLogic,
+      predicateComparisonValue: event.predicate.predicateComparisonValue,
+      measurementSource: event.predicate.measurementSource
+    }
   };
 }
 
@@ -47,15 +56,15 @@ function createProbabiltiyBound(type, probability){
 }
 
 // creates the pattern part of the payload
-function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit) {
+function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
   const pattern = {
     type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
-    p_event: createEvent(selectedEventP, "")
+    p_event: createEvent(selectedEventP, events)
   };
 
   // include s_event if exists
   if (selectedEventS && selectedEventS.trim() !== "") {
-    pattern.s_event = createEvent(selectedEventS, "")
+    pattern.s_event = createEvent(selectedEventS, events)
   }
 
   // include chained_events if one exists
@@ -64,14 +73,14 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 
       let ch_event = {
         // event is required
-        event: createEvent(chainedEvent.event.name, ""),
-        //constrain_event: createEvent(chainedEvent.constrain_event.name, ""),
+        event: createEvent(chainedEvent.event.name, events),
+        //constrain_event: createEvent(chainedEvent.constrain_event.name, events),
         //time_bound: time_bound(chainedEvent)
       };
 
       // constrain_event is optional
       if (chainedEvent.constrain_event && chainedEvent.constrain_event.name !== "Constraint") {
-        ch_event.constrain_event = createEvent(chainedEvent.constrain_event.name, "")
+        ch_event.constrain_event = createEvent(chainedEvent.constrain_event.name, events)
       }
 
       // time_bound is optional
@@ -154,7 +163,7 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
     }
 
     if (selectedConstraintEvent && selectedConstraintEvent !== "Constraint") {
-      pattern.pattern_constrains.constrain_event = createEvent(selectedConstraintEvent, "")
+      pattern.pattern_constrains.constrain_event = createEvent(selectedConstraintEvent, events)
     }
   }
 
@@ -162,10 +171,10 @@ function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, s
 }
 
 // creates the payload
-function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit) {
+function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
   return {
-    scope: createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR),
-    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit),
+    scope: createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events),
+    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events),
     target_logic: selectedTargetLogic
   };
 }
@@ -197,8 +206,21 @@ export default {
         timeUnit: "time units",
         interval: ["Interval"]
       },
-      events: ["A(a)"],
-      customEvent: "",
+      events: [/**{
+        eventName: "Test(Test)",
+        predicate: {
+          predicateName: "A",
+          predicateLogic: "biggerEqual",
+          predicateComparisonValue: "100",
+          measurementSource: "resp_time_high"
+        }
+      } **/],
+      customPredicateName: "",
+      customPredicateLogic: "",
+      customMeasurementSource: "",
+      customPredicateComparisonValue: "",
+      predicateLogicOptions: ['equal', 'smallerEqual', 'smaller', 'biggerEqual', 'bigger', 'trendUpward', 'trendUpwardStrict', 'trendDownward', 'trendDownwardStrict',],
+      measurementSourceOptions: ["example-service_1_I0_CPU_Utilization", "example-service_1_I1_CPU_Utilization", "example-service_1_I2_Requests_InSystem"],
       scopeOptions: ["Globally", "BeforeR", "AfterQ", "BetweenQandR", "AfterQUntilR"],
       occurrenceOptions: ["SteadyState", "MinimumDuration", "MaximumDuration", "Recurrence", "Universality", "Absence", "Existence", "BoundedExistence", "TransientState"],
       orderOptions: ["Response", "ResponseChain1N", "ResponseChainN1", "ResponseInvariance", "Precedence", "PrecedenceChain1N", "PrecedenceChainN1", "Until"],
@@ -215,6 +237,23 @@ export default {
     };
   },
   computed: {
+    displayPredicateLogics() {
+      // Map technical names to better display names
+      const logicMap = {
+        'equal': "Equal",
+        'smallerEqual': "Smaller or equal",
+        'smaller': "Smaller",
+        'biggerEqual': "Greater or equal",
+        'bigger': "Greater",
+        'trendUpward': "Trend upward",
+        'trendUpwardStrict': "Trend upward strict",
+        'trendDownward': "Trend downward",
+        'trendDownwardStrict': "Trend downward strict"
+      };
+
+      // Create an array of objects with label and value properties
+      return this.predicateLogicOptions.map(logic => ({ label: logicMap[logic], value: logic }));
+    },
     displayScopes() {
       // Map technical names to better display names
       const scopeMap = {
@@ -262,6 +301,13 @@ export default {
           this.pspSpecification.selectedOccurrence === 'Existence' ||
           this.pspSpecification.selectedOccurrence === 'BoundedExistence');
     },
+    comparisonValueShouldGrayOut() {
+      return !(this.customPredicateLogic === "bigger" ||
+          this.customPredicateLogic === "biggerEqual" ||
+          this.customPredicateLogic === "smaller" ||
+          this.customPredicateLogic === "smallerEqual" ||
+          this.customPredicateLogic === "equal");
+    },
   },
   methods: {
     resetAllFields() {
@@ -289,7 +335,15 @@ export default {
         timeUnit: "time units",
         interval: ["Interval"]
       }
-      this.events = ["A(a)"]
+      this.events = [{
+        eventName: "",
+        predicate: {
+          predicateName: "A",
+          predicateLogic: "biggerEqual",
+          predicateComparisonValue: "100",
+          measurementSource: "resp_time_high"
+        }
+      }]
       this.checkedProbability = false
       this.checkedTime = false
     },
@@ -304,17 +358,68 @@ export default {
     },
     addCustomEvent() {
       // Add the custom event to the list if it is not empty
-      if (this.customEvent.trim() !== "") {
-        this.events.push(this.customEvent.trim());
-        // Clear the input field after adding the custom event
-        this.customEvent = "";
+      if (this.customPredicateName.trim() !== "") {
+        this.events.push({
+          eventName: this.customPredicateName+"("+this.customMeasurementSource+")",
+          predicate: {
+            predicateName: this.customPredicateName,
+            predicateLogic: this.customPredicateLogic,
+            predicateComparisonValue: this.customPredicateComparisonValue,
+            measurementSource: this.customMeasurementSource
+          }
+        });
+        // Clear the input fields after adding the custom event
+        this.customPredicateName = "";
+        this.customPredicateLogic = "";
+        this.customPredicateComparisonValue = "";
+        this.customMeasurementSource = "";
       }
     },
     addSampleEvents() {
-      if (!this.events.includes("B(b)")) {
-        this.events.push("B(b)", "C(c)", "D(d)", "P", "S", "T")
-      }
-      this.forceRerender()
+      this.events.forEach(event => {
+        if (event.eventName === "Test(resp_time_high)") {
+          return; // If event already exists, exit loop
+        }
+      });
+
+      this.events.push({
+            eventName: "large_workload(example-service_1_I0_CPU_Utilization)",
+            predicate: {
+              predicateName: "large_workload",
+              predicateLogic: "biggerEqual",
+              predicateComparisonValue: "100",
+              measurementSource: "example-service_1_I0_CPU_Utilization"
+            }
+          },
+          {
+            eventName: "cpu_temperature_rises(example-service_1_I1_CPU_Utilization)",
+            predicate: {
+              predicateName: "cpu_temperature_rises",
+              predicateLogic: "trendUpwardStrict",
+              predicateComparisonValue: "200",
+              measurementSource: "example-service_1_I1_CPU_Utilization"
+            }
+          },
+          {
+            eventName: "third_request(example-service_1_I2_Requests_InSystem)",
+            predicate: {
+              predicateName: "third_request",
+              predicateLogic: "equal",
+              predicateComparisonValue: "3",
+              measurementSource: "example-service_1_I2_Requests_InSystem"
+            }
+          },
+          {
+            eventName: "low_power(example-service_1_I0_CPU_Utilization)",
+            predicate: {
+              predicateName: "low_power",
+              predicateLogic: "smaller",
+              predicateComparisonValue: "400",
+              measurementSource: "example-service_1_I0_CPU_Utilization"
+            }
+          });
+
+      this.forceRerender();
     },
     addProbability() {
       // Add the custom probabilitiy
@@ -372,7 +477,6 @@ export default {
           this.pspSpecification.mapping = responsePayload.payload.error
         }
 
-        //TODO this doesn't seem to work
         this.forceRerender()
 
         // Debug
@@ -387,7 +491,7 @@ export default {
     },
     async transformToTemporalLogic() {
 
-      const payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
+      const payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.events);
 
       console.log(payload)
       console.log(this.pspSpecification.selectedChainedEvents)
@@ -464,11 +568,27 @@ export default {
           // scope
           this.pspSpecification.selectedScope = jsonData.scope.type
           if (jsonData.scope.q_event && jsonData.scope.q_event.name) {
-            this.events.push(jsonData.scope.q_event.name)
+            this.events.push({
+              eventName: jsonData.scope.q_event.name,
+              predicate: {
+                predicateName: jsonData.scope.q_event.specification.predicateName,
+                predicateLogic: jsonData.scope.q_event.specification.predicateLogic,
+                predicateComparisonValue: jsonData.scope.q_event.specification.predicateComparisonValue,
+                measurementSource: jsonData.scope.q_event.specification.measurementSource
+              }
+            })
             this.pspSpecification.selectedScopeEventQ = jsonData.scope.q_event.name
           }
           if (jsonData.scope.r_event && jsonData.scope.r_event.name) {
-            this.events.push(jsonData.scope.r_event.name)
+            this.events.push({
+              eventName: jsonData.scope.r_event.name,
+              predicate: {
+                predicateName: jsonData.scope.r_event.specification.predicateName,
+                predicateLogic: jsonData.scope.r_event.specification.predicateLogic,
+                predicateComparisonValue: jsonData.scope.r_event.specification.predicateComparisonValue,
+                measurementSource: jsonData.scope.r_event.specification.measurementSource
+              }
+            })
             this.pspSpecification.selectedScopeEventR = jsonData.scope.r_event.name
           }
           // pattern type
@@ -481,11 +601,27 @@ export default {
           }
           // main pattern events
           if (jsonData.pattern.p_event && jsonData.pattern.p_event.name) {
-            this.events.push(jsonData.pattern.p_event.name)
+            this.events.push({
+              eventName: jsonData.pattern.p_event.name,
+              predicate: {
+                predicateName: jsonData.pattern.p_event.specification.predicateName,
+                predicateLogic: jsonData.pattern.p_event.specification.predicateLogic,
+                predicateComparisonValue: jsonData.pattern.p_event.specification.predicateComparisonValue,
+                measurementSource: jsonData.pattern.p_event.specification.measurementSource
+              }
+            })
             this.pspSpecification.selectedEventP = jsonData.pattern.p_event.name
           }
           if (jsonData.pattern.s_event && jsonData.pattern.s_event.name) {
-            this.events.push(jsonData.pattern.s_event.name)
+            this.events.push({
+              eventName: jsonData.pattern.s_event.name,
+              predicate: {
+                predicateName: jsonData.pattern.s_event.specification.predicateName,
+                predicateLogic: jsonData.pattern.s_event.specification.predicateLogic,
+                predicateComparisonValue: jsonData.pattern.s_event.specification.predicateComparisonValue,
+                measurementSource: jsonData.pattern.s_event.specification.measurementSource
+              }
+            })
             this.pspSpecification.selectedEventS = jsonData.pattern.s_event.name
           }
           // pattern specifications
@@ -517,7 +653,15 @@ export default {
               this.pspSpecification.probability = jsonData.pattern.pattern_constrains.probability_bound.probability
             }
             if (jsonData.pattern.pattern_constrains.constrain_event) {
-              this.events.push(jsonData.pattern.pattern_constrains.constrain_event.name)
+              this.events.push({
+                eventName: jsonData.pattern.pattern_constrains.constrain_event.name,
+                predicate: {
+                  predicateName: jsonData.pattern.pattern_constrains.constrain_event.specification.predicateName,
+                  predicateLogic: jsonData.pattern.pattern_constrains.constrain_event.specification.predicateLogic,
+                  predicateComparisonValue: jsonData.pattern.pattern_constrains.constrain_event.specification.predicateComparisonValue,
+                  measurementSource: jsonData.pattern.pattern_constrains.constrain_event.specification.measurementSource
+                }
+              })
               this.pspSpecification.selectedConstraintEvent = jsonData.pattern.pattern_constrains.constrain_event.name
             }
           }
@@ -529,14 +673,30 @@ export default {
               const chainedEvent = {}
 
               // event is required
-              this.events.push(chEventJson.event.name)
+              this.events.push({
+                eventName: chEventJson.event.name,
+                predicate: {
+                  predicateName: chEventJson.event.specification.predicateName,
+                  predicateLogic: chEventJson.event.specification.predicateLogic,
+                  predicateComparisonValue: chEventJson.event.specification.predicateComparisonValue,
+                  measurementSource: chEventJson.event.specification.measurementSource
+                }
+              })
               chainedEvent.event = {
                 name: chEventJson.event && chEventJson.event.name || "",
                 specification: chEventJson.event && chEventJson.event.specification || ""
               }
               // constrain_event is optional
               if (chEventJson.constrain_event) {
-                this.events.push(chEventJson.constrain_event.name)
+                this.events.push({
+                  eventName: chEventJson.constrain_event.name,
+                  predicate: {
+                    predicateName: chEventJson.constrain_event.specification.predicateName,
+                    predicateLogic: chEventJson.constrain_event.specification.predicateLogic,
+                    predicateComparisonValue: chEventJson.constrain_event.specification.predicateComparisonValue,
+                    measurementSource: chEventJson.constrain_event.specification.measurementSource
+                  }
+                })
                 chainedEvent.constrain_event = {
                   name: chEventJson.constrain_event && chEventJson.constrain_event.name || "",
                   specification: chEventJson.constrain_event && chEventJson.constrain_event.specification || ""
@@ -582,8 +742,10 @@ export default {
     // Save the mapping to the Vue store and direct to the Scenario Editor
     async confirm() {
       var index;
+
+      // add all mappings to the commit
       for (index in this.targetLogicOptions) {
-        var payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
+        var payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.events);
 
         // Perform the HTTP request with the input data
         const response = await useFetch("/api/getPSPMapping", {
@@ -600,8 +762,23 @@ export default {
           this.formulas.push("")
         }
       }
+
+      // add target logic index to commit
       var number = this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic)
       this.formulas.push(number)
+
+      // add predicates to commit
+      this.events.forEach(event => {
+        //console.log(event);
+        this.formulas.push({
+          predicate_name: event.predicate.predicateName,
+          predicate_logic: event.predicate.predicateLogic,
+          measurement_source: event.predicate.measurementSource,
+          predicate_comparison_value: event.predicate.predicateComparisonValue
+        });
+      });
+
+      //console.log(this.formulas)
 
       if (this.$store.state.outputType === 'Stimulus') {
         this.$store.commit('addStimulus', this.formulas)
@@ -747,8 +924,19 @@ export default {
 
       <div class="grouping-container">
         <div class="selection-group">
-          <label class="title">Add Custom Event:</label>
-          <input v-model="customEvent" type="text" @input="handleInputChange" class="select-event-box" />
+          <label class="title">Add Custom Event:</label> <br><br>
+          <label class="subtitle">Predicate Name: </label>
+          <input v-model="customPredicateName" type="text" @input="handleInputChange" class="select-event-box" /> <br><br>
+          <label class="subtitle">Predicate Logic: </label>
+          <select v-model="customPredicateLogic" @input="handleInputChange" class="select-box">
+            <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{ logic.label }}</option>
+          </select> <br><br>
+          <label class="subtitle">Measurement Source: </label>
+          <select v-model="customMeasurementSource" @input="handleInputChange" class="select-box">
+            <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{ source }}</option>
+          </select> <br><br>
+          <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison Value: </label>
+          <input v-model="customPredicateComparisonValue" type="text" @input="handleInputChange" :class="{ 'grayed-out': comparisonValueShouldGrayOut }" class="select-event-box" /> <br><br>
           <button class="add-event-button event-button" @click="addCustomEvent">Add Custom Event</button>
           <button class="event-button" @click="addSampleEvents">Add Sample Events</button>
         </div>
@@ -763,33 +951,33 @@ export default {
         <div v-if="this.pspSpecification.selectedScope === 'BeforeR'">
           Before
           <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
         </div>
         <div v-if="this.pspSpecification.selectedScope === 'AfterQ'">
           After
           <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
         </div>
         <div v-if="this.pspSpecification.selectedScope === 'BetweenQandR'">
           Between
           <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           and
           <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
         </div>
         <div v-if="this.pspSpecification.selectedScope === 'AfterQUntilR'">
           After
           <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           until
           <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
         </div>
 
@@ -797,14 +985,14 @@ export default {
 
         <div v-if="this.pspSpecification.selectedOccurrence === 'SteadyState'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds] in the long run.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'MinimumDuration'">
           once
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [becomes satisfied] <br>
           it remains so for at least
@@ -814,7 +1002,7 @@ export default {
         <div v-if="this.pspSpecification.selectedOccurrence === 'MaximumDuration'">
           once
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [becomes satisfied] <br>
           it remains so for less than
@@ -823,7 +1011,7 @@ export default {
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'Recurrence'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds] repeatedly <br>
           [every
@@ -834,26 +1022,26 @@ export default {
         <div v-if="this.pspSpecification.selectedOccurrence === 'Universality'">
           it is always the case that
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           holds.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'Absence'">
           it is never the case that
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           holds.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'Existence'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds] eventually.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'BoundedExistence'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds] at most
           <input v-model="this.pspSpecification.selectedInterval" type="number" @input="handleInputChange" class="select-pattern-box" />
@@ -861,7 +1049,7 @@ export default {
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'TransientState'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds] after
           <input v-model="this.pspSpecification.selectedTime" type="number" @input="handleInputChange" class="select-pattern-box" />
@@ -870,12 +1058,12 @@ export default {
         <div v-if="this.pspSpecification.selectedOrder=== 'Response'">
           if
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [has occurred] <br>
           then in response
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [eventually holds]. <br>
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
@@ -889,18 +1077,18 @@ export default {
           </div>
           <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
         </div>
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChain1N'">
           if
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [has occurred] <br>
           then in response
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [eventually holds] <br>
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
@@ -914,13 +1102,13 @@ export default {
           </div>
           <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select> <br>
 
           <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
             <label class="title">followed by </label>
             <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-for="event in this.events" :key="event">{{ event }}</option>
+              <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
             </select> <br>
             <div>
               <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" @input="handleInputChange" class="select-box">
@@ -943,7 +1131,7 @@ export default {
             </div>
             <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
               <option value="Constraint">Constraint</option>
-              <option v-for="event in this.events" :key="event">{{ event }}</option>
+              <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
             </select> <br>
             <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
           </div> <br>
@@ -954,13 +1142,13 @@ export default {
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChainN1'">
           if
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select> <br>
 
           <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
             <label class="title">followed by </label>
             <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-for="event in this.events" :key="event">{{ event }}</option>
+              <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
             </select> <br>
             <div>
               <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" @input="handleInputChange" class="select-box">
@@ -983,7 +1171,7 @@ export default {
             </div>
             <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
               <option value="Constraint">Constraint</option>
-              <option v-for="event in this.events" :key="event">{{ event }}</option>
+              <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
             </select> <br>
             <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
           </div> <br>
@@ -991,7 +1179,7 @@ export default {
           [have occured] <br>
           then in response
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [eventually holds] <br>
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
@@ -1005,18 +1193,18 @@ export default {
           </div>
           <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
         </div>
         <div v-if="this.pspSpecification.selectedOrder=== 'ResponseInvariance'">
           if
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [has occurred] <br>
           then in response
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds] continually.
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
@@ -1032,12 +1220,12 @@ export default {
         <div v-if="this.pspSpecification.selectedOrder=== 'Precedence'">
           if
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds] then it must have been the case <br>
           that
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [has occured] <br>
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
@@ -1045,21 +1233,21 @@ export default {
           </div>
           before
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds].
         </div>
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChain1N'">
           if
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [has occurred] <br>
 
           <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
             <label class="title">and afterwards </label>
             <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-for="event in this.events" :key="event">{{ event }}</option>
+              <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
             </select> <br>
             <div>
               <div>
@@ -1075,7 +1263,7 @@ export default {
             </div>
             <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
               <option value="Constraint">Constraint</option>
-              <option v-for="event in this.events" :key="event">{{ event }}</option>
+              <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
             </select> <br>
             <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
           </div> <br>
@@ -1085,7 +1273,7 @@ export default {
           [holds] <br>
           then it must be the case that
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [has occured] <br>
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
@@ -1093,29 +1281,29 @@ export default {
           </div>
           before
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select> <br>
           [holds].
           <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
         </div>
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChainN1'">
           if
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds] <br>
           then it must be the case that
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select> <br>
 
           <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index" class="chained-event-section">
             <label class="title">and afterwards </label>
             <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-for="event in this.events" :key="event">{{ event }}</option>
+              <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
             </select> <br>
             <div>
               <div>
@@ -1131,7 +1319,7 @@ export default {
             </div>
             <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
               <option value="Constraint">Constraint</option>
-              <option v-for="event in this.events" :key="event">{{ event }}</option>
+              <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
             </select> <br>
             <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
           </div> <br>
@@ -1144,21 +1332,21 @@ export default {
           </div>
           <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select> <br>
           before
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds] <br>
         </div>
         <div v-if="this.pspSpecification.selectedOrder=== 'Until'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds] without interruption until <br>
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event in this.events" :key="event">{{ event }}</option>
+            <option v-for="event in this.events" :key="event.eventName" :value="event.eventName">{{ event.predicate.predicateName }}</option>
           </select>
           [holds]
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">

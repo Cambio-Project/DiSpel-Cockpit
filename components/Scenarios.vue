@@ -1,7 +1,7 @@
 <script>
 import JSZip from 'jszip';
 
-// creates all target_logics for one PSPItem (Stumulus or Response)
+// creates all target_logics for one PSPItem (Stimulus or Response)
 function createPSPItem(item) {
   return {
     SEL: item[0],
@@ -12,10 +12,11 @@ function createPSPItem(item) {
     TBV_timed: item[5],
     TBV_untimed: item[6],
     display_logic: item[7],
+    predicates_info: item[8],
   };
 } 
 
-// creates a list of all target_logics for PSPItems (Stumuli or Responses)
+// creates a list of all target_logics for PSPItems (Stimuli or Responses)
 function createPSPList(coll) {
   var list = [];
   coll.forEach((item, index) => {
@@ -183,6 +184,7 @@ computed:{
                   </select>
                   {{ stimulus[stimulus[7]] }} <br>
                   <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>
+                  <i class="sel-line"> <strong>Predicates:</strong> {{ stimulus[8] }} </i> <br> <br>
                 </li>
               
                 <h4 class="left">
@@ -196,6 +198,7 @@ computed:{
                   </select>
                   {{ response[response[7]] }} <br>
                   <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>
+                  <i class="sel-line"> <strong>Predicates:</strong> {{ response[8] }} </i> <br> <br>
                 </li>
 
               <div>
