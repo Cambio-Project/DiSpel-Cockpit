@@ -768,15 +768,17 @@ export default {
       this.formulas.push(number)
 
       // add predicates to commit
+      let eventArray = [];
       this.events.forEach(event => {
         //console.log(event);
-        this.formulas.push({
+        eventArray.push({
           predicate_name: event.predicate.predicateName,
           predicate_logic: event.predicate.predicateLogic,
           measurement_source: event.predicate.measurementSource,
           predicate_comparison_value: event.predicate.predicateComparisonValue
         });
       });
+      this.formulas.push(eventArray)
 
       //console.log(this.formulas)
 
