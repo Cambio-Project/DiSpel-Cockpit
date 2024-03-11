@@ -1,11 +1,9 @@
 <script setup lang="ts">
 
-const response = await useFetch("/api/dbPing", {
+const response = await useFetch("/api/verifySimulation", {
   method: "POST",
+  //body: payload
 })
-
-const dbMissing = response.data.value["offline"];
-
 </script>
 
 <template>
