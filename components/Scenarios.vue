@@ -40,6 +40,7 @@ function createSchema(scenario) {
 export default {
   name: "ScenarioList",
   el: '#app',
+  scenariosNew: [],
   data() {
     return{
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
@@ -107,16 +108,34 @@ export default {
 
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    }
+    },
   },
-computed:{
+  computed:{
     scenarios(){
       return this.$store.state.scenarios
     },
   },
+  // async mounted() {
+  //   const res = await fetch("/api/allScenarios")
+  //   this.scenariosNew = await res.json();
+  //   console.log(this.scenariosNew)
+  // },
+  setup() {
+    const state = reactive({
+      scenarios: null,
+    });
+
+    onMounted(async () => {
+      const response = await fetch("/api/allScenarios");
+      state.scenarios = await response.json();
+    });
+
+    return {
+      state,
+    };
+  },
 };
 </script>
-
 
 <template>
 
@@ -148,66 +167,76 @@ computed:{
     
       <div class="list-container">
         <div class="list-content">
-          <div v-if="scenarios">
-            <li v-for="(scenario, index) in scenarios" :key="index" class="list-item">
-          
-              <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">
-                {{ 'None' }}
-              </div>
+<!--          <div v-if="{scenarios}">-->
+          <div v-if="state.scenarios">
 
-              <div v-if="scenario[Object.keys(scenario)[1]] == 'Exploratory' " class="category-frame-1">
-                {{ 'Exploratory' }}
-              </div>
+<!--            <li v-for="(scenario, index) in scenarios" :key="index" class="list-item">-->
+            <li v-for="scenarios in state.scenarios" class="list-item">
+            <li v-for="scenario in scenarios" class="list-item">
 
-              <div v-if="scenario[Object.keys(scenario)[1]] == 'Growth' " class="category-frame-2">
-                {{ 'Growth' }}
-              </div>
+              <h3>SimulationID: {{scenario.simulationID}}</h3>
 
-              <div v-if="scenario[Object.keys(scenario)[1]] == 'UseCase' " class="category-frame-3">
-                {{ 'Use Case' }}
-              </div>
+<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">-->
+<!--                {{ 'None' }}-->
+<!--              </div>-->
 
-              <h3>
-                {{ index +1}}. {{ scenario[Object.keys(scenario)[0]] }}
-              </h3>
+<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'Exploratory' " class="category-frame-1">-->
+<!--                {{ 'Exploratory' }}-->
+<!--              </div>-->
 
-              {{ scenario[Object.keys(scenario)[2]] }}
+<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'Growth' " class="category-frame-2">-->
+<!--                {{ 'Growth' }}-->
+<!--              </div>-->
+
+<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'UseCase' " class="category-frame-3">-->
+<!--                {{ 'Use Case' }}-->
+<!--              </div>-->
+
+<!--              <h3>-->
+<!--                {{ index +1}}. {{ scenario[Object.keys(scenario)[0]] }}-->
+<!--              </h3>-->
+
+<!--              {{ scenario[Object.keys(scenario)[2]] }}-->
 
                 <h4 class="left">
                   Stimuli:
                 </h4>
 
-                <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" class="left">
-                  {{ index +1}}.
-                  <select v-model="stimulus[7]" class="select-box">
-                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-                  </select>
-                  {{ stimulus[stimulus[7]] }} <br>
-                  <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>
-                  <i class="sel-line"> <strong>Predicates:</strong> {{ stimulus[8] }} </i> <br> <br>
-                </li>
+              {{scenario.stimuli}}
+
+<!--                <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" class="left">-->
+<!--                  {{ index +1}}.-->
+<!--                  <select v-model="stimulus[7]" class="select-box">-->
+<!--                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
+<!--                  </select>-->
+<!--                  {{ stimulus[stimulus[7]] }} <br>-->
+<!--                  <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>-->
+<!--                  <i class="sel-line"> <strong>Predicates:</strong> {{ stimulus[8] }} </i> <br> <br>-->
+<!--                </li>-->
               
                 <h4 class="left">
                 Responses:
                 </h4 >
 
-                <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">
-                  {{ index +1}}.
-                  <select v-model="response[7]" class="select-box">
-                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-                  </select>
-                  {{ response[response[7]] }} <br>
-                  <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>
-                  <i class="sel-line"> <strong>Predicates:</strong> {{ response[8] }} </i> <br> <br>
-                </li>
+              {{scenario.responses[0]}}
+
+<!--                <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">-->
+<!--                  {{ index +1}}.-->
+<!--                  <select v-model="response[7]" class="select-box">-->
+<!--                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
+<!--                  </select>-->
+<!--                  {{ response[response[7]] }} <br>-->
+<!--                  <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>-->
+<!--                  <i class="sel-line"> <strong>Predicates:</strong> {{ response[8] }} </i> <br> <br>-->
+<!--                </li>-->
 
               <div>
                 <button class="remove-button" @click="removeScenario(index)">Remove Scenario</button>
                 <button class="file-download-button" @click="downloadJSON(index)">Download as JSON</button>
               </div>
                 
+              </li>
             </li>
-                
           </div>
         </div>
       </div>

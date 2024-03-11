@@ -20,7 +20,7 @@ export default {
       showTooltip: false,
       stimuli: this.$store.state.stimuli,
       responses: this.$store.state.responses,
-      importErrorMessage: null
+      importErrorMessage: null,
     }
   },
   methods:{
@@ -52,16 +52,23 @@ export default {
       // this.$store.commit('setResponses', this.responses);
       // this.$store.commit('addScenario');
       // this.$router.push('/scenariosSite');
+
       const body = {
+        name: this.name,
         category: this.category,
         description: this.description,
         stimuli: this.stimuli,
-        setResponses: this.responses
+        responses: this.responses
       }
 
-      const res = await fetch("", {
+      console.log(body)
+
+      const res = await fetch("/api/saveScenario", {
+        method: "POST",
         body: JSON.stringify(body)
       })
+
+      console.log(res)
 
     },
     //Changes all target logics to the same one
@@ -72,6 +79,21 @@ export default {
       this.responses.forEach(response => {
         response[7]= this.target;
       })
+    },
+    async uploadStimulus() {
+      const fileInput = this.$refs.fileInputStimulus;
+      this.stimuli = []
+      this.loadedFiles = []
+      for (const file of fileInput.files) {
+        const jsonAsText = await file.text()
+        const json = JSON.parse(jsonAsText)
+        const filename = file.name
+        const tmp = {
+          [filename]: json
+        }
+        this.stimuli.push(tmp)
+        this.loadedFiles.push(filename)
+      }
     },
     //imports a scenario
     handleFileChange() {
@@ -296,9 +318,9 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
   <!--Main Frame-->
   <div class="box-frame">
 
-        <div v-if="this.importErrorMessage">
-          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
-        </div>
+<!--        <div v-if="this.importErrorMessage">-->
+<!--          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>-->
+<!--        </div>-->
 
         <h3 class="center">
 
@@ -329,33 +351,26 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
       <p>Stimuli:</p>
 
-      <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">
-        {{ index +1}}.
-        <select v-model="stimulus[7]" class="select-box">
-          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-        </select>
+<!--      <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">-->
+<!--        {{ index +1}}.-->
+<!--        <select v-model="stimulus[7]" class="select-box">-->
+<!--          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
+<!--        </select>-->
 
-        {{ stimulus[stimulus[7]] }}
-        <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>
-        <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>
+<!--        {{ stimulus[stimulus[7]] }}-->
+<!--        <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>-->
+<!--        <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>-->
 
-      </li>
+<!--      </li>-->
 
-      <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>
+      <input id="fileInput" type="file" ref="fileInputStimulus" @change="uploadStimulus" multiple="multiple">
 
-<!--TODO Here is my stuff-->
-<!--      <form method="post" :action="domain" enctype="multipart/form-data">-->
-<!--        <label>Simulation ID: </label>-->
-<!--        <input type="text" name="simulation_id">-->
-<!--        <br>-->
-<!--        <br>-->
-<!--        <label>MiSim Files: </label>-->
-<!--        <input type="file" name="files" multiple="multiple">-->
-<!--        <br>-->
-<!--        <br>-->
-<!--        <input type="submit">-->
-<!--      </form>-->
+<!--      <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>-->
 
+      <ul>
+        <li v-for="file in stimuli">{{file}}</li>
+      </ul>
+      
     </div>
 
     <div class="message-container">
@@ -377,17 +392,17 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
     </div>
 
-    <div v-if="this.name.length !== 0 && this.stimuli.length !== 0 && this.responses.length !== 0">
+<!--    <div v-if="this.name.length !== 0 && this.stimuli.length !== 0 && this.responses.length !== 0">-->
+    <div>
       <button class="new-button" @click="addScenario">Complete</button>
     </div>
 
-    <div v-else>
-      <div class="info">
-        <button class="not-ready-button" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</button>
-        <span v-if="showTooltip" class="info-text">A Name and at least one Stimulus and one Response is mandatory</span>
-      </div>
-
-    </div>
+<!--    <div v-else>-->
+<!--      <div class="info">-->
+<!--        <button class="not-ready-button" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</button>-->
+<!--        <span v-if="showTooltip" class="info-text">A Name and at least one Stimulus and one Response is mandatory</span>-->
+<!--      </div>-->
+<!--    </div>-->
 
   </div>
 
