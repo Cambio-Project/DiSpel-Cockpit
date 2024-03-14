@@ -53,6 +53,17 @@ export default {
     openEditor() {
       this.$router.push('/scenarioEditorSite');
     },
+    async startSimulation(simulationID) {
+      const res = await fetch("/api/startSimulation", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: simulationID
+        })
+      })
+      const body = await res.json();
+      console.log(body);
+      alert(body.status)
+    },
     // Remove one scenario 
     removeScenario(index) {
       this.$store.commit('removeScenario', index)
@@ -199,8 +210,9 @@ export default {
             <li v-for="scenario in scenarios" class="list-item">
 
               <h3>SimulationID: {{scenario.simulationID}}</h3>
+              <button @click="startSimulation(scenario.simulationID)">Start Simulation</button>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">-->
+              <!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">-->
 <!--                {{ 'None' }}-->
 <!--              </div>-->
 
