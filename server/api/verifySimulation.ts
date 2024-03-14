@@ -1,80 +1,44 @@
 import { MeasurementPoint } from "~/models/measurement-point";
 import { Predicate } from "~/models/predicate";
 import { ResponseSpecification } from "~/models/response-specification";
-import {id} from "postcss-selector-parser";
 
-const TBVERIFIER_URL = 'http://localhost:8083/monitor';
+//const TBVERIFIER_URL = 'http://localhost:8083/monitor';
+const TBVERIFIER_URL = 'http://localhost:5000/monitor';
 
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
 
-   /*  const body = await readBody(event)
-    const simulationPath = '/path';
+    const scenario = body.scenario;
+    const simulationID = scenario.simulationID;
+    const responses = scenario.responses;
     
-    const specification = 'TOOD_INPUT_SPECIFICATION';
-    const predicates: Predicate[] = [
+    const responseVerificationResultPromises = responses.map((response: any) => {
+        const specification = response[6];
+        const predicates = response[8];
 
-    ];
-
-    // Create Response Specification
-    const responseSpecification: ResponseSpecification = {
-        behavior_description: 'Description',
-        specification,
-        specification_type: 'psp',
-        predicates_info: predicates,
-        measurement_source: 'csv',
-        measurement_points: getMeasurementPointsFromPredicates(predicates),
-    } */
-
-    // Create Request
-    var formdata = new FormData();
-    let simulationID = body.simulationID
-
-    const DEMO_SPECIFICATION = {
-        "specification": " always(instance_dead(instance_count) since[0,3] instance_alive(instance_count)) ",
-        "specification_type":"mtl",
-        "predicates_info": [
-            {
-                "predicate_name":"instance_alive",
-                "predicate_comparison_value":"0",
-                "predicate_logic":"biggerEqual"
-            },
-            {
-                "predicate_name":"instance_dead",
-                "predicate_comparison_value":"0",
-                "predicate_logic":"biggerEqual"
+        const responseSpecification: ResponseSpecification = {
+            behavior_description: 'Description',
+            specification,
+            specification_type: 'tbv',
+            predicates_info: predicates,
+            measurement_source: "misim",
+            "remote-misim-address": "/app/simulations_results/" + simulationID,
+            measurement_points: getMeasurementPointsFromPredicates(predicates),
+            options: {
+                create_plots: false,
+                store_combined_misim_results: false,
             }
-        ],
-        "measurement_source": "misim",
-        "remote-misim-address": "/app/simulations_results/"+simulationID,
-        "measurement_points": [
-            {
-                "measurement_name":"instance_count",
-                "measurement_column":"gateway_InstanceCount"
-            }
-        ]
-    };
+        } 
+        return sendVerificationRequest(responseSpecification);
+    })
 
-    formdata.append("formula_json", JSON.stringify(DEMO_SPECIFICATION));
-    var requestOptions: RequestInit = {
-        method: 'POST',
-        body: formdata,
-        redirect: 'follow',
-    };
-    const response = await fetch(TBVERIFIER_URL, requestOptions);
-
-    // Result
-    const verificationResult = await response.json();
-    console.log(verificationResult);
+    const responseVerificationResults = await Promise.all(responseVerificationResultPromises);
 
     return {
-        result: verificationResult
+        result: responseVerificationResults,
     }
 })
-
-
-
 
 const getMeasurementPointsFromPredicates = (predicates: Predicate[]) => {
     return predicates.map(predicate => {
@@ -85,3 +49,44 @@ const getMeasurementPointsFromPredicates = (predicates: Predicate[]) => {
         return measurementPoint;
     });
 }
+
+const sendVerificationRequest = async (responseSepcification: ResponseSpecification) => {
+    const formdata = new FormData();
+    formdata.append("formula_json", JSON.stringify(responseSepcification));
+    const requestOptions: RequestInit = {
+        method: 'POST',
+        body: formdata,
+        redirect: 'follow',
+    };
+    const response = await fetch(TBVERIFIER_URL, requestOptions);
+
+    // Result
+    const verificationResult = await response.json();
+    return verificationResult.result === 'True';
+}
+
+
+/* const DEMO_SPECIFICATION = {
+    "specification": " always(instance_dead(instance_count) since[0,3] instance_alive(instance_count)) ",
+    "specification_type":"mtl",
+    "predicates_info": [
+        {
+            "predicate_name":"instance_alive",
+            "predicate_comparison_value":"0",
+            "predicate_logic":"biggerEqual"
+        },
+        {
+            "predicate_name":"instance_dead",
+            "predicate_comparison_value":"0",
+            "predicate_logic":"biggerEqual"
+        }
+    ],
+    "measurement_source": "misim",
+    "remote-misim-address": "/app/simulations_results/"+simulationID,
+    "measurement_points": [
+        {
+            "measurement_name":"instance_count",
+            "measurement_column":"gateway_InstanceCount"
+        }
+    ]
+}; */

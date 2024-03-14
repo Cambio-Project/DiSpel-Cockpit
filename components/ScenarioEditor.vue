@@ -51,7 +51,6 @@ export default {
       // this.$store.commit('setStimuli', this.stimuli);
       // this.$store.commit('setResponses', this.responses);
       // this.$store.commit('addScenario');
-      // this.$router.push('/scenariosSite');
 
       const body = {
         name: this.name,
@@ -61,14 +60,12 @@ export default {
         responses: this.responses
       }
 
-      console.log(body)
-
       const res = await fetch("/api/saveScenario", {
         method: "POST",
         body: JSON.stringify(body)
       })
 
-      console.log(res)
+      this.$router.push('/scenariosSite');
 
     },
     //Changes all target logics to the same one
@@ -85,13 +82,27 @@ export default {
       this.stimuli = []
       this.loadedFiles = []
       for (const file of fileInput.files) {
-        const jsonAsText = await file.text()
-        const json = JSON.parse(jsonAsText)
         const filename = file.name
-        const tmp = {
-          [filename]: json
+        if (filename.split(".").pop() === "json"){
+          const jsonAsText = await file.text()
+          const json = JSON.parse(jsonAsText)
+          const tmp = {
+            [filename]: json
+          }
+          this.stimuli.push(tmp)
+
+        } else {
+          const formdata = new FormData()
+          formdata.append(filename, file)
+          await fetch("/api/uploadAdditionalStimuliFile", {
+            method: "POST",
+            body: formdata
+          })
+          const tmp = {
+            [filename]: "external"
+          }
+          this.stimuli.push(tmp)
         }
-        this.stimuli.push(tmp)
         this.loadedFiles.push(filename)
       }
     },
