@@ -253,9 +253,8 @@ export default {
                 <h4 class="left">
                 Responses:
                 </h4 >
-
-              <span :style="{ color: getVerificationTextColor(scenario, 0)}">
-                {{scenario.responses[0]}}
+              <span v-for="(response, index) in scenario.responses" :key="index" :style="{ color: getVerificationTextColor(scenario, index)}">
+                {{response}}
               </span>
 <!--                <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">-->
 <!--                  {{ index +1}}.-->
