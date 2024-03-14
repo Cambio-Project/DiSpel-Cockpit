@@ -2,19 +2,34 @@
   "scope": {
     "type": "Globally",
     "q_event": {
-      "name": "A(a)",
-      "specification": ""
+      "name": "low_power(example-service_1_I0_CPU_Utilization)",
+      "specification": {
+        "predicateName": "low_power",
+        "predicateLogic": "smaller",
+        "predicateComparisonValue": "400",
+        "measurementSource": "example-service_1_I0_CPU_Utilization"
+      }
     },
     "r_event": {
-      "name": "B(b)",
-      "specification": ""
+      "name": "large_workload(example-service_1_I0_CPU_Utilization)",
+      "specification": {
+        "predicateName": "large_workload",
+        "predicateLogic": "biggerEqual",
+        "predicateComparisonValue": "100",
+        "measurementSource": "example-service_1_I0_CPU_Utilization"
+      }
     }
   },
   "pattern": {
     "type": "Universality",
     "p_event": {
-      "name": "A(a)",
-      "specification": ""
+      "name": "cpu_temperature_rises(example-service_1_I1_CPU_Utilization)",
+      "specification": {
+        "predicateName": "cpu_temperature_rises",
+        "predicateLogic": "trendUpwardStrict",
+        "predicateComparisonValue": "200",
+        "measurementSource": "example-service_1_I1_CPU_Utilization"
+      }
     },
     "chained_events": [],
     "pattern_specifications": {

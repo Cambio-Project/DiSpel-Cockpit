@@ -5,12 +5,22 @@
   "pattern": {
     "type": "ResponseChain1N",
     "p_event": {
-      "name": "A(a)",
-      "specification": ""
+      "name": "low_power(example-service_1_I0_CPU_Utilization)",
+      "specification": {
+        "predicateName": "low_power",
+        "predicateLogic": "smaller",
+        "predicateComparisonValue": "400",
+        "measurementSource": "example-service_1_I0_CPU_Utilization"
+      }
     },
     "s_event": {
-      "name": "B(b)",
-      "specification": ""
+      "name": "large_workload(example-service_1_I0_CPU_Utilization)",
+      "specification": {
+        "predicateName": "large_workload",
+        "predicateLogic": "biggerEqual",
+        "predicateComparisonValue": "100",
+        "measurementSource": "example-service_1_I0_CPU_Utilization"
+      }
     },
     "chained_events": []
   },

@@ -2,15 +2,25 @@
   "scope": {
     "type": "AfterQ",
     "q_event": {
-      "name": "P",
-      "specification": ""
+      "name": "third_request(example-service_1_I2_Requests_InSystem)",
+      "specification": {
+        "predicateName": "third_request",
+        "predicateLogic": "equal",
+        "predicateComparisonValue": "3",
+        "measurementSource": "example-service_1_I2_Requests_InSystem"
+      }
     }
   },
   "pattern": {
     "type": "BoundedExistence",
     "p_event": {
-      "name": "S",
-      "specification": ""
+      "name": "low_power(example-service_1_I0_CPU_Utilization)",
+      "specification": {
+        "predicateName": "low_power",
+        "predicateLogic": "smaller",
+        "predicateComparisonValue": "400",
+        "measurementSource": "example-service_1_I0_CPU_Utilization"
+      }
     },
     "chained_events": [],
     "pattern_specifications": {
