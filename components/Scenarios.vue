@@ -45,6 +45,7 @@ export default {
     return{
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
+      verificationResults: {}
   };
 },
   methods:{
@@ -52,9 +53,43 @@ export default {
     openEditor() {
       this.$router.push('/scenarioEditorSite');
     },
+    async startSimulation(simulationID) {
+      const res = await fetch("/api/startSimulation", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: simulationID
+        })
+      })
+      const body = await res.json();
+      console.log(body);
+      alert(body.status)
+    },
     // Remove one scenario 
     removeScenario(index) {
       this.$store.commit('removeScenario', index)
+    },
+    async verifyScenario(scenario) {
+      const response = await useFetch("/api/verifySimulation", {
+        method: "POST",
+        body: JSON.stringify({
+          scenario,
+        })
+      });
+      const responsePayload = response.data.value.result;
+      this.verificationResults[scenario._id] = responsePayload;
+    },
+    getVerificationTextColor(scenario, responseIndex) {
+      const verificationResult = this.verificationResults[scenario._id];
+      if(verificationResult) {
+        if(verificationResult[responseIndex]) {
+          return 'green';
+        } else {
+          return 'red';
+        }
+      } else {
+        return 'black';
+      }
+      //return verificationResult ? verificationResult[responseIndex] : null;
     },
     //Changes all target logics to the same one
     changeAllTargets() {
@@ -175,8 +210,9 @@ export default {
             <li v-for="scenario in scenarios" class="list-item">
 
               <h3>SimulationID: {{scenario.simulationID}}</h3>
+              <button @click="startSimulation(scenario.simulationID)">Start Simulation</button>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">-->
+              <!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">-->
 <!--                {{ 'None' }}-->
 <!--              </div>-->
 
@@ -218,8 +254,9 @@ export default {
                 Responses:
                 </h4 >
 
-              {{scenario.responses[0]}}
-
+              <span :style="{ color: getVerificationTextColor(scenario, 0)}">
+                {{scenario.responses[0]}}
+              </span>
 <!--                <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">-->
 <!--                  {{ index +1}}.-->
 <!--                  <select v-model="response[7]" class="select-box">-->
@@ -231,6 +268,7 @@ export default {
 <!--                </li>-->
 
               <div>
+                <button class="verify-button" @click="verifyScenario(scenario)">Verify Scenario</button>
                 <button class="remove-button" @click="removeScenario(index)">Remove Scenario</button>
                 <button class="file-download-button" @click="downloadJSON(index)">Download as JSON</button>
               </div>
@@ -420,6 +458,24 @@ body {
 }
 .remove-button:hover {
   background-color: rgb(160, 40, 40);
+}
+
+.verify-button {
+  background-color: rgb(65, 219, 65);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin-top: 20px;
+  margin-right: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.verify-button:hover {
+  background-color: rgb(40, 160, 40);
 }
 
 .left{
