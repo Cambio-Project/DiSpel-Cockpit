@@ -7,7 +7,7 @@ let TQPropRefinerActive = ref(false);
 
 const config = useRuntimeConfig()
 
-let src = computed(() => "http://"+config.public.tqPropRefinerDomain+":"+config.public.tqPropRefinerPort+"/requirement-refinement/shortcut?file-address=data/simulationResults&sim_id="+simId.value+"&pattern="+pattern.value)
+let src = computed(() => "http://"+config.public.tqPropRefinerDomain+":"+config.public.tqPropRefinerPort+"/requirement-refinement/shortcut?file-address=assets/simulation_results&sim_id="+simId.value+"&pattern="+pattern.value)
 
 </script>
 
