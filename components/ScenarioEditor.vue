@@ -85,13 +85,27 @@ export default {
       this.stimuli = []
       this.loadedFiles = []
       for (const file of fileInput.files) {
-        const jsonAsText = await file.text()
-        const json = JSON.parse(jsonAsText)
         const filename = file.name
-        const tmp = {
-          [filename]: json
+        if (filename.split(".").pop() === "json"){
+          const jsonAsText = await file.text()
+          const json = JSON.parse(jsonAsText)
+          const tmp = {
+            [filename]: json
+          }
+          this.stimuli.push(tmp)
+
+        } else {
+          const formdata = new FormData()
+          formdata.append(filename, file)
+          await fetch("/api/uploadAdditionalStimuliFile", {
+            method: "POST",
+            body: formdata
+          })
+          const tmp = {
+            [filename]: "external"
+          }
+          this.stimuli.push(tmp)
         }
-        this.stimuli.push(tmp)
         this.loadedFiles.push(filename)
       }
     },
