@@ -14,15 +14,23 @@ export default defineEventHandler(async (event) => {
 
     for (const stimuli of stimuliArray) {
         const fileName = Object.keys(stimuli)[0]
-        const fileContent = stimuli[fileName]
 
-        await fs.promises.writeFile(fileName, JSON.stringify(fileContent));
+        if (fileName.split(".").pop() === "json"){
+            const fileContent = stimuli[fileName]
 
-        const file = await fs.promises.readFile("./"+fileName)
-        const blob = new Blob([file], { type: 'application/octet-stream' });
+            await fs.promises.writeFile(fileName, JSON.stringify(fileContent));
 
-        formData.append("files", blob, fileName)
-        await fs.promises.unlink(fileName);
+            const file = await fs.promises.readFile("./"+fileName)
+            const blob = new Blob([file], { type: 'application/octet-stream' });
+            formData.append("files", blob, fileName)
+            await fs.promises.unlink(fileName);
+
+
+        } else {
+            const file = await fs.promises.readFile("./uploaded/"+fileName)
+            const blob = new Blob([file], { type: 'application/octet-stream' });
+            formData.append("files", blob, fileName)
+        }
     }
 
     formData.append("simulation_id", simulationID)

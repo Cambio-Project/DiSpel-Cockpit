@@ -51,7 +51,6 @@ export default {
       // this.$store.commit('setStimuli', this.stimuli);
       // this.$store.commit('setResponses', this.responses);
       // this.$store.commit('addScenario');
-      // this.$router.push('/scenariosSite');
 
       const body = {
         name: this.name,
@@ -61,14 +60,12 @@ export default {
         responses: this.responses
       }
 
-      console.log(body)
-
       const res = await fetch("/api/saveScenario", {
         method: "POST",
         body: JSON.stringify(body)
       })
 
-      console.log(res)
+      this.$router.push('/scenariosSite');
 
     },
     //Changes all target logics to the same one
