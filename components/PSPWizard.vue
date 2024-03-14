@@ -225,7 +225,7 @@ export default {
       changedPredicateComparisonValue: "",
       changedEventId: "",
       predicateLogicOptions: ['equal', 'smallerEqual', 'smaller', 'biggerEqual', 'bigger', 'trendUpward', 'trendUpwardStrict', 'trendDownward', 'trendDownwardStrict',],
-      measurementSourceOptions: ["example-service_1_I0_CPU_Utilization", "example-service_1_I1_CPU_Utilization", "example-service_1_I2_Requests_InSystem"],
+      measurementSourceOptions: ["DB_WRITE_1_ResponseTimes","DB_READ_1_ResponseTimes", "AllResponseTimes", "NL_latency"],
       scopeOptions: ["Globally", "BeforeR", "AfterQ", "BetweenQandR", "AfterQUntilR"],
       occurrenceOptions: ["SteadyState", "MinimumDuration", "MaximumDuration", "Recurrence", "Universality", "Absence", "Existence", "BoundedExistence", "TransientState"],
       orderOptions: ["Response", "ResponseChain1N", "ResponseChainN1", "ResponseInvariance", "Precedence", "PrecedenceChain1N", "PrecedenceChainN1", "Until"],
@@ -322,6 +322,8 @@ export default {
     onMounted(async () => {
       const response = await fetch("/api/allEvents");
       state.events = await response.json();
+
+      console.log($store.state.stimuli)
     });
 
     return {
