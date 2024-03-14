@@ -40,7 +40,7 @@ services:
       - dashboardNetwork
     pull_policy: always
     volumes:
-      - ./data/simulationResults:/app/simulationResults
+      - ./data/simulationResults:/app/simulations_results
 
   misim:
     image: ghcr.io/cambio-project/misim:latest

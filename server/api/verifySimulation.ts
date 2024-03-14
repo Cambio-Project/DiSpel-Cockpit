@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
             }
         ],
         "measurement_source": "misim",
-        "remote-misim-address": "/app/simulationResults/"+simulationID,
+        "remote-misim-address": "/app/simulations_results/"+simulationID,
         "measurement_points": [
             {
                 "measurement_name":"instance_count",
