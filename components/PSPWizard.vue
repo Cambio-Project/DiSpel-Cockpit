@@ -218,6 +218,12 @@ export default {
       customPredicateLogic: "",
       customMeasurementSource: "",
       customPredicateComparisonValue: "",
+      eventToChange: "",
+      changedPredicateName: "",
+      changedPredicateLogic: "",
+      changedMeasurementSource: "",
+      changedPredicateComparisonValue: "",
+      changedEventId: "",
       predicateLogicOptions: ['equal', 'smallerEqual', 'smaller', 'biggerEqual', 'bigger', 'trendUpward', 'trendUpwardStrict', 'trendDownward', 'trendDownwardStrict',],
       measurementSourceOptions: ["example-service_1_I0_CPU_Utilization", "example-service_1_I1_CPU_Utilization", "example-service_1_I2_Requests_InSystem"],
       scopeOptions: ["Globally", "BeforeR", "AfterQ", "BetweenQandR", "AfterQUntilR"],
@@ -408,8 +414,89 @@ export default {
         this.customMeasurementSource = "";
       }
     },
+    eventToChangeSelected() {
+      setTimeout(this.setEventChangeFields,200)
+    },
+    async setEventChangeFields() {
+      /*
+      // get the event id from the mongodb database
+      const body = {
+        event_name: this.customPredicateName + "(" + this.customMeasurementSource + ")",
+        predicate_name: this.customPredicateName,
+        predicate_logic: this.customPredicateLogic,
+        predicate_comparison_value: this.customPredicateComparisonValue,
+        measurement_source: this.customMeasurementSource,
+      }
+
+      const response = await fetch("/api/getEventByProperties", {
+        method: "POST",
+        body: JSON.stringify(body)
+      })
+
+      console.log(response);
+
+      this.changedEventId = await response.json();
+       */
+
+      this.changedEventId = this.eventToChange._id;
+
+      this.changedPredicateName = this.eventToChange.predicate_name
+      this.changedPredicateLogic = this.eventToChange.predicate_logic
+      this.changedPredicateComparisonValue = this.eventToChange.predicate_comparison_value
+      this.changedMeasurementSource = this.eventToChange.measurement_source
+
+      this.forceRerender()
+      this.handleInputChange()
+    },
+    async changeEvent() {
+      // write the event to the mongodb database
+      const body = {
+        _id: this.eventToChange._id,
+        event_name: this.changedPredicateName + "(" + this.changedMeasurementSource + ")",
+        predicate_name: this.changedPredicateName,
+        predicate_logic: this.changedPredicateLogic,
+        predicate_comparison_value: this.changedPredicateComparisonValue,
+        measurement_source: this.changedMeasurementSource,
+      }
+      const res = await fetch("/api/changeEvent", {
+        method: "POST",
+        body: JSON.stringify(body)
+      })
+
+      // also add this event to the local event array
+      const response = await fetch("/api/allEvents");
+      this.state.events = await response.json();
+
+      // clear the input fields after adding the custom event
+      this.changedPredicateName = "";
+      this.changedPredicateLogic = "";
+      this.changedPredicateComparisonValue = "";
+      this.changedMeasurementSource = "";
+    },
+    async deleteEvent() {
+      // delete the event from the mongodb database
+      const body = {
+        _id: this.eventToChange._id
+      }
+
+      // send a POST request to delete the event
+      const deleteResponse = await fetch("/api/deleteEvent", {
+        method: "POST",
+        body: JSON.stringify(body)
+      })
+
+      // also add this event to the local event array
+      const response = await fetch("/api/allEvents");
+      this.state.events = await response.json();
+
+      // clear the input fields after adding the custom event
+      this.changedPredicateName = "";
+      this.changedPredicateLogic = "";
+      this.changedPredicateComparisonValue = "";
+      this.changedMeasurementSource = "";
+    },
     addProbability() {
-      // Add the custom probabilitiy
+      // Add the custom probabilitity
       this.pspSpecification.probability.push()
     },
     handleProbabilityChange() {
@@ -950,6 +1037,33 @@ export default {
           <button class="add-event-button event-button" @click="addCustomEvent">Add Custom Event</button>
         </div>
       </div>
+
+      <div class="grouping-container">
+        <div class="selection-group">
+          <label class="title">Edit an Event:</label> <br><br>
+          <label class="subtitle">Choose Event: </label>
+          <select v-model="this.eventToChange" @input="eventToChangeSelected">
+            <option v-for="event of state.events" :key="event.event_name" :value="event">{{ event.predicate_name }}</option>
+          </select> <br><br>
+          <div v-if="this.eventToChange !== ''">
+            <label class="subtitle">Predicate Name: </label>
+            <input v-model="changedPredicateName" type="text" @input="handleInputChange" class="select-event-box" /> <br><br>
+            <label class="subtitle">Predicate Logic: </label>
+            <select v-model="changedPredicateLogic" @input="handleInputChange" class="select-box">
+              <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{ logic.label }}</option>
+            </select> <br><br>
+            <label class="subtitle">Measurement Source: </label>
+            <select v-model="changedMeasurementSource" @input="handleInputChange" class="select-box">
+              <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{ source }}</option>
+            </select> <br><br>
+            <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison Value: </label>
+            <input v-model="changedPredicateComparisonValue" type="text" @input="handleInputChange" :class="{ 'grayed-out': comparisonValueShouldGrayOut }" class="select-event-box" /> <br><br>
+            <button class="add-event-button event-button" @click="changeEvent">Save Changes</button>
+            <button class="delete-event-button event-button" @click="deleteEvent">Delete this event</button>
+          </div>
+        </div>
+      </div>
+
     </div>
     <div class="selection-container">
       <div class="message-container">
@@ -1629,6 +1743,15 @@ export default {
 
 .add-event-button:hover {
   background-color: #3d8d41;
+}
+
+.delete-event-button {
+  background-color: #da2222;
+  color: white;
+}
+
+.delete-event-button:hover {
+  background-color: #a11414;
 }
 
 .chained-event-section {

@@ -6,7 +6,8 @@ export default defineEventHandler(async (event) => {
 
     var body = await readBody(event)
     body = JSON.parse(body)
-    //body["simulationID"] = crypto.randomUUID()
+
+    body["_id"] = crypto.randomUUID()
 
     try {
         await Event.create(body)

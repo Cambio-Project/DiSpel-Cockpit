@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 
 const EventSchema = new Schema({
+    _id: String,
     event_name: String,
     predicate_name: String,
     predicate_logic: String,
