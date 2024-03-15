@@ -218,6 +218,7 @@ export default {
       customPredicateLogic: "",
       customMeasurementSource: "",
       customPredicateComparisonValue: "",
+      isCustomEventExpanded: false,
       eventToChange: "",
       changedPredicateName: "",
       changedPredicateLogic: "",
@@ -312,6 +313,13 @@ export default {
           this.customPredicateLogic === "smaller" ||
           this.customPredicateLogic === "smallerEqual" ||
           this.customPredicateLogic === "equal");
+    },
+    comparisonValueShouldGrayOutEdit() {
+      return !(this.changedPredicateLogic === "bigger" ||
+          this.changedPredicateLogic === "biggerEqual" ||
+          this.changedPredicateLogic === "smaller" ||
+          this.changedPredicateLogic === "smallerEqual" ||
+          this.changedPredicateLogic === "equal");
     },
   },
   setup() {
@@ -415,6 +423,13 @@ export default {
         this.customPredicateComparisonValue = "";
         this.customMeasurementSource = "";
       }
+    },
+    handleComparisonInputChange() {
+      // remove non-numeric characters from the input
+      this.customPredicateComparisonValue = this.customPredicateComparisonValue.replace(/\D/g, '');
+      this.changedPredicateComparisonValue = this.changedPredicateComparisonValue.replace(/\D/g, '');
+
+      this.handleInputChange();
     },
     eventToChangeSelected() {
       setTimeout(this.setEventChangeFields,200)
@@ -869,14 +884,22 @@ export default {
       this.formulas.push(number)
 
       // add predicates to commit
+      var pl = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
+      const response = await useFetch("/api/getPSPMapping", {
+        method: "POST",
+        body: pl
+      })
+      const responsePayload = await response.data.value.result
       let eventArray = [];
       this.state.events.forEach(event => {
-        eventArray.push({
-          predicate_name: event.predicate_name,
-          predicate_logic: event.predicate_logic,
-          measurement_source: event.measurement_source,
-          predicate_comparison_value: event.predicate_comparison_value
-        });
+          if (responsePayload.payload.mapping.includes(event.predicate_name)) {
+            eventArray.push({
+              predicate_name: event.predicate_name,
+              predicate_logic: event.predicate_logic,
+              measurement_source: event.measurement_source,
+              predicate_comparison_value: event.predicate_comparison_value
+            });
+          }
       });
       this.formulas.push(eventArray)
 
@@ -1022,8 +1045,8 @@ export default {
       </div>
 
       <div class="grouping-container">
-        <div class="selection-group">
-          <label class="title">Add Custom Event:</label> <br><br>
+        <br><label class="title">Add Custom Event:</label> <br><br>
+        <div class="selection-group" v-show="isCustomEventExpanded">
           <label class="subtitle">Predicate Name: </label>
           <input v-model="customPredicateName" type="text" @input="handleInputChange" class="select-event-box" /> <br><br>
           <label class="subtitle">Predicate Logic: </label>
@@ -1035,8 +1058,14 @@ export default {
             <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{ source }}</option>
           </select> <br><br>
           <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison Value: </label>
-          <input v-model="customPredicateComparisonValue" type="text" @input="handleInputChange" :class="{ 'grayed-out': comparisonValueShouldGrayOut }" class="select-event-box" /> <br><br>
+          <input v-model="customPredicateComparisonValue" type="text" @input="handleComparisonInputChange" :class="{ 'grayed-out': comparisonValueShouldGrayOut }" class="select-event-box" /> <br><br>
           <button class="add-event-button event-button" @click="addCustomEvent">Add Custom Event</button>
+        </div>
+        <div class="expand-icon" v-show="!isCustomEventExpanded" @click="isCustomEventExpanded = !isCustomEventExpanded">
+          <img src="public/expand-icon.png" alt="Expand Icon" style="width: 3vh; height: 3vh;" class="expand-icon" />
+        </div>
+        <div class="expand-icon" v-show="isCustomEventExpanded" @click="isCustomEventExpanded = !isCustomEventExpanded">
+          <img src="public/reverse-expand-icon.png" alt="Expand Icon" style="width: 3vh; height: 3vh;" class="expand-icon" />
         </div>
       </div>
 
@@ -1058,8 +1087,8 @@ export default {
             <select v-model="changedMeasurementSource" @input="handleInputChange" class="select-box">
               <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{ source }}</option>
             </select> <br><br>
-            <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison Value: </label>
-            <input v-model="changedPredicateComparisonValue" type="text" @input="handleInputChange" :class="{ 'grayed-out': comparisonValueShouldGrayOut }" class="select-event-box" /> <br><br>
+            <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }">Comparison Value: </label>
+            <input v-model="changedPredicateComparisonValue" type="text" @input="handleComparisonInputChange" :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }" class="select-event-box" /> <br><br>
             <button class="add-event-button event-button" @click="changeEvent">Save Changes</button>
             <button class="delete-event-button event-button" @click="deleteEvent">Delete this event</button>
           </div>
@@ -1568,10 +1597,9 @@ export default {
   opacity: 0.5;
 }
 
-.selection-group .title {
+.title {
   font-weight: bold;
 }
-
 .grouping-container {
   border: 1px solid #ddd;
   border-radius: 1vw;
@@ -1702,6 +1730,10 @@ export default {
 
 .message-container p {
   font-weight: bold;
+}
+
+.expand-icon {
+  cursor: pointer;
 }
 
 .button {
