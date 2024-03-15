@@ -204,7 +204,7 @@ export default {
         <div class="list-content">
 <!--          <div v-if="{scenarios}">-->
           <div v-if="state.scenarios">
-
+            <ul>
 <!--            <li v-for="(scenario, index) in scenarios" :key="index" class="list-item">-->
             <li v-for="scenarios in state.scenarios" class="list-item">
             <li v-for="scenario in scenarios" class="list-item">
@@ -275,6 +275,7 @@ export default {
                 
               </li>
             </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -485,7 +486,6 @@ body {
 }
 
 .select-box {
-  width: text-align;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 8px;
