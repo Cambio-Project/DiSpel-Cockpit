@@ -214,6 +214,7 @@ export default {
           measurement_source: "resp_time_high"
         }
       } **/],
+      simID: this.$route.query.simID,
       customPredicateName: "",
       customPredicateLogic: "",
       customMeasurementSource: "",
@@ -330,8 +331,6 @@ export default {
     onMounted(async () => {
       const response = await fetch("/api/allEvents");
       state.events = await response.json();
-
-      console.log($store.state.stimuli)
     });
 
     return {
@@ -855,9 +854,20 @@ export default {
 
       this.forceRerender()
     },
-    // Save the mapping to the Vue store and direct to the Scenario Editor
+    // Save the mapping to the MongoDB Database and direct to the Scenario Editor
     async confirm() {
-      var index;
+      let index;
+      let responseObject = {
+        SEL: '',
+        LTL:'',
+        MTL: '',
+        Prism: '',
+        Quantitative_Prism: '',
+        TBV_untimed: '',
+        TBV_timed: '',
+        target_logic: this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic),
+        predicates_info: []
+      };
 
       // add all mappings to the commit
       for (index in this.targetLogicOptions) {
@@ -873,15 +883,33 @@ export default {
 
         // if mapping is returned, display it, else display the error message
         if (responsePayload.payload.mapping) {
-          this.formulas.push(responsePayload.payload.mapping);
-        } else {
-          this.formulas.push("")
+          switch (this.targetLogicOptions[index]) {
+            case 'SEL':
+              responseObject.SEL = responsePayload.payload.mapping;
+              break;
+            case 'LTL':
+              responseObject.LTL = responsePayload.payload.mapping;
+              break;
+            case 'MTL':
+              responseObject.MTL = responsePayload.payload.mapping;
+              break;
+            case 'Prism':
+              responseObject.Prism = responsePayload.payload.mapping;
+              break;
+            case 'Quantitative Prism':
+              responseObject.Quantitative_Prism = responsePayload.payload.mapping;
+              break;
+            case 'TBV (untimed)':
+              responseObject.TBV_untimed = responsePayload.payload.mapping;
+              break;
+            case 'TBV (timed)':
+              responseObject.TBV_timed = responsePayload.payload.mapping;
+              break;
+            default:
+              console.log('This target logic doesnt exist');
+          }
         }
       }
-
-      // add target logic index to commit
-      var number = this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic)
-      this.formulas.push(number)
 
       // add predicates to commit
       var pl = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
@@ -901,17 +929,22 @@ export default {
             });
           }
       });
-      this.formulas.push(eventArray)
+      responseObject.predicates_info = eventArray;
 
-      if (this.$store.state.outputType === 'Stimulus') {
-        this.$store.commit('addStimulus', this.formulas)
-      }
+      const res = await fetch("/api/setScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: "responses",
+          fieldValue: responseObject
+        })
+      })
 
-      if (this.$store.state.outputType === 'Response') {
-        this.$store.commit('addResponse', this.formulas)
-      }
+      const body = await res.json()
+      console.log("Success: "+body.success);
+      console.log("Message: "+body.message);
 
-      this.$router.push('/scenarioeditorSite');
+      this.$router.push('/scenarioeditorSite?='+this.simID);
     },
     forceRerender() {
       this.componentKey += 1;
@@ -922,7 +955,8 @@ export default {
 </script>
 
 <template :key="componentKey">
-  <h1>PSPWizard as {{ this.$store.state.outputType  }}</h1>
+  <h1>PSPWizard</h1>
+  {{ this.simID }}
   <div class="page-container">
     <div class="selection-container">
       <div class="file-upload-container">
