@@ -12,7 +12,19 @@ async function test() {
   })
 
   console.log(JSON.stringify(response.data.value!))
+}
 
+async function dbTest(){
+  const res = await fetch("/api/setScenarioField", {
+    method: "POST",
+    body: JSON.stringify({
+      simulationID: "3fdb8f0b-5f17-49c2-be26-fa19329367fd",
+      fieldName: "stimuli",
+      fieldValue: "Endpoint Test"
+    })
+  })
+  const body = await res.json()
+  console.log(body)
 }
 
 
@@ -21,6 +33,8 @@ const dbMissing = true
 </script>
 
 <template>
+
+  <button @click="dbTest">CLick me Test</button>
 
   <form method="post" action="http://localhost:8084/simulate/upload" enctype="multipart/form-data" target="_blank">
     <input type="file" name="files" multiple="multiple">
