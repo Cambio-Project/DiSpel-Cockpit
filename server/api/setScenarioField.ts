@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     const fieldValue = body.fieldValue
 
     try {
-        const scenario = await Scenario.findOne({ simulationID });
+        const scenario = await Scenario.findOne({ simulationID: simulationID });
 
         if (!scenario) {
             return {
@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
         console.log(e)
         return {
             "success": false,
+            "message": "Error updating the entry"
         };
     }
 
