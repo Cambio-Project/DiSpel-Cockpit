@@ -331,8 +331,6 @@ export default {
     onMounted(async () => {
       const response = await fetch("/api/allEvents");
       state.events = await response.json();
-
-      console.log($store.state.stimuli)
     });
 
     return {
@@ -856,9 +854,10 @@ export default {
 
       this.forceRerender()
     },
-    // Save the mapping to the Vue store and direct to the Scenario Editor
+    // Save the mapping to the MongoDB Database and direct to the Scenario Editor
     async confirm() {
-      var index;
+      let index;
+      let responseEntry = [];
 
       // add all mappings to the commit
       for (index in this.targetLogicOptions) {
@@ -874,15 +873,16 @@ export default {
 
         // if mapping is returned, display it, else display the error message
         if (responsePayload.payload.mapping) {
-          this.formulas.push(responsePayload.payload.mapping);
+          //this.formulas.push(responsePayload.payload.mapping);
+          responseEntry.push(responsePayload.payload.mapping);
         } else {
-          this.formulas.push("")
+          responseEntry.push("")
         }
       }
 
       // add target logic index to commit
       var number = this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic)
-      this.formulas.push(number)
+      responseEntry.push(number)
 
       // add predicates to commit
       var pl = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
@@ -902,17 +902,18 @@ export default {
             });
           }
       });
-      this.formulas.push(eventArray)
+      responseEntry.push(eventArray)
 
-      if (this.$store.state.outputType === 'Stimulus') {
-        this.$store.commit('addStimulus', this.formulas)
-      }
+      const res = await fetch("/api/setScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: "responses",
+          fieldValue: responseEntry
+        })
+      })
 
-      if (this.$store.state.outputType === 'Response') {
-        this.$store.commit('addResponse', this.formulas)
-      }
-
-      this.$router.push('/scenarioeditorSite');
+      this.$router.push('/scenarioeditorSite?='+this.simID);
     },
     forceRerender() {
       this.componentKey += 1;

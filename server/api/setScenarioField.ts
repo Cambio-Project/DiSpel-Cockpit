@@ -16,15 +16,29 @@ export default defineEventHandler(async (event) => {
     const fieldValue = body.fieldValue
 
     try {
-        const updatedScenario = await Scenario.updateOne({ simulationID: simulationID }, {
-            [fieldName] : fieldValue
-        });
+        const scenario = await Scenario.findOne({ simulationID });
 
-        if (!updatedScenario.acknowledged) {
+        if (!scenario) {
             return {
-                "success": false,
-            }
+                success: false,
+                message: "Scenario not found",
+            };
         }
+
+        // check if the field exists and if it's an array
+        // @ts-ignore
+        if (fieldName in scenario && Array.isArray(scenario[fieldName])) {
+            // append the new value to the array
+            // @ts-ignore
+            scenario[fieldName].push(fieldValue);
+        } else {
+            // if the field doesn't exist or is not an array, update it directly
+            // @ts-ignore
+            scenario[fieldName] = fieldValue;
+        }
+
+        await scenario.save();
+
     } catch (e) {
         console.log(e)
         return {
