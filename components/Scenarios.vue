@@ -49,9 +49,15 @@ export default {
   };
 },
   methods:{
-    // Open the ScenarioEditor
-    openEditor() {
-      this.$router.push('/scenarioEditorSite');
+    // Open the ScenarioEditor with to create a new scenario
+    async openEditor() {
+      const res = await fetch("/api/initScenario", {
+      method: "POST"
+      })
+    const body = await res.json()
+    console.log(body)
+
+    this.$router.push('/scenarioEditorSite/?simID='+ body.simulationID);
     },
     async startSimulation(simulationID) {
       const res = await fetch("/api/startSimulation", {
@@ -64,7 +70,12 @@ export default {
       console.log(body);
       alert(body.status)
     },
-    // Remove one scenario 
+    // Open the ScenarioEditor to edit a scenario
+    async editScenario(simID) {
+      this.$router.push('/scenarioEditorSite/?simID='+ simID);
+    },
+    // Remove one scenario
+    //TODO 
     removeScenario(index) {
       this.$store.commit('removeScenario', index)
     },
@@ -92,14 +103,10 @@ export default {
       //return verificationResult ? verificationResult[responseIndex] : null;
     },
     //Changes all target logics to the same one
+    //TODO
     changeAllTargets() {
-      this.scenarios.forEach(scenario => {
-        scenario[3].forEach(stimulus => {
-          stimulus[7]= this.target;
-        })
-        scenario[4].forEach(response => {
-          response[7]= this.target;
-        })
+      state.scenarios.responses.forEach(response => {
+          response.target_logic= this.target;
       });
     },
     //Download a single scenario as json
@@ -145,11 +152,6 @@ export default {
       document.body.removeChild(a);
     },
   },
-  computed:{
-    scenarios(){
-      return this.$store.state.scenarios
-    },
-  },
   // async mounted() {
   //   const res = await fetch("/api/allScenarios")
   //   this.scenariosNew = await res.json();
@@ -173,7 +175,6 @@ export default {
 </script>
 
 <template>
-
   <!--Headline-->
   <div class ="headline-frame">
     <h1 class="headline"> Scenarios </h1>
@@ -202,37 +203,43 @@ export default {
     
       <div class="list-container">
         <div class="list-content">
-<!--          <div v-if="{scenarios}">-->
           <div v-if="state.scenarios">
             <ul>
-<!--            <li v-for="(scenario, index) in scenarios" :key="index" class="list-item">-->
+
             <li v-for="scenarios in state.scenarios" class="list-item">
-            <li v-for="scenario in scenarios" class="list-item">
+            <li v-for="(scenario, index) in scenarios" class="list-item">
 
-              <h3>SimulationID: {{scenario.simulationID}}</h3>
-              <button @click="startSimulation(scenario.simulationID)">Start Simulation</button>
+              
 
-              <!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">-->
-<!--                {{ 'None' }}-->
-<!--              </div>-->
+              <div v-if="scenario.category == 'None' " class="category-frame-0">
+                {{ 'None' }}
+              </div>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'Exploratory' " class="category-frame-1">-->
-<!--                {{ 'Exploratory' }}-->
-<!--              </div>-->
+              <div v-if="scenario.category == 'Exploratory' " class="category-frame-1">
+                {{ 'Exploratory' }}
+             </div>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'Growth' " class="category-frame-2">-->
-<!--                {{ 'Growth' }}-->
-<!--              </div>-->
+             <div v-if="scenario.category == 'Growth' " class="category-frame-2">
+                {{ 'Growth' }}
+              </div>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'UseCase' " class="category-frame-3">-->
-<!--                {{ 'Use Case' }}-->
-<!--              </div>-->
+              <div v-if="scenario.category == 'UseCase' " class="category-frame-3">
+                {{ 'Use Case' }}
+              </div>
 
-<!--              <h3>-->
-<!--                {{ index +1}}. {{ scenario[Object.keys(scenario)[0]] }}-->
-<!--              </h3>-->
+              <h3> {{ index +1}}. {{ scenario.name}} </h3>
+              <div>
+                {{"SimulationID: " + scenario.simulationID }}
+              </div>
 
-<!--              {{ scenario[Object.keys(scenario)[2]] }}-->
+              <div>
+                {{ scenario.description }}
+              </div>
+
+              <div>
+                <button @click="startSimulation(scenario.simulationID)">Start Simulation</button>
+              </div>
+              
 
                 <h4 class="left">
                   Stimuli:
@@ -240,35 +247,53 @@ export default {
 
               {{scenario.stimuli}}
 
-<!--                <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" class="left">-->
-<!--                  {{ index +1}}.-->
-<!--                  <select v-model="stimulus[7]" class="select-box">-->
-<!--                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
-<!--                  </select>-->
-<!--                  {{ stimulus[stimulus[7]] }} <br>-->
-<!--                  <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>-->
-<!--                  <i class="sel-line"> <strong>Predicates:</strong> {{ stimulus[8] }} </i> <br> <br>-->
-<!--                </li>-->
               
                 <h4 class="left">
                 Responses:
                 </h4 >
 
               <span :style="{ color: getVerificationTextColor(scenario, 0)}">
-                {{scenario.responses[0]}}
+                <!--{{scenario.responses[0]}}-->
+                <li v-for="(response, index) in scenario.responses" :key="response" class="left">
+                {{ index +1}}.
+                <select v-model="response.target_logic" class="select-box">
+                  <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+                </select>
+
+                <span v-if="response.target_logic==0">
+                  {{ response.SEL}}
+                </span>
+                <span v-if="response.target_logic==1">
+                  {{ response.LTL}}
+                </span>
+                <span v-if="response.target_logic==2">
+                  {{ response.MTL}}
+                </span>
+                <span v-if="response.target_logic==3">
+                  {{ response.Prism}}
+                </span>
+                <span v-if="response.target_logic==4">
+                  {{ response.Quantitative_Prism}}
+                </span>
+                <span v-if="response.target_logic==5">
+                  {{ response.TBV_untimed}}
+                </span>
+                <span v-if="response.target_logic==6">
+                  {{ response.TBV_timed}}
+                </span>
+                
+                <div>
+                <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i> <br> <br>
+              </div>
+                <div>
+                  <button class="remove-button-2" @click="removeResponse(index)">Remove</button> <br>
+                </div>
+              </li>
               </span>
-<!--                <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">-->
-<!--                  {{ index +1}}.-->
-<!--                  <select v-model="response[7]" class="select-box">-->
-<!--                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
-<!--                  </select>-->
-<!--                  {{ response[response[7]] }} <br>-->
-<!--                  <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>-->
-<!--                  <i class="sel-line"> <strong>Predicates:</strong> {{ response[8] }} </i> <br> <br>-->
-<!--                </li>-->
 
               <div>
                 <button class="verify-button" @click="verifyScenario(scenario)">Verify Scenario</button>
+                <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
                 <button class="remove-button" @click="removeScenario(index)">Remove Scenario</button>
                 <button class="file-download-button" @click="downloadJSON(index)">Download as JSON</button>
               </div>
@@ -461,6 +486,24 @@ body {
   background-color: rgb(160, 40, 40);
 }
 
+.remove-button-2 {
+  background-color: rgb(219, 65, 65);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.remove-button-2:hover {
+  background-color: rgb(160, 40, 40);
+}
+
 .verify-button {
   background-color: rgb(65, 219, 65);
   border: none;
@@ -477,6 +520,24 @@ body {
 }
 .verify-button:hover {
   background-color: rgb(40, 160, 40);
+}
+
+.edit-button {
+  background-color: rgb(240, 173, 28);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin-top: 20px;
+  margin-right: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.edit-button:hover {
+  background-color: rgb(196, 142, 25);
 }
 
 .left{
