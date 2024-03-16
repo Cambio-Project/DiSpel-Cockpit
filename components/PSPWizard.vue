@@ -944,7 +944,7 @@ export default {
       console.log("Success: "+body.success);
       console.log("Message: "+body.message);
 
-      this.$router.push('/scenarioeditorSite?='+this.simID);
+      this.$router.push('/scenarioeditorSite?simID='+this.simID);
     },
     forceRerender() {
       this.componentKey += 1;
@@ -1615,10 +1615,7 @@ export default {
 }
 
 .selection-container {
-  //max-width: 100vh;
-  //margin: auto;
   flex: 1;
-  //border: 1px solid black;
 }
 
 .selection-group {

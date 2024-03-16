@@ -209,7 +209,7 @@ export default {
             <li v-for="scenarios in state.scenarios" class="list-item">
             <li v-for="(scenario, index) in scenarios" class="list-item">
 
-              
+              <h3> {{ index +1}}. {{ scenario.name}} </h3>
 
               <div v-if="scenario.category == 'None' " class="category-frame-0">
                 {{ 'None' }}
@@ -227,7 +227,6 @@ export default {
                 {{ 'Use Case' }}
               </div>
 
-              <h3> {{ index +1}}. {{ scenario.name}} </h3>
               <div>
                 {{"SimulationID: " + scenario.simulationID }}
               </div>
@@ -241,9 +240,9 @@ export default {
               </div>
               
 
-                <h4 class="left">
-                  Stimuli:
-                </h4>
+              <h4 class="left">
+                Stimuli:
+              </h4>
 
               {{scenario.stimuli}}
 

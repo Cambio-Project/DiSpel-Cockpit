@@ -34,6 +34,7 @@ export default {
         })
       })
     const body = await res.json()
+    console.log(this.simID)
     console.log(body.Scenario)
 
     if (typeof body.Scenario.name !== "undefined") {

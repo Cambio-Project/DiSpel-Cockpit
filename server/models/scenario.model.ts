@@ -6,7 +6,7 @@ const ScenarioSchema = new Schema({
     category: String,
     description: String,
     stimuli: [{}],
-    responses: [{{}}]
+    responses: [{}]
 });
 
 export const Scenario = model("Scenario", ScenarioSchema);
