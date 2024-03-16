@@ -214,6 +214,7 @@ export default {
           measurement_source: "resp_time_high"
         }
       } **/],
+      simID: this.$route.query.simID,
       customPredicateName: "",
       customPredicateLogic: "",
       customMeasurementSource: "",
@@ -922,7 +923,8 @@ export default {
 </script>
 
 <template :key="componentKey">
-  <h1>PSPWizard as {{ this.$store.state.outputType  }}</h1>
+  <h1>PSPWizard</h1>
+  {{ this.simID }}
   <div class="page-container">
     <div class="selection-container">
       <div class="file-upload-container">

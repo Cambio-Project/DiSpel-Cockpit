@@ -34,7 +34,7 @@ export default {
     openPSPResponse() {
       this.outputType= 'Response';
       this.$store.commit('setOutputType', this.outputType);
-      this.$router.push('/pspwizardSite');
+      this.$router.push('/pspwizardSite?simID=1234');
     },
     // remove stiumulus
     removeStimulus(index) {
