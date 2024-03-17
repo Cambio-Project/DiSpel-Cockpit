@@ -1,5 +1,6 @@
 <script>
 import JSZip from 'jszip';
+import {tryCatch} from "standard-as-callback/built/utils.js";
 
 // creates all target_logics for one PSPItem (Stimulus or Response)
 function createPSPItem(item) {
@@ -45,10 +46,15 @@ export default {
     return{
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
-      verificationResults: {}
+      verificationResults: {},
+      scenarios : null,
+      popUp: null,
   };
 },
   methods:{
+    tryCatch() {
+      return tryCatch
+    },
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
       const res = await fetch("/api/initScenario", {
@@ -67,8 +73,8 @@ export default {
         })
       })
       const body = await res.json();
-      console.log(body);
-      alert(body.status)
+      console.log(body.status);
+      return 'done'
     },
     // Open the ScenarioEditor to edit a scenario
     async editScenario(simID) {
@@ -152,42 +158,41 @@ export default {
       document.body.removeChild(a);
     },
   },
+  async beforeMount() {
+    const response = await fetch("/api/allScenarios");
+    const body = await response.json();
+    this.scenarios = body.scenarios
+
+    for (let i = 0; i < this.scenarios.length; i++) {
+      this.scenarios[i].simState = "none"
+    }
+
+    this.popUp = useToast()
+
+    console.log(this.scenarios)
+  },
   // async mounted() {
   //   const res = await fetch("/api/allScenarios")
   //   this.scenariosNew = await res.json();
   //   console.log(this.scenariosNew)
   // },
-  setup() {
-    const state = reactive({
-      scenarios: null,
-    });
-
-    onMounted(async () => {
-      const response = await fetch("/api/allScenarios");
-      state.scenarios = await response.json();
-    });
-
-    return {
-      state,
-    };
-  },
 };
 </script>
 
 <template>
   <!--Headline-->
-  <div class ="headline-frame">
-    <h1 class="headline"> Scenarios </h1>
+  <div>
+    <h1> Scenarios </h1>
   </div>
 
   <!--Mainframe-->
-  <div class="main-frame">
+  <div>
     <!--Tools-->
-    <div class="tool-frame">
+    <div>
 
       <div> 
-        <button class="new-button" @click="openEditor">New Scenario</button> 
-        <button class="all-file-download-button" @click="downloadZip(index)">Download all Scenarios</button>
+        <UButton @click="openEditor">New Scenario</UButton>
+        <UButton @click="downloadZip(index)">Download all Scenarios</UButton>
       </div>
 
       <div>
@@ -203,27 +208,26 @@ export default {
     
       <div class="list-container">
         <div class="list-content">
-          <div v-if="state.scenarios">
+          <div v-if="scenarios">
             <ul>
 
-            <li v-for="scenarios in state.scenarios" class="list-item">
             <li v-for="(scenario, index) in scenarios" class="list-item">
 
-              <h3> {{ index +1}}. {{ scenario.name}} </h3>
+              <h3>Index: {{index}} Name: {{scenario.name}} </h3>
 
-              <div v-if="scenario.category == 'None' " class="category-frame-0">
+              <div v-if="scenario.category === 'None' " class="category-frame-0">
                 {{ 'None' }}
               </div>
 
-              <div v-if="scenario.category == 'Exploratory' " class="category-frame-1">
+              <div v-if="scenario.category === 'Exploratory' " class="category-frame-1">
                 {{ 'Exploratory' }}
              </div>
 
-             <div v-if="scenario.category == 'Growth' " class="category-frame-2">
+             <div v-if="scenario.category === 'Growth' " class="category-frame-2">
                 {{ 'Growth' }}
               </div>
 
-              <div v-if="scenario.category == 'UseCase' " class="category-frame-3">
+              <div v-if="scenario.category === 'UseCase' " class="category-frame-3">
                 {{ 'Use Case' }}
               </div>
 
@@ -236,15 +240,28 @@ export default {
               </div>
 
               <div>
-                <button @click="startSimulation(scenario.simulationID)">Start Simulation</button>
+                <UButton @click="
+                    startSimulation(scenario.simulationID);
+                    this.popUp.add({
+                      title: 'Simulation Started',
+                      description: 'SimID: '+scenario.simulationID});
+                    scenario.simState = 'running';">
+                  Start Simulation
+                </UButton>
+                <UProgress v-if="scenario.simState === 'running'" animation="carousel"></UProgress>
               </div>
               
+              {{scenario.simState}}
 
               <h4 class="left">
                 Stimuli:
               </h4>
 
-              {{scenario.stimuli}}
+              <ul>
+                <li v-for="stimuli in scenario.stimuli">
+                  {{Object.keys(stimuli)[0]}}
+                </li>
+              </ul>
 
               
                 <h4 class="left">
@@ -298,14 +315,12 @@ export default {
               </div>
                 
               </li>
-            </li>
             </ul>
           </div>
         </div>
       </div>
-     
+     {{test}}
   </div>
-          
 </template>
 
 
