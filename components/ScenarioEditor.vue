@@ -10,71 +10,71 @@ export default {
   },
   data() {
     return {
-      outputType: null,
       categories: ["None", "UseCase", "Growth", "Exploratory"],
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
-      name: this.$store.state.name,
-      category: this.$store.state.category,
-      description: this.$store.state.description,
-      showTooltip: false,
-      stimuli: this.$store.state.stimuli,
-      responses: this.$store.state.responses,
+
+      simID: this.$route.query.simID,
+      name: null,
+      category: "None",
+      description: null,
+      stimuli: null,
+      responses: null,
+
       importErrorMessage: null,
     }
   },
   methods:{
-    // create stimulus with pspwizard
-    openPSPStimulus() {
-      this.outputType= 'Stimulus';
-      this.$store.commit('setOutputType', this.outputType);
-      this.$router.push('/pspwizardSite');
+    // get fields from DB object with simulationID
+    async initFields() {
+      const res = await fetch("/api/getScenarios", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID
+        })
+      })
+    const body = await res.json()
+    console.log(this.simID)
+    console.log(body.Scenario)
+
+    if (typeof body.Scenario.name !== "undefined") {
+      this.name = body.Scenario.name
+    }
+    if (typeof body.Scenario.category !== "undefined") {
+      this.category = body.Scenario.category
+    }
+    if (typeof body.Scenario.description !== "undefined") {
+      this.description = body.Scenario.description
+    }
+    if (typeof body.Scenario.stimuli !== "undefined") {
+      this.stimuli = body.Scenario.stimuli
+    }
+    if (typeof body.Scenario.responses !== "undefined") {
+      this.responses = body.Scenario.responses
+    }
+  
     },
     // create response with pspwizard
     openPSPResponse() {
-      this.outputType= 'Response';
-      this.$store.commit('setOutputType', this.outputType);
-      this.$router.push('/pspwizardSite');
+      this.$router.push('/pspwizardSite?simID='+ this.simID);
     },
-    // remove stiumulus
-    removeStimulus(index) {
-      this.$store.commit('removeStimulus', index);
+    // remove stimulus
+    removeStimulus(id) {
+      //TODO Delete stimulus via api
     },
     // remove response
-    removeResponse(index) {
-      this.$store.commit('removeResponse', index);
+    removeResponse(id) {
+      //TODO Delete response via api
     },
     // add scenario with metadata and stimuli and responses
-    async addScenario() {
-      // this.$store.commit('addCategory', this.category);
-      // this.$store.commit('addDescription', this.description);
-      // this.$store.commit('setStimuli', this.stimuli);
-      // this.$store.commit('setResponses', this.responses);
-      // this.$store.commit('addScenario');
-
-      const body = {
-        name: this.name,
-        category: this.category,
-        description: this.description,
-        stimuli: this.stimuli,
-        responses: this.responses
-      }
-
-      const res = await fetch("/api/saveScenario", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
-
+    async complete() {
       this.$router.push('/scenariosSite');
 
     },
     //Changes all target logics to the same one
     changeAllTargets() {
-      this.stimuli.forEach(stimulus => {
-        stimulus[7]= this.target;
-      })
       this.responses.forEach(response => {
-        response[7]= this.target;
+        response.target_logic = this.target;
       })
     },
     async uploadStimulus() {
@@ -89,7 +89,7 @@ export default {
           const tmp = {
             [filename]: json
           }
-          this.stimuli.push(tmp)
+          this.addValue("stimuli", tmp)
 
         } else {
           const formdata = new FormData()
@@ -101,7 +101,7 @@ export default {
           const tmp = {
             [filename]: "external"
           }
-          this.stimuli.push(tmp)
+          this.addValue("stimuli", tmp)
         }
         this.loadedFiles.push(filename)
       }
@@ -285,28 +285,57 @@ export default {
       this.name= "",
       this.category= "None",
       this.description= null,
-      this.stimuli= [],
-      this.responses= [],
+      this.stimuli= null,
+      this.responses= null,
       this.showTooltip= false
     },
+    async addValue(field, newValue){
+      const res = await fetch("/api/setScenarioField", {
+      method: "POST",
+      body: JSON.stringify({
+        simulationID: this.simID,
+        fieldName: field,
+        fieldValue: newValue
+      })
+    })
+    const body = await res.json()
+    console.log(body)
+    }
+  },
+  beforeMount() {
+    this.initFields();
   },
   watch:{
-    name(newName) {
-      this.$store.commit('addName', newName);
+      name(newName) {
+        this.addValue("name", newName)
+      },
+      category(newCategory) {
+        this.addValue("category", newCategory)
+      },
+      description(newDescription) {
+        this.addValue("description", newDescription)
+      },
+      // stimuli(newStimuli) {
+      //   this.addValue("stimuli", newStimuli)
+      // },
+      // responses(newResponses) {
+      //   this.addValue("responses", newResponses)
+      // }
     },
-    category(newCategory) {
-      this.$store.commit('addCategory', newCategory);
-    },
-    description(newDescription) {
-      this.$store.commit('addDescription', newDescription);
-    },
-    stimuli(newStimuli) {
-      this.$store.commit('setStimuli', newStimuli);
-    },
-    responses(newResponses) {
-      this.$store.commit('setResponses', newResponses);
-    }
-  }
+    setup() {
+    const state = reactive({
+      scenarios: null,
+    });
+
+    onMounted(async () => {
+      const response = await fetch("/api/getScenarios");
+      state.scenarios = await response.json();
+    });
+
+    return {
+      state,
+    };
+  },
   }
 
 
@@ -320,7 +349,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 </script>
 
 <template>
-
+  {{ "SimID: "+ simID }} {{ "Name: "+ name }} 
   <!--Headline-->
   <div class ="headline-frame">
     <h1 class="headline"> Scenario Editor </h1>
@@ -329,9 +358,9 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
   <!--Main Frame-->
   <div class="box-frame">
 
-<!--        <div v-if="this.importErrorMessage">-->
-<!--          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>-->
-<!--        </div>-->
+       <div v-if="this.importErrorMessage">
+          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
+        </div>
 
         <h3 class="center">
 
@@ -362,21 +391,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
       <p>Stimuli:</p>
 
-<!--      <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">-->
-<!--        {{ index +1}}.-->
-<!--        <select v-model="stimulus[7]" class="select-box">-->
-<!--          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
-<!--        </select>-->
-
-<!--        {{ stimulus[stimulus[7]] }}-->
-<!--        <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>-->
-<!--        <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>-->
-
-<!--      </li>-->
-
       <input id="fileInput" type="file" ref="fileInputStimulus" @change="uploadStimulus" multiple="multiple">
-
-<!--      <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>-->
 
       <ul>
         <li v-for="file in stimuli">{{file}}</li>
@@ -389,13 +404,34 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
       <p>Responses:</p>
       <li v-for="(response, index) in responses" :key="response" class="left">
         {{ index +1}}.
-        <select v-model="response[7]" class="select-box">
+        <select v-model="response.target_logic" class="select-box">
           <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
 
-        {{ response[response[7]] }}
+        <span v-if="response.target_logic==0">
+          {{ response.SEL}}
+        </span>
+        <span v-if="response.target_logic==1">
+          {{ response.LTL}}
+        </span>
+        <span v-if="response.target_logic==2">
+          {{ response.MTL}}
+        </span>
+        <span v-if="response.target_logic==3">
+          {{ response.Prism}}
+        </span>
+        <span v-if="response.target_logic==4">
+          {{ response.Quantitative_Prism}}
+        </span>
+        <span v-if="response.target_logic==5">
+          {{ response.TBV_untimed}}
+        </span>
+        <span v-if="response.target_logic==6">
+          {{ response.TBV_timed}}
+        </span>
+        
         <button class="remove-button" @click="removeResponse(index)">Remove</button> <br>
-        <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>
+        <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i> <br> <br>
 
       </li>
 
@@ -403,17 +439,16 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
     </div>
 
-<!--    <div v-if="this.name.length !== 0 && this.stimuli.length !== 0 && this.responses.length !== 0">-->
-    <div>
-      <button class="new-button" @click="addScenario">Complete</button>
+    <div v-if="this.name !== null && this.stimuli !== null && this.responses !== null">
+      <button class="new-button" @click="complete">Complete</button>
     </div>
 
-<!--    <div v-else>-->
-<!--      <div class="info">-->
-<!--        <button class="not-ready-button" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</button>-->
-<!--        <span v-if="showTooltip" class="info-text">A Name and at least one Stimulus and one Response is mandatory</span>-->
-<!--      </div>-->
-<!--    </div>-->
+    <div v-else>
+      <div class="info">
+        <button class="not-ready-button" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</button>
+        <span v-if="showTooltip" class="info-text">A Name and at least one Stimulus and one Response is mandatory</span>
+     </div>
+    </div>
 
   </div>
 
