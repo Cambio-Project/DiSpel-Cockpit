@@ -14,11 +14,15 @@ export default defineNuxtConfig({
   },
   devtools: { enabled: true },
   modules:[
-    'nuxt-mongoose'
+    'nuxt-mongoose',
+    '@nuxt/ui'
   ],
   mongoose: {
     uri: process.env.MONGODB_URI,
     options: {},
     modelsDir: 'models',
   },
+  colorMode:{
+    preference: "light"
+  }
 })
