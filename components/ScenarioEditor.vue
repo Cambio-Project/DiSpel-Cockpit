@@ -97,7 +97,7 @@ export default {
         response.target_logic = this.target;
       })
     },
-    async uploadStimulus() {
+    async upload(type) {
       const fileInput = this.$refs.fileInputStimulus;
       this.stimuli = []
       this.loadedFiles = []
@@ -109,7 +109,7 @@ export default {
           const tmp = {
             [filename]: json
           }
-          this.addValue("stimuli", tmp)
+          this.addValue(type, tmp)
 
         } else {
           const formdata = new FormData()
@@ -121,14 +121,14 @@ export default {
           const tmp = {
             [filename]: "external"
           }
-          this.addValue("stimuli", tmp)
+          this.addValue(type, tmp)
         }
         this.loadedFiles.push(filename)
       }
       this.initFields()
     },
     //imports a scenario
-    handleFileChange() {
+    async handleFileChange() {
       const fileInput = this.$refs.fileInput;
 
       if (!fileInput.files.length) {
@@ -152,6 +152,9 @@ export default {
             return;
           }
 
+          var oldStimuli = this.stimuli
+          var oldResponses = this.responses
+
           // reset all fields
           this.resetAllFields();
 
@@ -170,123 +173,42 @@ export default {
             this.description = jsonData.description;
           }
 
-          var jsonlist = [];
 
           // stimuli
-          if(jsonData.stimuli != null) {
-            jsonData.stimuli.forEach(element => {
-              if(element.SEL == null) {
-                this.importErrorMessage = "SEL in each stimulus need to be defined.";
-                console.warn(this.importErrorMessage);
-                return;
-              }
-              else {
-                jsonlist.push(element.SEL);
-              }
-              if(element.LTL == null) {
-                jsonlist.push("LTL not defined");
-              }
-              else {
-                jsonlist.push(element.LTL);
-              }
-              if(element.MTL == null) {
-                jsonlist.push("MTL not defined");
-              }
-              else {
-                jsonlist.push(element.MTL);
-              }
-              if(element.Prism == null) {
-                jsonlist.push("Prism not defined");
-              }
-              else {
-                jsonlist.push(element.Prism);
-              }
-              if(element.Quantitative_Prism == null) {
-                jsonlist.push("Quantitative_Prism not defined");
-              }
-              else {
-                jsonlist.push(element.Quantitative_Prism);
-              }
-              if(element.TBV_timed == null) {
-                jsonlist.push("TBV_timed not defined");
-              }
-              else {
-                jsonlist.push(element.TBV_timed);
-              }
-              if(element.TBV_untimed == null) {
-                jsonlist.push("TBV_untimed not defined");
-              }
-              else {
-                jsonlist.push(element.TBV_untimed);
-              }
-              if(element.display_logic == null) {
-                jsonlist.push(0);
-              }
-              else {
-                jsonlist.push(element.display_logic);
-              }
-              this.stimuli.push(jsonlist);
-              jsonlist = [];
-
+          if(this.oldStimuli != null)
+          {
+            this.oldStimuli.forEach((stimulus, index) => {
+              this.removeStimulus(index)
             });
           }
+          this.stimuli = []
+
+          if(jsonData.stimuli != null)
+            {
+            jsonData.stimuli.forEach(element => {
+              this.stimuli.push(element);
+              this.addValue("stimuli", element)
+           });
+           
+          }
+          
 
           // responses
-          if(jsonData.responses != null) {
-            jsonData.responses.forEach(element => {
-              if(element.SEL == null) {
-                this.importErrorMessage = "SEL in each response need to be defined.";
-                console.warn(this.importErrorMessage);
-                return;
-              }
-              else {
-                jsonlist.push(element.SEL);
-              }
-              if(element.LTL == null) {
-                jsonlist.push("LTL not defined");
-              }
-              else {
-                jsonlist.push(element.LTL);
-              }
-              if(element.MTL == null) {
-                jsonlist.push("MTL not defined");
-              }
-              else {
-                jsonlist.push(element.MTL);
-              }
-              if(element.Prism == null) {
-                jsonlist.push("Prism not defined");
-              }
-              else {
-                jsonlist.push(element.Prism);
-              }
-              if(element.Quantitative_Prism == null) {
-                jsonlist.push("Quantitative_Prism not defined");
-              }
-              else {
-                jsonlist.push(element.Quantitative_Prism);
-              }
-              if(element.TBV_timed == null) {
-                jsonlist.push("TBV_timed not defined");
-              }
-              else {
-                jsonlist.push(element.TBV_timed);
-              }
-              if(element.TBV_untimed == null) {
-                jsonlist.push("TBV_untimed not defined");
-              }
-              else {
-                jsonlist.push(element.TBV_untimed);
-              }
-              if(element.display_logic == null) {
-                jsonlist.push(0);
-              }
-              else {
-                jsonlist.push(element.display_logic);
-              }
-              this.responses.push(jsonlist);
-              jsonlist = [];
+          if(this.olsResponses != null)
+          {
+            this.oldResponses.forEach((response, index) => {
+              this.removeResponse(index)
             });
+          }
+          this.responses = []
+
+          if(jsonData.responses != null)
+            {
+            jsonData.responses.forEach(element => {
+              this.responses.push(element);
+              this.addValue("responses", element)
+           });
+           
           }
 
           this.importErrorMessage = null
@@ -405,7 +327,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
       <p>Stimuli:</p>
 
-      <input id="fileInput" type="file" ref="fileInputStimulus" @change="uploadStimulus" multiple="multiple">
+      <input id="fileInput" type="file" ref="fileInputStimulus" @change="upload('stimuli')" multiple="multiple">
 
       <ul>
         <li v-for="(file, index) in stimuli">{{file}}
