@@ -4,25 +4,62 @@
   "description": "After killing service and load peak response Time should be <1 s.",
   "stimuli": [
     {
-      "SEL": "Globally, {kill 1 service instance of example-service} [holds] eventually between 20 and 20 time units.",
-      "LTL": "◇ (kill 1 service instance of example-service)",
-      "MTL": "◇[20,20] (kill 1 service instance of example-service)",
-      "Prism": "[ F[20,20] (kill 1 service instance of example-service) ]",
-      "Quantitative_Prism": "P=? [ F[20,20] (kill 1 service instance of example-service) ]",
-      "TBV_timed": "once (kill 1 service instance of example-service)",
-      "TBV_untimed": "once[20,20] (kill 1 service instance of example-service)",
-      "display_logic": 0
-    },
-    {
-      "SEL": "After {kill 1 service instance of example-service} if {service instance failure} [has occurred] then in response {increase load exponentially to 5x base load over 20 time units} [eventually holds] after 2 time units without {A(a)} [holding] in between.",
-      "LTL": "☐((kill 1 service instance of example-service) → ☐((service instance failure) → (¬(A(a)) U (increase load exponentially to 5x base load over 20 time units))))",
-      "MTL": "☐((kill 1 service instance of example-service) → (☐((service instance failure) → ¬(A(a)) U[2,∞) (increase load exponentially to 5x base load over 20 time units))))",
-      "Prism": "[ G((kill 1 service instance of example-service) => G((service instance failure) => !(A(a)) U>=2 (increase load exponentially to 5x base load over 20 time units))) ]",
-      "Quantitative_Prism": "P=? [ G((kill 1 service instance of example-service) => G((service instance failure) => !(A(a)) U>=2 (increase load exponentially to 5x base load over 20 time units))) ]",
-      "TBV_timed": "always((kill 1 service instance of example-service) -> always((service instance failure) -> ( not (A(a)) since (increase load exponentially to 5x base load over 20 time units))))",
-      "TBV_untimed": "always((kill 1 service instance of example-service) -> (always((service instance failure) -> not (A(a)) since[2,inf] (increase load exponentially to 5x base load over 20 time units))))",
-      "display_logic": 1
-    }
+      "architecture_circuitbreaker_demonstration.json": {
+          "network_latency": "0.02+-0.01",
+          "microservices": [
+              {
+                  "name": "gateway",
+                  "instances": 1,
+                  "capacity": 40000,
+                  "loadbalancer_strategy": "even",
+                  "operations": [
+                      {
+                          "name": "EXTERNAL_DEP",
+                          "demand": 1,
+                          "dependencies": [
+                              {
+                                  "service": "example-service",
+                                  "operation": "call_external_service"
+                              }
+                          ]
+                      }
+                    ],
+                  "patterns": [
+                      {
+                          "type": "circuitbreaker",
+                          "config": {
+                              "error_threshold_percentage": 75
+                          }
+                      }
+                  ]
+              },
+              {
+                  "name": "example-service",
+                  "instances": 1,
+                  "capacity": 20000,
+                  "operations": [
+                      {
+                          "name": "example-service.DB_WRITE",
+                          "demand": 200
+                      }
+                  ]
+              }
+          ]
+      }
+  },
+  {
+      "experiment_circuitbreaker.json": {
+          "simulation_meta_data": {
+              "experiment_name": "Example-Circuitbreaker",
+              "model_name": "Scenario Circuitbreaker",
+              "duration": 120,
+              "seed": 404
+          }
+      }
+  },
+  {
+      "load_const20ArrivalRates.csv": "external"
+  }
   ],
   "responses": [
     {
@@ -33,7 +70,15 @@
       "Quantitative_Prism": "P=? [ G (ResponseTime < 1s) ]",
       "TBV_timed": "always (ResponseTime < 1s)",
       "TBV_untimed": "always (ResponseTime < 1s)",
-      "display_logic": 2
+      "target_logic": 2,
+      "predicates_info": [
+        {
+            "predicate_name": "cpu_temperature_rises",
+            "predicate_logic": "trendUpwardStrict",
+            "measurement_source": "example-service_1_I1_CPU_Utilization",
+            "predicate_comparison_value": 200
+        }
+      ]
     }
   ]
 }
