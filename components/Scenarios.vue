@@ -1,42 +1,6 @@
 <script>
 import JSZip from 'jszip';
 
-// creates all target_logics for one PSPItem (Stimulus or Response)
-function createPSPItem(item) {
-  return {
-    SEL: item[0],
-    LTL: item[1],
-    MTL: item[2],
-    Prism: item[3],
-    Quantitative_Prism: item[4],
-    TBV_timed: item[5],
-    TBV_untimed: item[6],
-    display_logic: item[7],
-    predicates_info: item[8],
-  };
-} 
-
-// creates a list of all target_logics for PSPItems (Stimuli or Responses)
-function createPSPList(coll) {
-  var list = [];
-  coll.forEach((item, index) => {
-    list.push(createPSPItem(coll[index]));
-  });
-  return list;
-}
-
-// creates the scenario schema
-function createSchema(scenario) {
-  const jsonData = {
-    name: scenario[0],
-    category: scenario[1],
-    description: scenario[2],
-    stimuli: createPSPList(scenario[3]),
-    responses: createPSPList(scenario[4])
-  }
-    return jsonData;
-  };
-
 export default {
   name: "ScenarioList",
   el: '#app',
@@ -123,14 +87,22 @@ export default {
     });
     },
     //Download a single scenario as json
-    downloadJSON(index) {
-      const jsonData = createSchema(this.scenarios[index]);
-      const jsonStr = JSON.stringify(jsonData, null, 2);
+    async downloadJSON(simID) {
+      const res = await fetch("/api/getScenario", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: simID
+        })
+      })
+      const body = await res.json()
+      var scenario = body.Scenario
+
+      const jsonStr = JSON.stringify(scenario, null, 2);
       const blob = new Blob([jsonStr], {type: 'application/json'})
       const url = window.URL.createObjectURL(blob);
 
       const a = document.createElement('a');
-      const fileName = 'Scenario_' + this.scenarios[index][0] + '.json';
+      const fileName = 'Scenario_' + scenario.name + '.json';
       a.style.display = 'none';
       a.href = url;
       a.download = fileName;
@@ -145,8 +117,8 @@ export default {
       const zip = new JSZip();
       var c = 1
       this.scenarios.forEach((scenario, index) => {
-        var name = c + " - " + this.scenarios[index][0];
-        const jsonData = createSchema(this.scenarios[index]);
+        var name = c + " - " + scenario.name;
+        const jsonData = this.scenarios[index];
         zip.file('Scenario_' + name + '.json', JSON.stringify(jsonData, null, 2));
         c++;
       });
@@ -314,7 +286,7 @@ export default {
                 <button class="verify-button" @click="verifyScenario(scenario)">Verify Scenario</button>
                 <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
                 <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
-                <button class="file-download-button" @click="downloadJSON(index)">Download as JSON</button>
+                <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON</button>
               </div>
                 
               </li>
