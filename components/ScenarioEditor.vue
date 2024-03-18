@@ -59,12 +59,32 @@ export default {
       this.$router.push('/pspwizardSite?simID='+ this.simID);
     },
     // remove stimulus
-    removeStimulus(id) {
-      //TODO Delete stimulus via api
+    async removeStimulus(index) {
+      const res = await fetch("/api/deleteScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: "stimuli",
+          fieldIndex: index
+        })
+      })
+    const body = await res.json()
+    console.log(body)
+    this.initFields()
     },
     // remove response
-    removeResponse(id) {
-      //TODO Delete response via api
+    async removeResponse(index) {
+      const res = await fetch("/api/deleteScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: "responses",
+          fieldIndex: index
+        })
+      })
+    const body = await res.json()
+    console.log(body)
+    this.initFields()
     },
     // add scenario with metadata and stimuli and responses
     async complete() {
@@ -105,6 +125,7 @@ export default {
         }
         this.loadedFiles.push(filename)
       }
+      this.initFields()
     },
     //imports a scenario
     handleFileChange() {
@@ -290,7 +311,7 @@ export default {
       this.showTooltip= false
     },
     async addValue(field, newValue){
-      const res = await fetch("/api/setScenarioField", {
+      const res = await fetch("/api/pushScenarioField", {
       method: "POST",
       body: JSON.stringify({
         simulationID: this.simID,
@@ -315,27 +336,21 @@ export default {
       description(newDescription) {
         this.addValue("description", newDescription)
       },
-      // stimuli(newStimuli) {
-      //   this.addValue("stimuli", newStimuli)
-      // },
-      // responses(newResponses) {
-      //   this.addValue("responses", newResponses)
-      // }
     },
-    setup() {
-    const state = reactive({
-      scenarios: null,
-    });
+    // setup() {
+    // const state = reactive({
+    //   scenarios: null,
+    // });
 
-    onMounted(async () => {
-      const response = await fetch("/api/getScenarios");
-      state.scenarios = await response.json();
-    });
+    // onMounted(async () => {
+    //   const response = await fetch("/api/getScenarios");
+    //   state.scenarios = await response.json();
+    // });
 
-    return {
-      state,
-    };
-  },
+    // return {
+    //   state,
+    // };
+    //},
   }
 
 
@@ -349,7 +364,6 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 </script>
 
 <template>
-  {{ "SimID: "+ simID }} {{ "Name: "+ name }} 
   <!--Headline-->
   <div class ="headline-frame">
     <h1 class="headline"> Scenario Editor </h1>
@@ -394,7 +408,9 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
       <input id="fileInput" type="file" ref="fileInputStimulus" @change="uploadStimulus" multiple="multiple">
 
       <ul>
-        <li v-for="file in stimuli">{{file}}</li>
+        <li v-for="(file, index) in stimuli">{{file}}
+        <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>
+      </li>
       </ul>
       
     </div>
@@ -439,7 +455,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
     </div>
 
-    <div v-if="this.name !== null && this.stimuli !== null && this.responses !== null">
+    <div v-if="name !== null && stimuli != null && responses != null">
       <button class="new-button" @click="complete">Complete</button>
     </div>
 

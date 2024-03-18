@@ -77,9 +77,19 @@ export default {
       this.$router.push('/scenarioEditorSite/?simID='+ simID);
     },
     // Remove one scenario
-    //TODO 
-    removeScenario(index) {
-      this.$store.commit('removeScenario', index)
+    async removeScenario(ID) {
+      const res = await fetch("/api/deleteScenario", {
+        method: "POST",
+        body: JSON.stringify({
+          ID: ID
+        })
+      })
+      const body = await res.json();
+      console.log(body);
+
+      const response = await fetch("/api/allScenarios");
+      const bodyScenarios = await response.json();
+      this.scenarios = bodyScenarios.scenarios
     },
     async verifyScenario(scenario) {
       const response = await useFetch("/api/verifySimulation", {
@@ -162,7 +172,7 @@ export default {
     for (let i = 0; i < this.scenarios.length; i++) {
        this.scenarios[i].simState = "none"
      }
-    this.popUp = useToast()
+    //this.popUp = useToast()
     console.log(this.scenarios)
   },
   // async mounted() {
@@ -296,16 +306,14 @@ export default {
                 <div>
                 <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i> <br> <br>
               </div>
-                <div>
-                  <button class="remove-button-2" @click="removeResponse(index)">Remove</button> <br>
-                </div>
+                
               </li>
               </span>
 
               <div>
                 <button class="verify-button" @click="verifyScenario(scenario)">Verify Scenario</button>
                 <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
-                <button class="remove-button" @click="removeScenario(index)">Remove Scenario</button>
+                <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
                 <button class="file-download-button" @click="downloadJSON(index)">Download as JSON</button>
               </div>
                 

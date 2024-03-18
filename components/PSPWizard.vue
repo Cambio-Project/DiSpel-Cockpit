@@ -931,7 +931,7 @@ export default {
       });
       responseObject.predicates_info = eventArray;
 
-      const res = await fetch("/api/setScenarioField", {
+      const res = await fetch("/api/pushScenarioField", {
         method: "POST",
         body: JSON.stringify({
           simulationID: this.simID,
