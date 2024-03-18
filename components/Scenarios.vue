@@ -233,6 +233,7 @@ export default {
                 </UButton>
                 <UProgress v-if="scenario.simState === 'running'" animation="carousel"></UProgress>
               </div>
+
               
               {{scenario.simState}}
 

@@ -5,12 +5,24 @@ const dbMissing = true
 
 //Setup (Check Connection)
 const serviceStatus = {
-  database: "green",
-  pspWizard: "green",
-  tqPropRefiner: "green",
+  db: "red",
+  pspWizard: "red",
+  tqPropRefiner: "red",
   tbVerifier: "red",
   miSim: "red",
 }
+
+async function updateServiceState(){
+  const res = await useFetch("/api/dbPing")
+  const body = res.data.value
+
+  for (const bodyElement in body) {
+    // @ts-ignore
+    serviceStatus[bodyElement] = body[bodyElement].status
+  }
+}
+
+await updateServiceState()
 
 </script>
 
@@ -29,7 +41,7 @@ const serviceStatus = {
         </UTooltip>
       </h1>
       <div class="flex flex-row space-x-2 mt-2">
-        <UChip :color="serviceStatus.database" size="lg"><UBadge color="white" class="text-sm	">Database</UBadge></UChip>
+        <UChip :color="serviceStatus.db" size="lg"><UBadge color="white" class="text-sm	">Database</UBadge></UChip>
         <UChip :color="serviceStatus.pspWizard" size="lg"><UBadge color="white" class="text-sm	">PSPWizard</UBadge></UChip>
         <UChip :color="serviceStatus.miSim" size="lg"><UBadge color="white" class="text-sm	">MiSim</UBadge></UChip>
         <UChip :color="serviceStatus.tbVerifier" size="lg"><UBadge color="white" class="text-sm	">TBVerifier</UBadge></UChip>
