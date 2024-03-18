@@ -152,8 +152,8 @@ export default {
             return;
           }
 
-          var oldStimuli = this.stimuli
-          var oldResponses = this.responses
+          const oldStimuli = this.stimuli
+          const oldResponses = this.responses
 
           // reset all fields
           this.resetAllFields();
@@ -175,12 +175,10 @@ export default {
 
 
           // stimuli
-          if(this.oldStimuli != null)
-          {
-            this.oldStimuli.forEach((stimulus, index) => {
+          oldStimuli.forEach((index) => {
               this.removeStimulus(index)
             });
-          }
+          
           this.stimuli = []
 
           if(jsonData.stimuli != null)
@@ -192,14 +190,11 @@ export default {
            
           }
           
-
           // responses
-          if(this.olsResponses != null)
-          {
-            this.oldResponses.forEach((response, index) => {
+            oldResponses.forEach((index) => {
               this.removeResponse(index)
             });
-          }
+            
           this.responses = []
 
           if(jsonData.responses != null)
@@ -210,6 +205,7 @@ export default {
            });
            
           }
+          this.initFields()
 
           this.importErrorMessage = null
 
