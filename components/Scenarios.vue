@@ -45,7 +45,9 @@ export default {
     return{
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
-      verificationResults: {}
+      verificationResults: {},
+      scenarios : null,
+      popUp: null,
   };
 },
   methods:{
@@ -103,11 +105,12 @@ export default {
       //return verificationResult ? verificationResult[responseIndex] : null;
     },
     //Changes all target logics to the same one
-    //TODO
     changeAllTargets() {
-      state.scenarios.responses.forEach(response => {
+      this.scenarios.forEach(scenario => {
+      scenario.responses.forEach(response => {
           response.target_logic= this.target;
-      });
+      })
+    });
     },
     //Download a single scenario as json
     downloadJSON(index) {
@@ -152,25 +155,35 @@ export default {
       document.body.removeChild(a);
     },
   },
+  async beforeMount() {
+    const response = await fetch("/api/allScenarios");
+    const body = await response.json();
+    this.scenarios = body.scenarios
+    for (let i = 0; i < this.scenarios.length; i++) {
+       this.scenarios[i].simState = "none"
+     }
+    this.popUp = useToast()
+    console.log(this.scenarios)
+  },
   // async mounted() {
   //   const res = await fetch("/api/allScenarios")
   //   this.scenariosNew = await res.json();
   //   console.log(this.scenariosNew)
   // },
-  setup() {
-    const state = reactive({
-      scenarios: null,
-    });
+  // setup() {
+  //   const state = reactive({
+  //     scenarios: null,
+  //   });
 
-    onMounted(async () => {
-      const response = await fetch("/api/allScenarios");
-      state.scenarios = await response.json();
-    });
+  //   onMounted(async () => {
+  //     const response = await fetch("/api/allScenarios");
+  //     state.scenarios = await response.json();
+  //   });
 
-    return {
-      state,
-    };
-  },
+  //   return {
+  //     state,
+  //   };
+  // },
 };
 </script>
 
@@ -203,27 +216,26 @@ export default {
     
       <div class="list-container">
         <div class="list-content">
-          <div v-if="state.scenarios">
+          <div v-if="scenarios">
             <ul>
 
-            <li v-for="scenarios in state.scenarios" class="list-item">
             <li v-for="(scenario, index) in scenarios" class="list-item">
 
               <h3> {{ index +1}}. {{ scenario.name}} </h3>
 
-              <div v-if="scenario.category == 'None' " class="category-frame-0">
+              <div v-if="scenario.category === 'None' " class="category-frame-0">
                 {{ 'None' }}
               </div>
 
-              <div v-if="scenario.category == 'Exploratory' " class="category-frame-1">
+              <div v-if="scenario.category === 'Exploratory' " class="category-frame-1">
                 {{ 'Exploratory' }}
              </div>
 
-             <div v-if="scenario.category == 'Growth' " class="category-frame-2">
+             <div v-if="scenario.category === 'Growth' " class="category-frame-2">
                 {{ 'Growth' }}
               </div>
 
-              <div v-if="scenario.category == 'UseCase' " class="category-frame-3">
+              <div v-if="scenario.category === 'UseCase' " class="category-frame-3">
                 {{ 'Use Case' }}
               </div>
 
@@ -298,7 +310,6 @@ export default {
               </div>
                 
               </li>
-            </li>
             </ul>
           </div>
         </div>
