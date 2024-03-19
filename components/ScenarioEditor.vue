@@ -34,26 +34,25 @@ export default {
           simulationID: this.simID
         })
       })
-    const body = await res.json()
-    console.log(this.simID)
-    console.log(body.Scenario)
+      const body = await res.json()
+      console.log(this.simID)
+      console.log(body.Scenario)
 
-    if (typeof body.Scenario.name !== "undefined") {
-      this.name = body.Scenario.name
-    }
-    if (typeof body.Scenario.category !== "undefined") {
-      this.category = body.Scenario.category
-    }
-    if (typeof body.Scenario.description !== "undefined") {
-      this.description = body.Scenario.description
-    }
-    if (typeof body.Scenario.stimuli !== "undefined") {
-      this.stimuli = body.Scenario.stimuli
-    }
-    if (typeof body.Scenario.responses !== "undefined") {
-      this.responses = body.Scenario.responses
-    }
-  
+      if (typeof body.Scenario.name !== "undefined") {
+        this.name = body.Scenario.name
+      }
+      if (typeof body.Scenario.category !== "undefined") {
+        this.category = body.Scenario.category
+      }
+      if (typeof body.Scenario.description !== "undefined") {
+        this.description = body.Scenario.description
+      }
+      if (typeof body.Scenario.stimuli !== "undefined") {
+        this.stimuli = body.Scenario.stimuli
+      }
+      if (typeof body.Scenario.responses !== "undefined") {
+        this.responses = body.Scenario.responses
+      }
     },
     // create response with pspwizard
     openPSPResponse() {
@@ -153,27 +152,27 @@ export default {
             return;
           }
 
-          const oldStimuli = this.stimuli
-          const oldResponses = this.responses
-
           // reset all fields
           this.resetAllFields();
 
           // name
           if(jsonData.name != null) {
             this.name = jsonData.name;
+            this.setValue("name", this.name)
           }
 
           // category
           if(jsonData.category != null) {
             this.category = jsonData.category;
+            this.setValue("category", this.category)
           }
 
           // description
           if(jsonData.description != null) {
             this.description = jsonData.description;
+            this.setValue("description", this.description)
           }
-          
+
           // stimuli
           this.stimuli = []
           if(jsonData.stimuli != null) {
@@ -200,7 +199,11 @@ export default {
           this.importErrorMessage = null
 
           //TODO rerendering doesn't help
-          setTimeout(this.forceRerender,1000)
+          //setTimeout(this.forceRerender,1000)
+          //TODO reloading the page works, but isn't pretty
+          setTimeout(() => {
+            location.reload();
+          }, 500);
 
         } catch (error) {
           // mapping not valid
@@ -248,7 +251,7 @@ export default {
     forceRerender() {
       this.componentKey += 1;
       console.log("Rerendering!")
-    }
+    },
   },
   beforeMount() {
     this.initFields();
