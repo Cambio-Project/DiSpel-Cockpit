@@ -22,6 +22,7 @@ export default {
       responses: null,
 
       importErrorMessage: null,
+      componentKey: 0,
     }
   },
   methods:{
@@ -175,39 +176,46 @@ export default {
 
 
           // stimuli
+          /*
           oldStimuli.forEach((index) => {
               this.removeStimulus(index)
             });
+           */
           
           this.stimuli = []
 
-          if(jsonData.stimuli != null)
-            {
+          if(jsonData.stimuli != null) {
             jsonData.stimuli.forEach(element => {
               this.stimuli.push(element);
-              this.addValue("stimuli", element)
-           });
-           
+            });
+            this.setValue("stimuli", this.stimuli)
+          } else {
+            this.setValue("stimuli", [])
           }
-          
+
+          /*
           // responses
             oldResponses.forEach((index) => {
               this.removeResponse(index)
             });
+           */
             
           this.responses = []
 
-          if(jsonData.responses != null)
-            {
+          if(jsonData.responses != null) {
             jsonData.responses.forEach(element => {
               this.responses.push(element);
-              this.addValue("responses", element)
-           });
-           
+            });
+            this.setValue("responses", this.responses)
+          } else {
+            this.setValue("responses", [])
           }
           this.initFields()
 
           this.importErrorMessage = null
+
+          //TODO rerendering doesn't help
+          setTimeout(this.forceRerender,500)
 
         } catch (error) {
           // mapping not valid
@@ -230,15 +238,31 @@ export default {
     },
     async addValue(field, newValue){
       const res = await fetch("/api/pushScenarioField", {
-      method: "POST",
-      body: JSON.stringify({
-        simulationID: this.simID,
-        fieldName: field,
-        fieldValue: newValue
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: field,
+          fieldValue: newValue
+        })
       })
-    })
-    const body = await res.json()
-    console.log(body)
+      const body = await res.json()
+      console.log(body)
+    },
+    async setValue(field, newValue){
+      const res = await fetch("/api/setScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: field,
+          fieldValue: newValue
+        })
+      })
+      const body = await res.json()
+      console.log(body)
+    },
+    forceRerender() {
+      this.componentKey += 1;
+      console.log("test")
     }
   },
   beforeMount() {
@@ -281,7 +305,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
 </script>
 
-<template>
+<template :key="componentKey">
   <!--Headline-->
   <div class ="headline-frame">
     <h1 class="headline"> Scenario Editor </h1>
