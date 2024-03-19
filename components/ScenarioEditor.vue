@@ -173,17 +173,9 @@ export default {
           if(jsonData.description != null) {
             this.description = jsonData.description;
           }
-
-
-          // stimuli
-          /*
-          oldStimuli.forEach((index) => {
-              this.removeStimulus(index)
-            });
-           */
           
+          // stimuli
           this.stimuli = []
-
           if(jsonData.stimuli != null) {
             jsonData.stimuli.forEach(element => {
               this.stimuli.push(element);
@@ -193,15 +185,8 @@ export default {
             this.setValue("stimuli", [])
           }
 
-          /*
-          // responses
-            oldResponses.forEach((index) => {
-              this.removeResponse(index)
-            });
-           */
-            
+          // response
           this.responses = []
-
           if(jsonData.responses != null) {
             jsonData.responses.forEach(element => {
               this.responses.push(element);
@@ -215,7 +200,7 @@ export default {
           this.importErrorMessage = null
 
           //TODO rerendering doesn't help
-          setTimeout(this.forceRerender,500)
+          setTimeout(this.forceRerender,1000)
 
         } catch (error) {
           // mapping not valid
@@ -262,7 +247,7 @@ export default {
     },
     forceRerender() {
       this.componentKey += 1;
-      console.log("test")
+      console.log("Rerendering!")
     }
   },
   beforeMount() {
