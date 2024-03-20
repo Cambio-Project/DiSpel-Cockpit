@@ -42,6 +42,8 @@ const dbMissing = true
     <a href="/scenariosSite">Scenarios</a> |
     <a href="/scenarioEditorSite">Scenario Editor</a> |
     <a href="/tqPropRefinerSite">TQPropRefiner</a>
+		<!-- TODO delete when tqPropRefinerSiteDynamic can be accessed from scenario -->
+		<a href="/tqPropRefinerSiteDynamic">TQPropRefiner Dynamic</a>
   </div>
 </template>
 
