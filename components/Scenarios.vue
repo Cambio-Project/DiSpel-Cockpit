@@ -29,7 +29,13 @@ export default {
 
     this.$router.push('/scenarioEditorSite/?simID='+ body.simulationID);
     },
-    async startSimulation(simulationID) {
+    async startSimulation(simulationID, scenario) {
+
+      this.popUp.add({
+        title: 'Simulation Started',
+        description: 'SimID: '+scenario.simulationID});
+      scenario.simState = 'running';
+
       const res = await fetch("/api/startSimulation", {
         method: "POST",
         body: JSON.stringify({
@@ -37,7 +43,10 @@ export default {
         })
       })
       const body = await res.json();
-      console.log(body.status);
+      scenario.simState = 'done';
+
+      console.log("MiSim Response for simulationID: " + simulationID + ": ", body)
+
       return 'done'
     },
     // Open the ScenarioEditor to edit a scenario
@@ -164,8 +173,8 @@ export default {
 
 <template>
   <!--Headline-->
-  <div>
-    <h1> Scenarios </h1>
+  <div class="mb-4 mt-2">
+    <h1 class="text-3xl"> Scenarios </h1>
   </div>
 
   <!--Mainframe-->
@@ -173,8 +182,8 @@ export default {
     <!--Tools-->
     <div>
 
-      <div> 
-        <UButton @click="openEditor">New Scenario</UButton>
+      <div class="mb-4">
+        <UButton class="mr-4" @click="openEditor">New Scenario</UButton>
         <UButton @click="downloadZip(index)">Download all Scenarios</UButton>
       </div>
 
@@ -196,60 +205,50 @@ export default {
 
             <li v-for="(scenario, index) in scenarios" class="list-item">
 
-              <h3>Index: {{index}} Name: {{scenario.name}} </h3>
+              <h3 class="text-2xl">Name: {{scenario.name}} </h3>
 
-              <div v-if="scenario.category === 'None' " class="category-frame-0">
-                {{ 'None' }}
-              </div>
+              <UBadge v-if="scenario.category === 'None' " color="gray">
+                {{ 'None category defined' }}
+              </UBadge>
 
-              <div v-if="scenario.category === 'Exploratory' " class="category-frame-1">
+              <UBadge v-if="scenario.category === 'Exploratory' " color="purple">
                 {{ 'Exploratory' }}
-             </div>
+             </UBadge>
 
-             <div v-if="scenario.category === 'Growth' " class="category-frame-2">
+             <UBadge v-if="scenario.category === 'Growth' " color="blue">
                 {{ 'Growth' }}
-              </div>
+              </UBadge>
 
-              <div v-if="scenario.category === 'UseCase' " class="category-frame-3">
+              <UBadge v-if="scenario.category === 'UseCase' " color="yellow">
                 {{ 'Use Case' }}
-              </div>
+              </UBadge>
 
-              <div>
-                {{"SimulationID: " + scenario.simulationID }}
-              </div>
 
-              <div>
+              <div class="left mb-8">
+                <h4  class="text-mb font-bold mb-1" >
+                  Description:
+                </h4>
                 {{ scenario.description }}
               </div>
 
-              <div>
-                <UButton @click="
-                    startSimulation(scenario.simulationID);
-                    this.popUp.add({
-                      title: 'Simulation Started',
-                      description: 'SimID: '+scenario.simulationID});
-                    scenario.simState = 'running';">
-                  Start Simulation
-                </UButton>
-                <UProgress v-if="scenario.simState === 'running'" animation="carousel"></UProgress>
+
+
+              <div class="left mb-8">
+                <h4 class="text-mb font-bold mb-1">
+                  Stimuli:
+                </h4>
+
+                <ul>
+                  <li v-for="stimuli in scenario.stimuli">
+                    - {{Object.keys(stimuli)[0]}}
+                  </li>
+                </ul>
               </div>
 
-              
-              {{scenario.simState}}
-
-              <h4 class="left">
-                Stimuli:
-              </h4>
-
-              <ul>
-                <li v-for="stimuli in scenario.stimuli">
-                  {{Object.keys(stimuli)[0]}}
-                </li>
-              </ul>
 
               
-                <h4 class="left">
-                Responses:
+                <h4 class="left text-mb font-bold mb-1">
+                 Responses:
                 </h4 >
 
               <span :style="{ color: getVerificationTextColor(scenario, 0)}">
@@ -290,18 +289,32 @@ export default {
               </span>
 
               <div>
+                <UButton v-if="scenario.simState === 'none'" @click="startSimulation(scenario.simulationID, scenario);">Start Simulation</UButton>
+                <div v-if="scenario.simState === 'running'">
+                  <UProgress animation="carousel"></UProgress>
+                  <p>Simulation is running</p>
+                </div>
+                <div v-if="scenario.simState === 'done'">
+                  <p>Simulation is Done, you can now start the verify process</p>
+                </div>
+              </div>
+
+              <div class="text-gray-300">
+                {{"SimulationID: " + scenario.simulationID }}
+              </div>
+
+              <div>
                 <button class="verify-button" @click="verifyScenario(scenario)">Verify Scenario</button>
                 <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
                 <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
                 <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON</button>
               </div>
-                
+
               </li>
             </ul>
           </div>
         </div>
       </div>
-     {{test}}
   </div>
 </template>
 

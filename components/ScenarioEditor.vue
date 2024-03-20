@@ -70,7 +70,7 @@ export default {
       })
     const body = await res.json()
     console.log(body)
-    this.initFields()
+    await this.initFields()
     },
     // remove response
     async removeResponse(index) {
@@ -84,7 +84,7 @@ export default {
       })
     const body = await res.json()
     console.log(body)
-    this.initFields()
+    await this.initFields()
     },
     // add scenario with metadata and stimuli and responses
     async complete() {
@@ -125,7 +125,8 @@ export default {
         }
         this.loadedFiles.push(filename)
       }
-      this.initFields()
+      await this.initFields()
+      location.reload();
     },
     //imports a scenario
     async handleFileChange() {
@@ -267,20 +268,6 @@ export default {
         this.addValue("description", newDescription)
       },
     },
-    // setup() {
-    // const state = reactive({
-    //   scenarios: null,
-    // });
-
-    // onMounted(async () => {
-    //   const response = await fetch("/api/getScenarios");
-    //   state.scenarios = await response.json();
-    // });
-
-    // return {
-    //   state,
-    // };
-    //},
   }
 
 
@@ -295,13 +282,12 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
 <template :key="componentKey">
   <!--Headline-->
-  <div class ="headline-frame">
-    <h1 class="headline"> Scenario Editor </h1>
+  <div>
+    <h1 class="text-3xl mt-2"> Scenario Editor </h1>
   </div>
 
   <!--Main Frame-->
-  <div class="box-frame">
-
+  <div>
        <div v-if="this.importErrorMessage">
           <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
         </div>
@@ -310,19 +296,17 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
           <div class="file-upload-label">
             <label for="fileInput" class="custom-file-upload">Import Scenario</label>
-            <input id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
+            <input class="bg-gray-500" id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
           </div>
 
-          Name:
-          <input v-model="name" type="text" placeholder="Enter name" class="small-text-field"/>
+          <input v-model="name" type="text" placeholder="Enter scenario name" class="small-text-field p-1 border-2 rounded-xl"/>
           Category:
           <select v-model="category" class="select-box">
             <option v-for="category in categories" :key="category">{{ category }}</option>
           </select>
-           Description:
         </h3>
 
-        <textarea v-model="description" type="text" placeholder="Enter description" class="larger-text-field"/>
+        <textarea v-model="description" type="text" placeholder="Enter description" class="larger-text-field p-1 border-2 rounded-xl" />
 
         <div>
         {{ "Transform all Target Logics to " }}
@@ -335,10 +319,11 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
       <p>Stimuli:</p>
 
-      <input id="fileInput" type="file" ref="fileInputStimulus" @change="upload('stimuli')" multiple="multiple">
+      <input class="custom-stimuli-input" id="fileInput" type="file" ref="fileInputStimulus" @change="upload('stimuli')" multiple="multiple">
 
       <ul>
-        <li v-for="(file, index) in stimuli">{{file}}
+        <li v-for="(file, index) in stimuli">
+          {{Object.keys(file)}}
         <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>
       </li>
       </ul>
@@ -346,8 +331,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
     </div>
 
     <div class="message-container">
-
-      <p>Responses:</p>
+      <p class="mb-2">Responses:</p>
       <li v-for="(response, index) in responses" :key="response" class="left">
         {{ index +1}}.
         <select v-model="response.target_logic" class="select-box">
@@ -381,21 +365,23 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
       </li>
 
-      <button class="new-button" @click="openPSPResponse">Add Response</button>
+      <UButton @click="openPSPResponse">Add Response</UButton>
 
     </div>
 
-    <div v-if="name !== null && stimuli != null && responses != null">
-      <button class="new-button" @click="complete">Complete</button>
-    </div>
+    <div class="mt-2">
+      <div v-if="name !== null && stimuli != null && responses != null">
+        <UButton @click="complete">Complete</UButton>
+      </div>
 
-    <div v-else>
-      <div class="info">
-        <button class="not-ready-button" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</button>
-        <span v-if="showTooltip" class="info-text">A Name and at least one Stimulus and one Response is mandatory</span>
-     </div>
+      <div v-else>
+        <div>
+          <UTooltip text="Minimum: Name, 1 Stimulus and 1 Response!">
+            <UButton color="gray" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</UButton>
+          </UTooltip>
+       </div>
+      </div>
     </div>
-
   </div>
 
 </template>
@@ -555,7 +541,6 @@ overflow-y: auto;
 }
 
 .select-box {
-  width: text-align;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -574,4 +559,23 @@ overflow-y: auto;
 .custom-file-upload {
   cursor: pointer;
 }
+
+.custom-stimuli-input::file-selector-button{
+  background: #22C55E;
+  border-radius: 5px;
+  color: white;
+  font-size: .9rem;
+  border: none;
+  margin-right: 10px;
+}
+
+.custom-stimuli-input::file-selector-button:hover{
+  background: #16A34A;
+  border-radius: 5px;
+  color: white;
+  font-size: .9rem;
+  border: none;
+  margin-right: 10px;
+}
+
 </style>
