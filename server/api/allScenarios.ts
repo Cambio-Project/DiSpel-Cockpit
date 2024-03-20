@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     try {
         scenarios = await Scenario.find({})
     } catch (e) {
-        console.log("Error creating scenario")
+        console.log("Error finding scenarios")
     }
 
     console.log(scenarios)

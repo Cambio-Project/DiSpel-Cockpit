@@ -1,41 +1,6 @@
 <script>
 import JSZip from 'jszip';
-
-// creates all target_logics for one PSPItem (Stimulus or Response)
-function createPSPItem(item) {
-  return {
-    SEL: item[0],
-    LTL: item[1],
-    MTL: item[2],
-    Prism: item[3],
-    Quantitative_Prism: item[4],
-    TBV_timed: item[5],
-    TBV_untimed: item[6],
-    display_logic: item[7],
-    predicates_info: item[8],
-  };
-} 
-
-// creates a list of all target_logics for PSPItems (Stimuli or Responses)
-function createPSPList(coll) {
-  var list = [];
-  coll.forEach((item, index) => {
-    list.push(createPSPItem(coll[index]));
-  });
-  return list;
-}
-
-// creates the scenario schema
-function createSchema(scenario) {
-  const jsonData = {
-    name: scenario[0],
-    category: scenario[1],
-    description: scenario[2],
-    stimuli: createPSPList(scenario[3]),
-    responses: createPSPList(scenario[4])
-  }
-    return jsonData;
-  };
+import {tryCatch} from "standard-as-callback/built/utils.js";
 
 export default {
   name: "ScenarioList",
@@ -45,37 +10,103 @@ export default {
     return{
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
+      verificationResults: {},
+      scenarios : null,
+      popUp: null,
   };
 },
   methods:{
-    // Open the ScenarioEditor
-    openEditor() {
-      this.$router.push('/scenarioEditorSite');
+    tryCatch() {
+      return tryCatch
     },
-    // Remove one scenario 
-    removeScenario(index) {
-      this.$store.commit('removeScenario', index)
+    // Open the ScenarioEditor with to create a new scenario
+    async openEditor() {
+      const res = await fetch("/api/initScenario", {
+      method: "POST"
+      })
+    const body = await res.json()
+    console.log(body)
+
+    this.$router.push('/scenarioEditorSite/?simID='+ body.simulationID);
+    },
+    async startSimulation(simulationID) {
+      const res = await fetch("/api/startSimulation", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: simulationID
+        })
+      })
+      const body = await res.json();
+      console.log(body.status);
+      return 'done'
+    },
+    // Open the ScenarioEditor to edit a scenario
+    async editScenario(simID) {
+      this.$router.push('/scenarioEditorSite/?simID='+ simID);
+    },
+    // Remove one scenario
+    async removeScenario(ID) {
+      const res = await fetch("/api/deleteScenario", {
+        method: "POST",
+        body: JSON.stringify({
+          ID: ID
+        })
+      })
+      const body = await res.json();
+      console.log(body);
+
+      const response = await fetch("/api/allScenarios");
+      const bodyScenarios = await response.json();
+      this.scenarios = bodyScenarios.scenarios
+    },
+    async verifyScenario(scenario) {
+      const response = await useFetch("/api/verifySimulation", {
+        method: "POST",
+        body: JSON.stringify({
+          scenario,
+        })
+      });
+      const responsePayload = response.data.value.result;
+      this.verificationResults[scenario._id] = responsePayload;
+    },
+    getVerificationTextColor(scenario, responseIndex) {
+      const verificationResult = this.verificationResults[scenario._id];
+      if(verificationResult) {
+        if(verificationResult[responseIndex]) {
+          return 'green';
+        } else {
+          return 'red';
+        }
+      } else {
+        return 'black';
+      }
+      //return verificationResult ? verificationResult[responseIndex] : null;
     },
     //Changes all target logics to the same one
     changeAllTargets() {
       this.scenarios.forEach(scenario => {
-        scenario[3].forEach(stimulus => {
-          stimulus[7]= this.target;
-        })
-        scenario[4].forEach(response => {
-          response[7]= this.target;
-        })
-      });
+      scenario.responses.forEach(response => {
+          response.target_logic= this.target;
+      })
+    });
     },
     //Download a single scenario as json
-    downloadJSON(index) {
-      const jsonData = createSchema(this.scenarios[index]);
-      const jsonStr = JSON.stringify(jsonData, null, 2);
+    async downloadJSON(simID) {
+      const res = await fetch("/api/getScenario", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: simID
+        })
+      })
+      const body = await res.json()
+      var scenario = body.Scenario
+
+      const jsonStr = JSON.stringify(scenario, null, 2);
       const blob = new Blob([jsonStr], {type: 'application/json'})
       const url = window.URL.createObjectURL(blob);
 
       const a = document.createElement('a');
-      const fileName = 'Scenario_' + this.scenarios[index][0] + '.json';
+      const fileName = 'Scenario_' + scenario.name + '.json';
       a.style.display = 'none';
       a.href = url;
       a.download = fileName;
@@ -90,8 +121,8 @@ export default {
       const zip = new JSZip();
       var c = 1
       this.scenarios.forEach((scenario, index) => {
-        var name = c + " - " + this.scenarios[index][0];
-        const jsonData = createSchema(this.scenarios[index]);
+        var name = c + " - " + scenario.name;
+        const jsonData = this.scenarios[index];
         zip.file('Scenario_' + name + '.json', JSON.stringify(jsonData, null, 2));
         c++;
       });
@@ -110,48 +141,41 @@ export default {
       document.body.removeChild(a);
     },
   },
-  computed:{
-    scenarios(){
-      return this.$store.state.scenarios
-    },
+  async beforeMount() {
+    const response = await fetch("/api/allScenarios");
+    const body = await response.json();
+    this.scenarios = body.scenarios
+
+    for (let i = 0; i < this.scenarios.length; i++) {
+      this.scenarios[i].simState = "none"
+    }
+
+    this.popUp = useToast()
+
+    console.log(this.scenarios)
   },
   // async mounted() {
   //   const res = await fetch("/api/allScenarios")
   //   this.scenariosNew = await res.json();
   //   console.log(this.scenariosNew)
   // },
-  setup() {
-    const state = reactive({
-      scenarios: null,
-    });
-
-    onMounted(async () => {
-      const response = await fetch("/api/allScenarios");
-      state.scenarios = await response.json();
-    });
-
-    return {
-      state,
-    };
-  },
 };
 </script>
 
 <template>
-
   <!--Headline-->
-  <div class ="headline-frame">
-    <h1 class="headline"> Scenarios </h1>
+  <div>
+    <h1> Scenarios </h1>
   </div>
 
   <!--Mainframe-->
-  <div class="main-frame">
+  <div>
     <!--Tools-->
-    <div class="tool-frame">
+    <div>
 
       <div> 
-        <button class="new-button" @click="openEditor">New Scenario</button> 
-        <button class="all-file-download-button" @click="downloadZip(index)">Download all Scenarios</button>
+        <UButton @click="openEditor">New Scenario</UButton>
+        <UButton @click="downloadZip(index)">Download all Scenarios</UButton>
       </div>
 
       <div>
@@ -167,82 +191,118 @@ export default {
     
       <div class="list-container">
         <div class="list-content">
-<!--          <div v-if="{scenarios}">-->
-          <div v-if="state.scenarios">
+          <div v-if="scenarios">
+            <ul>
 
-<!--            <li v-for="(scenario, index) in scenarios" :key="index" class="list-item">-->
-            <li v-for="scenarios in state.scenarios" class="list-item">
-            <li v-for="scenario in scenarios" class="list-item">
+            <li v-for="(scenario, index) in scenarios" class="list-item">
 
-              <h3>SimulationID: {{scenario.simulationID}}</h3>
+              <h3>Index: {{index}} Name: {{scenario.name}} </h3>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">-->
-<!--                {{ 'None' }}-->
-<!--              </div>-->
+              <div v-if="scenario.category === 'None' " class="category-frame-0">
+                {{ 'None' }}
+              </div>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'Exploratory' " class="category-frame-1">-->
-<!--                {{ 'Exploratory' }}-->
-<!--              </div>-->
+              <div v-if="scenario.category === 'Exploratory' " class="category-frame-1">
+                {{ 'Exploratory' }}
+             </div>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'Growth' " class="category-frame-2">-->
-<!--                {{ 'Growth' }}-->
-<!--              </div>-->
+             <div v-if="scenario.category === 'Growth' " class="category-frame-2">
+                {{ 'Growth' }}
+              </div>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'UseCase' " class="category-frame-3">-->
-<!--                {{ 'Use Case' }}-->
-<!--              </div>-->
+              <div v-if="scenario.category === 'UseCase' " class="category-frame-3">
+                {{ 'Use Case' }}
+              </div>
 
-<!--              <h3>-->
-<!--                {{ index +1}}. {{ scenario[Object.keys(scenario)[0]] }}-->
-<!--              </h3>-->
+              <div>
+                {{"SimulationID: " + scenario.simulationID }}
+              </div>
 
-<!--              {{ scenario[Object.keys(scenario)[2]] }}-->
+              <div>
+                {{ scenario.description }}
+              </div>
 
-                <h4 class="left">
-                  Stimuli:
-                </h4>
+              <div>
+                <UButton @click="
+                    startSimulation(scenario.simulationID);
+                    this.popUp.add({
+                      title: 'Simulation Started',
+                      description: 'SimID: '+scenario.simulationID});
+                    scenario.simState = 'running';">
+                  Start Simulation
+                </UButton>
+                <UProgress v-if="scenario.simState === 'running'" animation="carousel"></UProgress>
+              </div>
 
-              {{scenario.stimuli}}
+              
+              {{scenario.simState}}
 
-<!--                <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" class="left">-->
-<!--                  {{ index +1}}.-->
-<!--                  <select v-model="stimulus[7]" class="select-box">-->
-<!--                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
-<!--                  </select>-->
-<!--                  {{ stimulus[stimulus[7]] }} <br>-->
-<!--                  <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>-->
-<!--                  <i class="sel-line"> <strong>Predicates:</strong> {{ stimulus[8] }} </i> <br> <br>-->
-<!--                </li>-->
+              <h4 class="left">
+                Stimuli:
+              </h4>
+
+              <ul>
+                <li v-for="stimuli in scenario.stimuli">
+                  {{Object.keys(stimuli)[0]}}
+                </li>
+              </ul>
+
               
                 <h4 class="left">
                 Responses:
                 </h4 >
 
-              {{scenario.responses[0]}}
+              <span :style="{ color: getVerificationTextColor(scenario, 0)}">
+                <!--{{scenario.responses[0]}}-->
+                <li v-for="(response, index) in scenario.responses" :key="response" class="left">
+                {{ index +1}}.
+                <select v-model="response.target_logic" class="select-box">
+                  <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+                </select>
 
-<!--                <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">-->
-<!--                  {{ index +1}}.-->
-<!--                  <select v-model="response[7]" class="select-box">-->
-<!--                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
-<!--                  </select>-->
-<!--                  {{ response[response[7]] }} <br>-->
-<!--                  <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>-->
-<!--                  <i class="sel-line"> <strong>Predicates:</strong> {{ response[8] }} </i> <br> <br>-->
-<!--                </li>-->
+                <span v-if="response.target_logic==0">
+                  {{ response.SEL}}
+                </span>
+                <span v-if="response.target_logic==1">
+                  {{ response.LTL}}
+                </span>
+                <span v-if="response.target_logic==2">
+                  {{ response.MTL}}
+                </span>
+                <span v-if="response.target_logic==3">
+                  {{ response.Prism}}
+                </span>
+                <span v-if="response.target_logic==4">
+                  {{ response.Quantitative_Prism}}
+                </span>
+                <span v-if="response.target_logic==5">
+                  {{ response.TBV_untimed}}
+                </span>
+                <span v-if="response.target_logic==6">
+                  {{ response.TBV_timed}}
+                </span>
+                
+                <div>
+                <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i> <br> <br>
+              </div>
+
+              </li>
+              </span>
 
               <div>
-                <button class="remove-button" @click="removeScenario(index)">Remove Scenario</button>
-                <button class="file-download-button" @click="downloadJSON(index)">Download as JSON</button>
+                <button class="verify-button" @click="verifyScenario(scenario)">Verify Scenario</button>
+                <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
+                <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
+                <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON</button>
               </div>
                 
               </li>
-            </li>
+            </ul>
           </div>
         </div>
       </div>
-     
+     {{test}}
   </div>
-          
 </template>
 
 
@@ -422,6 +482,60 @@ body {
   background-color: rgb(160, 40, 40);
 }
 
+.remove-button-2 {
+  background-color: rgb(219, 65, 65);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.remove-button-2:hover {
+  background-color: rgb(160, 40, 40);
+}
+
+.verify-button {
+  background-color: rgb(65, 219, 65);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin-top: 20px;
+  margin-right: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.verify-button:hover {
+  background-color: rgb(40, 160, 40);
+}
+
+.edit-button {
+  background-color: rgb(240, 173, 28);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin-top: 20px;
+  margin-right: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.edit-button:hover {
+  background-color: rgb(196, 142, 25);
+}
+
 .left{
   text-align: left;
   overflow: auto;
@@ -429,7 +543,6 @@ body {
 }
 
 .select-box {
-  width: text-align;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 8px;

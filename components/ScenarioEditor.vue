@@ -10,93 +10,125 @@ export default {
   },
   data() {
     return {
-      outputType: null,
       categories: ["None", "UseCase", "Growth", "Exploratory"],
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
-      name: this.$store.state.name,
-      category: this.$store.state.category,
-      description: this.$store.state.description,
-      showTooltip: false,
-      stimuli: this.$store.state.stimuli,
-      responses: this.$store.state.responses,
+
+      simID: this.$route.query.simID,
+      name: null,
+      category: "None",
+      description: null,
+      stimuli: null,
+      responses: null,
+
       importErrorMessage: null,
+      componentKey: 0,
     }
   },
   methods:{
-    // create stimulus with pspwizard
-    openPSPStimulus() {
-      this.outputType= 'Stimulus';
-      this.$store.commit('setOutputType', this.outputType);
-      this.$router.push('/pspwizardSite');
+    // get fields from DB object with simulationID
+    async initFields() {
+      const res = await fetch("/api/getScenarios", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID
+        })
+      })
+      const body = await res.json()
+      console.log(this.simID)
+      console.log(body.Scenario)
+
+      if (typeof body.Scenario.name !== "undefined") {
+        this.name = body.Scenario.name
+      }
+      if (typeof body.Scenario.category !== "undefined") {
+        this.category = body.Scenario.category
+      }
+      if (typeof body.Scenario.description !== "undefined") {
+        this.description = body.Scenario.description
+      }
+      if (typeof body.Scenario.stimuli !== "undefined") {
+        this.stimuli = body.Scenario.stimuli
+      }
+      if (typeof body.Scenario.responses !== "undefined") {
+        this.responses = body.Scenario.responses
+      }
     },
     // create response with pspwizard
     openPSPResponse() {
-      this.outputType= 'Response';
-      this.$store.commit('setOutputType', this.outputType);
-      this.$router.push('/pspwizardSite');
+      this.$router.push('/pspwizardSite?simID='+ this.simID);
     },
-    // remove stiumulus
-    removeStimulus(index) {
-      this.$store.commit('removeStimulus', index);
+    // remove stimulus
+    async removeStimulus(index) {
+      const res = await fetch("/api/deleteScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: "stimuli",
+          fieldIndex: index
+        })
+      })
+    const body = await res.json()
+    console.log(body)
+    this.initFields()
     },
     // remove response
-    removeResponse(index) {
-      this.$store.commit('removeResponse', index);
+    async removeResponse(index) {
+      const res = await fetch("/api/deleteScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: "responses",
+          fieldIndex: index
+        })
+      })
+    const body = await res.json()
+    console.log(body)
+    this.initFields()
     },
     // add scenario with metadata and stimuli and responses
-    async addScenario() {
-      // this.$store.commit('addCategory', this.category);
-      // this.$store.commit('addDescription', this.description);
-      // this.$store.commit('setStimuli', this.stimuli);
-      // this.$store.commit('setResponses', this.responses);
-      // this.$store.commit('addScenario');
-      // this.$router.push('/scenariosSite');
-
-      const body = {
-        name: this.name,
-        category: this.category,
-        description: this.description,
-        stimuli: this.stimuli,
-        responses: this.responses
-      }
-
-      console.log(body)
-
-      const res = await fetch("/api/saveScenario", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
-
-      console.log(res)
+    async complete() {
+      this.$router.push('/scenariosSite');
 
     },
     //Changes all target logics to the same one
     changeAllTargets() {
-      this.stimuli.forEach(stimulus => {
-        stimulus[7]= this.target;
-      })
       this.responses.forEach(response => {
-        response[7]= this.target;
+        response.target_logic = this.target;
       })
     },
-    async uploadStimulus() {
+    async upload(type) {
       const fileInput = this.$refs.fileInputStimulus;
       this.stimuli = []
       this.loadedFiles = []
       for (const file of fileInput.files) {
-        const jsonAsText = await file.text()
-        const json = JSON.parse(jsonAsText)
         const filename = file.name
-        const tmp = {
-          [filename]: json
+        if (filename.split(".").pop() === "json"){
+          const jsonAsText = await file.text()
+          const json = JSON.parse(jsonAsText)
+          const tmp = {
+            [filename]: json
+          }
+          this.addValue(type, tmp)
+
+        } else {
+          const formdata = new FormData()
+          formdata.append(filename, file)
+          await fetch("/api/uploadAdditionalStimuliFile", {
+            method: "POST",
+            body: formdata
+          })
+          const tmp = {
+            [filename]: "external"
+          }
+          this.addValue(type, tmp)
         }
-        this.stimuli.push(tmp)
         this.loadedFiles.push(filename)
       }
+      this.initFields()
     },
     //imports a scenario
-    handleFileChange() {
+    async handleFileChange() {
       const fileInput = this.$refs.fileInput;
 
       if (!fileInput.files.length) {
@@ -126,138 +158,52 @@ export default {
           // name
           if(jsonData.name != null) {
             this.name = jsonData.name;
+            this.setValue("name", this.name)
           }
 
           // category
           if(jsonData.category != null) {
             this.category = jsonData.category;
+            this.setValue("category", this.category)
           }
 
           // description
           if(jsonData.description != null) {
             this.description = jsonData.description;
+            this.setValue("description", this.description)
           }
-
-          var jsonlist = [];
 
           // stimuli
+          this.stimuli = []
           if(jsonData.stimuli != null) {
             jsonData.stimuli.forEach(element => {
-              if(element.SEL == null) {
-                this.importErrorMessage = "SEL in each stimulus need to be defined.";
-                console.warn(this.importErrorMessage);
-                return;
-              }
-              else {
-                jsonlist.push(element.SEL);
-              }
-              if(element.LTL == null) {
-                jsonlist.push("LTL not defined");
-              }
-              else {
-                jsonlist.push(element.LTL);
-              }
-              if(element.MTL == null) {
-                jsonlist.push("MTL not defined");
-              }
-              else {
-                jsonlist.push(element.MTL);
-              }
-              if(element.Prism == null) {
-                jsonlist.push("Prism not defined");
-              }
-              else {
-                jsonlist.push(element.Prism);
-              }
-              if(element.Quantitative_Prism == null) {
-                jsonlist.push("Quantitative_Prism not defined");
-              }
-              else {
-                jsonlist.push(element.Quantitative_Prism);
-              }
-              if(element.TBV_timed == null) {
-                jsonlist.push("TBV_timed not defined");
-              }
-              else {
-                jsonlist.push(element.TBV_timed);
-              }
-              if(element.TBV_untimed == null) {
-                jsonlist.push("TBV_untimed not defined");
-              }
-              else {
-                jsonlist.push(element.TBV_untimed);
-              }
-              if(element.display_logic == null) {
-                jsonlist.push(0);
-              }
-              else {
-                jsonlist.push(element.display_logic);
-              }
-              this.stimuli.push(jsonlist);
-              jsonlist = [];
-
+              this.stimuli.push(element);
             });
+            this.setValue("stimuli", this.stimuli)
+          } else {
+            this.setValue("stimuli", [])
           }
 
-          // responses
+          // response
+          this.responses = []
           if(jsonData.responses != null) {
             jsonData.responses.forEach(element => {
-              if(element.SEL == null) {
-                this.importErrorMessage = "SEL in each response need to be defined.";
-                console.warn(this.importErrorMessage);
-                return;
-              }
-              else {
-                jsonlist.push(element.SEL);
-              }
-              if(element.LTL == null) {
-                jsonlist.push("LTL not defined");
-              }
-              else {
-                jsonlist.push(element.LTL);
-              }
-              if(element.MTL == null) {
-                jsonlist.push("MTL not defined");
-              }
-              else {
-                jsonlist.push(element.MTL);
-              }
-              if(element.Prism == null) {
-                jsonlist.push("Prism not defined");
-              }
-              else {
-                jsonlist.push(element.Prism);
-              }
-              if(element.Quantitative_Prism == null) {
-                jsonlist.push("Quantitative_Prism not defined");
-              }
-              else {
-                jsonlist.push(element.Quantitative_Prism);
-              }
-              if(element.TBV_timed == null) {
-                jsonlist.push("TBV_timed not defined");
-              }
-              else {
-                jsonlist.push(element.TBV_timed);
-              }
-              if(element.TBV_untimed == null) {
-                jsonlist.push("TBV_untimed not defined");
-              }
-              else {
-                jsonlist.push(element.TBV_untimed);
-              }
-              if(element.display_logic == null) {
-                jsonlist.push(0);
-              }
-              else {
-                jsonlist.push(element.display_logic);
-              }
-              this.responses.push(jsonlist);
-              jsonlist = [];
+              this.responses.push(element);
             });
+            this.setValue("responses", this.responses)
+          } else {
+            this.setValue("responses", [])
           }
+          this.initFields()
 
           this.importErrorMessage = null
+
+          //TODO rerendering doesn't help
+          //setTimeout(this.forceRerender,1000)
+          //TODO reloading the page works, but isn't pretty
+          setTimeout(() => {
+            location.reload();
+          }, 500);
 
         } catch (error) {
           // mapping not valid
@@ -274,28 +220,67 @@ export default {
       this.name= "",
       this.category= "None",
       this.description= null,
-      this.stimuli= [],
-      this.responses= [],
+      this.stimuli= null,
+      this.responses= null,
       this.showTooltip= false
     },
+    async addValue(field, newValue){
+      const res = await fetch("/api/pushScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: field,
+          fieldValue: newValue
+        })
+      })
+      const body = await res.json()
+      console.log(body)
+    },
+    async setValue(field, newValue){
+      const res = await fetch("/api/setScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: field,
+          fieldValue: newValue
+        })
+      })
+      const body = await res.json()
+      console.log(body)
+    },
+    forceRerender() {
+      this.componentKey += 1;
+      console.log("Rerendering!")
+    },
+  },
+  beforeMount() {
+    this.initFields();
   },
   watch:{
-    name(newName) {
-      this.$store.commit('addName', newName);
+      name(newName) {
+        this.addValue("name", newName)
+      },
+      category(newCategory) {
+        this.addValue("category", newCategory)
+      },
+      description(newDescription) {
+        this.addValue("description", newDescription)
+      },
     },
-    category(newCategory) {
-      this.$store.commit('addCategory', newCategory);
-    },
-    description(newDescription) {
-      this.$store.commit('addDescription', newDescription);
-    },
-    stimuli(newStimuli) {
-      this.$store.commit('setStimuli', newStimuli);
-    },
-    responses(newResponses) {
-      this.$store.commit('setResponses', newResponses);
-    }
-  }
+    // setup() {
+    // const state = reactive({
+    //   scenarios: null,
+    // });
+
+    // onMounted(async () => {
+    //   const response = await fetch("/api/getScenarios");
+    //   state.scenarios = await response.json();
+    // });
+
+    // return {
+    //   state,
+    // };
+    //},
   }
 
 
@@ -308,8 +293,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
 </script>
 
-<template>
-
+<template :key="componentKey">
   <!--Headline-->
   <div class ="headline-frame">
     <h1 class="headline"> Scenario Editor </h1>
@@ -318,9 +302,9 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
   <!--Main Frame-->
   <div class="box-frame">
 
-<!--        <div v-if="this.importErrorMessage">-->
-<!--          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>-->
-<!--        </div>-->
+       <div v-if="this.importErrorMessage">
+          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
+        </div>
 
         <h3 class="center">
 
@@ -351,24 +335,12 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
       <p>Stimuli:</p>
 
-<!--      <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">-->
-<!--        {{ index +1}}.-->
-<!--        <select v-model="stimulus[7]" class="select-box">-->
-<!--          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
-<!--        </select>-->
-
-<!--        {{ stimulus[stimulus[7]] }}-->
-<!--        <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>-->
-<!--        <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>-->
-
-<!--      </li>-->
-
-      <input id="fileInput" type="file" ref="fileInputStimulus" @change="uploadStimulus" multiple="multiple">
-
-<!--      <button class="new-button" @click="openPSPStimulus">Add Stimulus</button>-->
+      <input id="fileInput" type="file" ref="fileInputStimulus" @change="upload('stimuli')" multiple="multiple">
 
       <ul>
-        <li v-for="file in stimuli">{{file}}</li>
+        <li v-for="(file, index) in stimuli">{{file}}
+        <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>
+      </li>
       </ul>
       
     </div>
@@ -378,13 +350,34 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
       <p>Responses:</p>
       <li v-for="(response, index) in responses" :key="response" class="left">
         {{ index +1}}.
-        <select v-model="response[7]" class="select-box">
+        <select v-model="response.target_logic" class="select-box">
           <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
         </select>
 
-        {{ response[response[7]] }}
+        <span v-if="response.target_logic==0">
+          {{ response.SEL}}
+        </span>
+        <span v-if="response.target_logic==1">
+          {{ response.LTL}}
+        </span>
+        <span v-if="response.target_logic==2">
+          {{ response.MTL}}
+        </span>
+        <span v-if="response.target_logic==3">
+          {{ response.Prism}}
+        </span>
+        <span v-if="response.target_logic==4">
+          {{ response.Quantitative_Prism}}
+        </span>
+        <span v-if="response.target_logic==5">
+          {{ response.TBV_untimed}}
+        </span>
+        <span v-if="response.target_logic==6">
+          {{ response.TBV_timed}}
+        </span>
+        
         <button class="remove-button" @click="removeResponse(index)">Remove</button> <br>
-        <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>
+        <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i> <br> <br>
 
       </li>
 
@@ -392,17 +385,16 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
     </div>
 
-<!--    <div v-if="this.name.length !== 0 && this.stimuli.length !== 0 && this.responses.length !== 0">-->
-    <div>
-      <button class="new-button" @click="addScenario">Complete</button>
+    <div v-if="name !== null && stimuli != null && responses != null">
+      <button class="new-button" @click="complete">Complete</button>
     </div>
 
-<!--    <div v-else>-->
-<!--      <div class="info">-->
-<!--        <button class="not-ready-button" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</button>-->
-<!--        <span v-if="showTooltip" class="info-text">A Name and at least one Stimulus and one Response is mandatory</span>-->
-<!--      </div>-->
-<!--    </div>-->
+    <div v-else>
+      <div class="info">
+        <button class="not-ready-button" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</button>
+        <span v-if="showTooltip" class="info-text">A Name and at least one Stimulus and one Response is mandatory</span>
+     </div>
+    </div>
 
   </div>
 
