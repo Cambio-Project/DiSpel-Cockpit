@@ -22,6 +22,7 @@ export default {
       responses: null,
 
       importErrorMessage: null,
+      componentKey: 0,
     }
   },
   methods:{
@@ -33,26 +34,25 @@ export default {
           simulationID: this.simID
         })
       })
-    const body = await res.json()
-    console.log(this.simID)
-    console.log(body.Scenario)
+      const body = await res.json()
+      console.log(this.simID)
+      console.log(body.Scenario)
 
-    if (typeof body.Scenario.name !== "undefined") {
-      this.name = body.Scenario.name
-    }
-    if (typeof body.Scenario.category !== "undefined") {
-      this.category = body.Scenario.category
-    }
-    if (typeof body.Scenario.description !== "undefined") {
-      this.description = body.Scenario.description
-    }
-    if (typeof body.Scenario.stimuli !== "undefined") {
-      this.stimuli = body.Scenario.stimuli
-    }
-    if (typeof body.Scenario.responses !== "undefined") {
-      this.responses = body.Scenario.responses
-    }
-  
+      if (typeof body.Scenario.name !== "undefined") {
+        this.name = body.Scenario.name
+      }
+      if (typeof body.Scenario.category !== "undefined") {
+        this.category = body.Scenario.category
+      }
+      if (typeof body.Scenario.description !== "undefined") {
+        this.description = body.Scenario.description
+      }
+      if (typeof body.Scenario.stimuli !== "undefined") {
+        this.stimuli = body.Scenario.stimuli
+      }
+      if (typeof body.Scenario.responses !== "undefined") {
+        this.responses = body.Scenario.responses
+      }
     },
     // create response with pspwizard
     openPSPResponse() {
@@ -152,62 +152,58 @@ export default {
             return;
           }
 
-          const oldStimuli = this.stimuli
-          const oldResponses = this.responses
-
           // reset all fields
           this.resetAllFields();
 
           // name
           if(jsonData.name != null) {
             this.name = jsonData.name;
+            this.setValue("name", this.name)
           }
 
           // category
           if(jsonData.category != null) {
             this.category = jsonData.category;
+            this.setValue("category", this.category)
           }
 
           // description
           if(jsonData.description != null) {
             this.description = jsonData.description;
+            this.setValue("description", this.description)
           }
-
 
           // stimuli
-          oldStimuli.forEach((index) => {
-              this.removeStimulus(index)
-            });
-          
           this.stimuli = []
-
-          if(jsonData.stimuli != null)
-            {
+          if(jsonData.stimuli != null) {
             jsonData.stimuli.forEach(element => {
               this.stimuli.push(element);
-              this.addValue("stimuli", element)
-           });
-           
-          }
-          
-          // responses
-            oldResponses.forEach((index) => {
-              this.removeResponse(index)
             });
-            
-          this.responses = []
+            this.setValue("stimuli", this.stimuli)
+          } else {
+            this.setValue("stimuli", [])
+          }
 
-          if(jsonData.responses != null)
-            {
+          // response
+          this.responses = []
+          if(jsonData.responses != null) {
             jsonData.responses.forEach(element => {
               this.responses.push(element);
-              this.addValue("responses", element)
-           });
-           
+            });
+            this.setValue("responses", this.responses)
+          } else {
+            this.setValue("responses", [])
           }
           this.initFields()
 
           this.importErrorMessage = null
+
+          //TODO rerendering doesn't help
+          //setTimeout(this.forceRerender,1000)
+          //TODO reloading the page works, but isn't pretty
+          setTimeout(() => {
+            location.reload();
+          }, 500);
 
         } catch (error) {
           // mapping not valid
@@ -230,16 +226,32 @@ export default {
     },
     async addValue(field, newValue){
       const res = await fetch("/api/pushScenarioField", {
-      method: "POST",
-      body: JSON.stringify({
-        simulationID: this.simID,
-        fieldName: field,
-        fieldValue: newValue
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: field,
+          fieldValue: newValue
+        })
       })
-    })
-    const body = await res.json()
-    console.log(body)
-    }
+      const body = await res.json()
+      console.log(body)
+    },
+    async setValue(field, newValue){
+      const res = await fetch("/api/setScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: field,
+          fieldValue: newValue
+        })
+      })
+      const body = await res.json()
+      console.log(body)
+    },
+    forceRerender() {
+      this.componentKey += 1;
+      console.log("Rerendering!")
+    },
   },
   beforeMount() {
     this.initFields();
@@ -281,7 +293,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
 </script>
 
-<template>
+<template :key="componentKey">
   <!--Headline-->
   <div class ="headline-frame">
     <h1 class="headline"> Scenario Editor </h1>
