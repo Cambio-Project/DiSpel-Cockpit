@@ -91,6 +91,9 @@ export default {
       }
       //return verificationResult ? verificationResult[responseIndex] : null;
     },
+    openRefinement(simID, responseIndex) {
+			this.$router.push('/tqPropRefinerSiteDynamic?sim_id=' + simID + '&response_index=' + responseIndex);
+		},
     //Changes all target logics to the same one
     changeAllTargets() {
       this.scenarios.forEach(scenario => {
@@ -251,9 +254,9 @@ export default {
                  Responses:
                 </h4 >
 
-              <span :style="{ color: getVerificationTextColor(scenario, 0)}">
+              <span>
                 <!--{{scenario.responses[0]}}-->
-                <li v-for="(response, index) in scenario.responses" :key="response" class="left">
+                <li v-for="(response, index) in scenario.responses" :key="response"  :style="{ color: getVerificationTextColor(scenario, index)}" class="left">
                 {{ index +1}}.
                 <select v-model="response.target_logic" class="select-box">
                   <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
@@ -282,7 +285,10 @@ export default {
                 </span>
                 
                 <div>
-                <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i> <br> <br>
+                <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i>
+                <br>
+                <button @click="openRefinement(scenario.simulationID, index)" class="verify-button" :style="{ 'background-color': getVerificationTextColor(scenario, index) }">Refine Response</button>
+                <br><br>
               </div>
 
               </li>
