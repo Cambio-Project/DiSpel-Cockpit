@@ -54,7 +54,7 @@ export default {
         this.responses = body.Scenario.responses
       }
     },
-    // create response with pspwizard
+    // create response with PSPWizard
     openPSPResponse() {
       this.$router.push('/pspwizardSite?simID='+ this.simID);
     },
@@ -72,7 +72,7 @@ export default {
     console.log(body)
     await this.initFields()
     },
-    // remove response
+    // remove response from the scenario entry in the Scenario MongoDB table
     async removeResponse(index) {
       const res = await fetch("/api/deleteScenarioField", {
         method: "POST",
@@ -89,9 +89,8 @@ export default {
     // add scenario with metadata and stimuli and responses
     async complete() {
       this.$router.push('/scenariosSite');
-
     },
-    //Changes all target logics to the same one
+    // changes all target logics to the same one
     changeAllTargets() {
       this.responses.forEach(response => {
         response.target_logic = this.target;
@@ -128,7 +127,7 @@ export default {
       await this.initFields()
       location.reload();
     },
-    //imports a scenario
+    // imports a scenario
     async handleFileChange() {
       const fileInput = this.$refs.fileInput;
 
@@ -199,9 +198,7 @@ export default {
 
           this.importErrorMessage = null
 
-          //TODO rerendering doesn't help
-          //setTimeout(this.forceRerender,1000)
-          //TODO reloading the page works, but isn't pretty
+          // reloads the page, necessary to display everything
           setTimeout(() => {
             location.reload();
           }, 500);
@@ -215,6 +212,7 @@ export default {
 
       fileReader.readAsText(file);
     },
+    // resets all fields
     resetAllFields() {
       this.outputType = null,
       this.target= null,
@@ -225,6 +223,7 @@ export default {
       this.responses= null,
       this.showTooltip= false
     },
+    // adds a new value to a scenario field of the Scenario MongoDB table
     async addValue(field, newValue){
       const res = await fetch("/api/pushScenarioField", {
         method: "POST",
@@ -237,6 +236,7 @@ export default {
       const body = await res.json()
       console.log(body)
     },
+    // sets a new value to a scenario field of the Scenario MongoDB table
     async setValue(field, newValue){
       const res = await fetch("/api/setScenarioField", {
         method: "POST",
@@ -248,11 +248,7 @@ export default {
       })
       const body = await res.json()
       console.log(body)
-    },
-    forceRerender() {
-      this.componentKey += 1;
-      console.log("Rerendering!")
-    },
+    }
   },
   beforeMount() {
     this.initFields();

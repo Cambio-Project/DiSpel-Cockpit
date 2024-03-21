@@ -16,10 +16,7 @@ export default {
   };
 },
   methods:{
-    tryCatch() {
-      return tryCatch
-    },
-    // Open the ScenarioEditor with to create a new scenario
+    // open the ScenarioEditor with to create a new scenario
     async openEditor() {
       const res = await fetch("/api/initScenario", {
       method: "POST"
@@ -29,6 +26,7 @@ export default {
 
     this.$router.push('/scenarioEditorSite/?simID='+ body.simulationID);
     },
+    // starts the MiSim simulation
     async startSimulation(simulationID, scenario) {
 
       this.popUp.add({
@@ -49,11 +47,11 @@ export default {
 
       return 'done'
     },
-    // Open the ScenarioEditor to edit a scenario
+    // open the ScenarioEditor to edit a scenario
     async editScenario(simID) {
       this.$router.push('/scenarioEditorSite/?simID='+ simID);
     },
-    // Remove one scenario
+    // remove one scenario from the Scenario MongoDB table
     async removeScenario(ID) {
       const res = await fetch("/api/deleteScenario", {
         method: "POST",
@@ -68,6 +66,7 @@ export default {
       const bodyScenarios = await response.json();
       this.scenarios = bodyScenarios.scenarios
     },
+    // verify the simulation
     async verifyScenario(scenario) {
       const response = await useFetch("/api/verifySimulation", {
         method: "POST",
@@ -78,6 +77,7 @@ export default {
       const responsePayload = response.data.value.result;
       this.verificationResults[scenario._id] = responsePayload;
     },
+    // get the text color for the verifcation
     getVerificationTextColor(scenario, responseIndex) {
       const verificationResult = this.verificationResults[scenario._id];
       if(verificationResult) {
@@ -91,10 +91,11 @@ export default {
       }
       //return verificationResult ? verificationResult[responseIndex] : null;
     },
+    // open the refinement page
     openRefinement(simID, responseIndex) {
 			this.$router.push('/tqPropRefinerSiteDynamic?sim_id=' + simID + '&response_index=' + responseIndex);
 		},
-    //Changes all target logics to the same one
+    // changes all target logics to the same one
     changeAllTargets() {
       this.scenarios.forEach(scenario => {
       scenario.responses.forEach(response => {
@@ -102,7 +103,7 @@ export default {
       })
     });
     },
-    //Download a single scenario as json
+    // download a single scenario as json
     async downloadJSON(simID) {
       const res = await fetch("/api/getScenario", {
         method: "POST",
@@ -128,7 +129,7 @@ export default {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     },
-    //Download all scenarios as zip file
+    // download all scenarios as zip file
     async downloadZip() {
       const zip = new JSZip();
       var c = 1
@@ -154,10 +155,12 @@ export default {
     },
   },
   async beforeMount() {
+    // get all scenarios from the Scenario MongoDB table
     const response = await fetch("/api/allScenarios");
     const body = await response.json();
     this.scenarios = body.scenarios
 
+    // set the simulation state of every scenario to "none"
     for (let i = 0; i < this.scenarios.length; i++) {
       this.scenarios[i].simState = "none"
     }
