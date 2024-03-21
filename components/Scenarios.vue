@@ -1,41 +1,6 @@
 <script>
 import JSZip from 'jszip';
-
-// creates all target_logics for one PSPItem (Stimulus or Response)
-function createPSPItem(item) {
-  return {
-    SEL: item[0],
-    LTL: item[1],
-    MTL: item[2],
-    Prism: item[3],
-    Quantitative_Prism: item[4],
-    TBV_timed: item[5],
-    TBV_untimed: item[6],
-    display_logic: item[7],
-    predicates_info: item[8],
-  };
-} 
-
-// creates a list of all target_logics for PSPItems (Stimuli or Responses)
-function createPSPList(coll) {
-  var list = [];
-  coll.forEach((item, index) => {
-    list.push(createPSPItem(coll[index]));
-  });
-  return list;
-}
-
-// creates the scenario schema
-function createSchema(scenario) {
-  const jsonData = {
-    name: scenario[0],
-    category: scenario[1],
-    description: scenario[2],
-    stimuli: createPSPList(scenario[3]),
-    responses: createPSPList(scenario[4])
-  }
-    return jsonData;
-  };
+import {tryCatch} from "standard-as-callback/built/utils.js";
 
 export default {
   name: "ScenarioList",
@@ -45,15 +10,32 @@ export default {
     return{
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
-      verificationResults: {}
+      verificationResults: {},
+      scenarios : null,
+      popUp: null,
   };
 },
   methods:{
-    // Open the ScenarioEditor
-    openEditor() {
-      this.$router.push('/scenarioEditorSite');
+    tryCatch() {
+      return tryCatch
     },
-    async startSimulation(simulationID) {
+    // Open the ScenarioEditor with to create a new scenario
+    async openEditor() {
+      const res = await fetch("/api/initScenario", {
+      method: "POST"
+      })
+    const body = await res.json()
+    console.log(body)
+
+    this.$router.push('/scenarioEditorSite/?simID='+ body.simulationID);
+    },
+    async startSimulation(simulationID, scenario) {
+
+      this.popUp.add({
+        title: 'Simulation Started',
+        description: 'SimID: '+scenario.simulationID});
+      scenario.simState = 'running';
+
       const res = await fetch("/api/startSimulation", {
         method: "POST",
         body: JSON.stringify({
@@ -61,12 +43,30 @@ export default {
         })
       })
       const body = await res.json();
-      console.log(body);
-      alert(body.status)
+      scenario.simState = 'done';
+
+      console.log("MiSim Response for simulationID: " + simulationID + ": ", body)
+
+      return 'done'
     },
-    // Remove one scenario 
-    removeScenario(index) {
-      this.$store.commit('removeScenario', index)
+    // Open the ScenarioEditor to edit a scenario
+    async editScenario(simID) {
+      this.$router.push('/scenarioEditorSite/?simID='+ simID);
+    },
+    // Remove one scenario
+    async removeScenario(ID) {
+      const res = await fetch("/api/deleteScenario", {
+        method: "POST",
+        body: JSON.stringify({
+          ID: ID
+        })
+      })
+      const body = await res.json();
+      console.log(body);
+
+      const response = await fetch("/api/allScenarios");
+      const bodyScenarios = await response.json();
+      this.scenarios = bodyScenarios.scenarios
     },
     async verifyScenario(scenario) {
       const response = await useFetch("/api/verifySimulation", {
@@ -87,30 +87,38 @@ export default {
           return 'red';
         }
       } else {
-        return 'black';
+        return 'gray';
       }
       //return verificationResult ? verificationResult[responseIndex] : null;
     },
+    openRefinement(simID, responseIndex) {
+			this.$router.push('/tqPropRefinerSiteDynamic?sim_id=' + simID + '&response_index=' + responseIndex);
+		},
     //Changes all target logics to the same one
     changeAllTargets() {
       this.scenarios.forEach(scenario => {
-        scenario[3].forEach(stimulus => {
-          stimulus[7]= this.target;
-        })
-        scenario[4].forEach(response => {
-          response[7]= this.target;
-        })
-      });
+      scenario.responses.forEach(response => {
+          response.target_logic= this.target;
+      })
+    });
     },
     //Download a single scenario as json
-    downloadJSON(index) {
-      const jsonData = createSchema(this.scenarios[index]);
-      const jsonStr = JSON.stringify(jsonData, null, 2);
+    async downloadJSON(simID) {
+      const res = await fetch("/api/getScenario", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: simID
+        })
+      })
+      const body = await res.json()
+      var scenario = body.Scenario
+
+      const jsonStr = JSON.stringify(scenario, null, 2);
       const blob = new Blob([jsonStr], {type: 'application/json'})
       const url = window.URL.createObjectURL(blob);
 
       const a = document.createElement('a');
-      const fileName = 'Scenario_' + this.scenarios[index][0] + '.json';
+      const fileName = 'Scenario_' + scenario.name + '.json';
       a.style.display = 'none';
       a.href = url;
       a.download = fileName;
@@ -125,8 +133,8 @@ export default {
       const zip = new JSZip();
       var c = 1
       this.scenarios.forEach((scenario, index) => {
-        var name = c + " - " + this.scenarios[index][0];
-        const jsonData = createSchema(this.scenarios[index]);
+        var name = c + " - " + scenario.name;
+        const jsonData = this.scenarios[index];
         zip.file('Scenario_' + name + '.json', JSON.stringify(jsonData, null, 2));
         c++;
       });
@@ -145,48 +153,41 @@ export default {
       document.body.removeChild(a);
     },
   },
-  computed:{
-    scenarios(){
-      return this.$store.state.scenarios
-    },
+  async beforeMount() {
+    const response = await fetch("/api/allScenarios");
+    const body = await response.json();
+    this.scenarios = body.scenarios
+
+    for (let i = 0; i < this.scenarios.length; i++) {
+      this.scenarios[i].simState = "none"
+    }
+
+    this.popUp = useToast()
+
+    console.log(this.scenarios)
   },
   // async mounted() {
   //   const res = await fetch("/api/allScenarios")
   //   this.scenariosNew = await res.json();
   //   console.log(this.scenariosNew)
   // },
-  setup() {
-    const state = reactive({
-      scenarios: null,
-    });
-
-    onMounted(async () => {
-      const response = await fetch("/api/allScenarios");
-      state.scenarios = await response.json();
-    });
-
-    return {
-      state,
-    };
-  },
 };
 </script>
 
 <template>
-
   <!--Headline-->
-  <div class ="headline-frame">
-    <h1 class="headline"> Scenarios </h1>
+  <div class="mb-4 mt-2">
+    <h1 class="text-3xl"> Scenarios </h1>
   </div>
 
   <!--Mainframe-->
-  <div class="main-frame">
+  <div>
     <!--Tools-->
-    <div class="tool-frame">
+    <div>
 
-      <div> 
-        <button class="new-button" @click="openEditor">New Scenario</button> 
-        <button class="all-file-download-button" @click="downloadZip(index)">Download all Scenarios</button>
+      <div class="mb-4">
+        <UButton class="mr-4" @click="openEditor">New Scenario</UButton>
+        <UButton @click="downloadZip(index)" class="downloadScenarios">Download all Scenarios</UButton>
       </div>
 
       <div>
@@ -202,86 +203,127 @@ export default {
     
       <div class="list-container">
         <div class="list-content">
-<!--          <div v-if="{scenarios}">-->
-          <div v-if="state.scenarios">
+          <div v-if="scenarios">
             <ul>
-<!--            <li v-for="(scenario, index) in scenarios" :key="index" class="list-item">-->
-            <li v-for="scenarios in state.scenarios" class="list-item">
-            <li v-for="scenario in scenarios" class="list-item">
 
-              <h3>SimulationID: {{scenario.simulationID}}</h3>
-              <button @click="startSimulation(scenario.simulationID)">Start Simulation</button>
+            <li v-for="(scenario, index) in scenarios" class="list-item">
 
-              <!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'None' " class="category-frame-0">-->
-<!--                {{ 'None' }}-->
-<!--              </div>-->
+              <h3 class="text-2xl">Name: {{scenario.name}} </h3>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'Exploratory' " class="category-frame-1">-->
-<!--                {{ 'Exploratory' }}-->
-<!--              </div>-->
+              <UBadge v-if="scenario.category === 'None' " color="gray" class="customCategory">
+                {{ 'None category defined' }}
+              </UBadge>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'Growth' " class="category-frame-2">-->
-<!--                {{ 'Growth' }}-->
-<!--              </div>-->
+              <UBadge v-if="scenario.category === 'Exploratory' " color="purple" class="customCategory">
+                {{ 'Exploratory' }}
+             </UBadge>
 
-<!--              <div v-if="scenario[Object.keys(scenario)[1]] == 'UseCase' " class="category-frame-3">-->
-<!--                {{ 'Use Case' }}-->
-<!--              </div>-->
+             <UBadge v-if="scenario.category === 'Growth' " color="blue" class="customCategory">
+                {{ 'Growth' }}
+              </UBadge>
 
-<!--              <h3>-->
-<!--                {{ index +1}}. {{ scenario[Object.keys(scenario)[0]] }}-->
-<!--              </h3>-->
+              <UBadge v-if="scenario.category === 'UseCase' " color="yellow" class="customCategory">
+                {{ 'Use Case' }}
+              </UBadge>
 
-<!--              {{ scenario[Object.keys(scenario)[2]] }}-->
 
-                <h4 class="left">
+              <div class="left mb-8">
+                <h4  class="text-mb font-bold mb-1" >
+                  Description:
+                </h4>
+                {{ scenario.description }}
+              </div>
+
+
+
+              <div class="left mb-8">
+                <h4 class="text-mb font-bold mb-1">
                   Stimuli:
                 </h4>
 
-              {{scenario.stimuli}}
+                <ul>
+                  <li v-for="stimuli in scenario.stimuli">
+                    - {{Object.keys(stimuli)[0]}}
+                  </li>
+                </ul>
+              </div>
 
-<!--                <li v-for="(stimulus, index) in scenario[Object.keys(scenario)[3]]" :key="index" class="left">-->
-<!--                  {{ index +1}}.-->
-<!--                  <select v-model="stimulus[7]" class="select-box">-->
-<!--                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
-<!--                  </select>-->
-<!--                  {{ stimulus[stimulus[7]] }} <br>-->
-<!--                  <i class="sel-line"> <strong>SEL:</strong> {{ stimulus[0] }} </i> <br> <br>-->
-<!--                  <i class="sel-line"> <strong>Predicates:</strong> {{ stimulus[8] }} </i> <br> <br>-->
-<!--                </li>-->
+
               
-                <h4 class="left">
-                Responses:
+                <h4 class="left text-mb font-bold mb-1">
+                 Responses:
                 </h4 >
 
-              <span :style="{ color: getVerificationTextColor(scenario, 0)}">
-                {{scenario.responses[0]}}
+              <span>
+                <!--{{scenario.responses[0]}}-->
+                <li v-for="(response, index) in scenario.responses" :key="response"  :style="{ color: getVerificationTextColor(scenario, index)}" class="left">
+                {{ index +1}}.
+                <select v-model="response.target_logic" class="select-box">
+                  <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+                </select>
+
+                <span v-if="response.target_logic==0">
+                  {{ response.SEL}}
+                </span>
+                <span v-if="response.target_logic==1">
+                  {{ response.LTL}}
+                </span>
+                <span v-if="response.target_logic==2">
+                  {{ response.MTL}}
+                </span>
+                <span v-if="response.target_logic==3">
+                  {{ response.Prism}}
+                </span>
+                <span v-if="response.target_logic==4">
+                  {{ response.Quantitative_Prism}}
+                </span>
+                <span v-if="response.target_logic==5">
+                  {{ response.TBV_untimed}}
+                </span>
+                <span v-if="response.target_logic==6">
+                  {{ response.TBV_timed}}
+                </span>
+                
+                <div>
+                <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i>
+                <br>
+                  <UTooltip text="Please verify before Refinement!">
+                      <button @click="openRefinement(scenario.simulationID, index)" class="verify-button" :style="{ 'background-color': getVerificationTextColor(scenario, index) }">Refine Response</button>
+                  </UTooltip>
+                <br><br>
+              </div>
+
+              </li>
               </span>
-<!--                <li v-for="(response, index) in scenario[Object.keys(scenario)[4]]" :key="index" class="left">-->
-<!--                  {{ index +1}}.-->
-<!--                  <select v-model="response[7]" class="select-box">-->
-<!--                    <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>-->
-<!--                  </select>-->
-<!--                  {{ response[response[7]] }} <br>-->
-<!--                  <i class="sel-line"> <strong>SEL:</strong> {{ response[0] }} </i> <br> <br>-->
-<!--                  <i class="sel-line"> <strong>Predicates:</strong> {{ response[8] }} </i> <br> <br>-->
-<!--                </li>-->
+
+              <div>
+                <UButton v-if="scenario.simState === 'none'" @click="startSimulation(scenario.simulationID, scenario);">Start Simulation</UButton>
+                <div v-if="scenario.simState === 'running'">
+                  <UProgress animation="carousel"></UProgress>
+                  <p>Simulation is running</p>
+                </div>
+                <div v-if="scenario.simState === 'done'">
+                  <p>Simulation is Done, you can now start the verify process</p>
+                </div>
+              </div>
+
+              <div class="text-gray-300">
+                {{"SimulationID: " + scenario.simulationID }}
+              </div>
 
               <div>
                 <button class="verify-button" @click="verifyScenario(scenario)">Verify Scenario</button>
-                <button class="remove-button" @click="removeScenario(index)">Remove Scenario</button>
-                <button class="file-download-button" @click="downloadJSON(index)">Download as JSON</button>
+                <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
+                <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
+                <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON</button>
               </div>
-                
+
               </li>
-            </li>
             </ul>
           </div>
         </div>
       </div>
-     
   </div>
-          
 </template>
 
 
@@ -335,6 +377,14 @@ export default {
   background-color: #9bb8d3;
 }
 
+.downloadScenarios:hover{
+  background-color: #9bb8d3;
+}
+
+.downloadScenarios{
+  background-color: #aacbe9;
+}
+
 .all-file-download-button {
   background-color: #aacbe9;
   border: none;
@@ -380,6 +430,11 @@ export default {
   justify-content: center;
   align-items: center;
   border-radius: 32px;
+}
+
+
+.customCategory{
+  border-radius: 40px !important;
 }
 
 .category-frame-3 {
@@ -461,6 +516,24 @@ body {
   background-color: rgb(160, 40, 40);
 }
 
+.remove-button-2 {
+  background-color: rgb(219, 65, 65);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.remove-button-2:hover {
+  background-color: rgb(160, 40, 40);
+}
+
 .verify-button {
   background-color: rgb(65, 219, 65);
   border: none;
@@ -477,6 +550,24 @@ body {
 }
 .verify-button:hover {
   background-color: rgb(40, 160, 40);
+}
+
+.edit-button {
+  background-color: rgb(240, 173, 28);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin-top: 20px;
+  margin-right: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.edit-button:hover {
+  background-color: rgb(196, 142, 25);
 }
 
 .left{
