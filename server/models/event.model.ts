@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 
+// data model for events (used for MongoDB)
 const EventSchema = new Schema({
     _id: String,
     event_name: String,

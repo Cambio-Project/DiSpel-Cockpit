@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Event } from "~/server/models/event.model";
 
+// endpoint for updating the predicates of a scenario
 export default defineEventHandler(async (event) => {
 	setResponseHeaders(event, {
 		"Access-Control-Allow-Methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -34,6 +35,7 @@ export default defineEventHandler(async (event) => {
 	console.log(predicates);
 
 	try {
+		// get the scenario from the MongoDB
 		const scenario = await Scenario.findOne({ simulationID: simId });
 
 		if (!scenario) {
@@ -46,6 +48,7 @@ export default defineEventHandler(async (event) => {
 		const responses = scenario.responses;
 		responses[responseIndex].predicates_info = predicates;
 
+		// update that scenario using the responses
 		const updatedScenario = await Scenario.updateOne({ simulationID: simId }, {
 			responses: responses,
 		});

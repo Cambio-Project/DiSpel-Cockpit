@@ -1,8 +1,11 @@
+// endpoint for deleting a specified scenario field in specified scenario in the Scenario MongoDB table
+// requires simulationID, fieldName and fieldIndex
 export default defineEventHandler(async (event) => {
-    // Read the request body
+    // read the request body
     var body = await readBody(event)
     body = JSON.parse(body)
 
+    // simulationID, fieldName and fieldIndex are required
     if (typeof body.simulationID === "undefined" || body.fieldName === "undefined" || body.fieldIndex === "undefined") {
         return {
             "success": false,
@@ -15,6 +18,7 @@ export default defineEventHandler(async (event) => {
     const fieldIndex = body.fieldIndex
 
     try {
+        // get the scenario from the Scenario MongoDB table
         const scenario = await Scenario.findOne({ simulationID: simulationID });
 
         if (!scenario) {

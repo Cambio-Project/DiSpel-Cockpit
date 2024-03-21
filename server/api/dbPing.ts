@@ -1,10 +1,12 @@
 import { User } from "~/server/models/user.model";
 import mongoose from "mongoose";
 
+// endpoint for pinging all other endpoints and checking their availability
 export default defineEventHandler(async (event) => {
 
     const config = useRuntimeConfig(event)
 
+    // start with setting every status to "red"
     const endpointStatus = {
         pspWizard: {
             domain: "http://"+config.public.pspDomain+":"+config.public.pspPort,
@@ -28,6 +30,7 @@ export default defineEventHandler(async (event) => {
         }
     };
 
+    // for every endpoint, check if it should be "green" instead
     for (let endpoint in endpointStatus) {
         if (endpoint === "db") {
             continue

@@ -1,18 +1,18 @@
 import {Scenario} from "~/server/models/scenario.model";
-import * as crypto from "crypto";
 
+// endpoint for retrieving all scenarios from the Scenario MongoDB table
 export default defineEventHandler(async (event) => {
 
     let scenarios:any = []
 
     try {
+        // get all scenarios from the database table
         scenarios = await Scenario.find({})
     } catch (e) {
         console.log("Error finding scenarios")
     }
 
-    console.log(scenarios)
-
+    // return all scenarios
     return {
         scenarios: scenarios
     };

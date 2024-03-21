@@ -1,6 +1,7 @@
 import {User} from "~/server/models/user.model";
 import fs from "fs";
 
+// endpoint for uploading additional stimuli files
 export default defineEventHandler(async (event) => {
 
     const body = await readBody(event)

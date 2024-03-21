@@ -1,10 +1,13 @@
 import fs from 'fs';
+
+// endpoint for starting the MiSim Simulation
 export default defineEventHandler(async (event) => {
 
     const body = await readBody(event)
     const simulationID = JSON.parse(body).simulationID
 
     var res;
+    // get the scenario from the MongoDB
     const scenario = await Scenario.findOne({simulationID: simulationID})
 
     const stimuliArray = scenario!.stimuli;
@@ -12,6 +15,7 @@ export default defineEventHandler(async (event) => {
     //console.log(stimuliArray)
     const formData = new FormData();
 
+    // fill the formData with necessary information
     for (const stimuli of stimuliArray) {
         const fileName = Object.keys(stimuli)[0]
 
@@ -38,6 +42,7 @@ export default defineEventHandler(async (event) => {
 
     const config = useRuntimeConfig(event)
 
+    // send the request to MiSim
     const miSimResponse = await fetch("http://"+config.public.miSimDomain+":"+config.public.miSimPort+"/simulate/upload", {
         method: "POST",
         body: formData

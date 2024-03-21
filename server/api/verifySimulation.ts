@@ -2,7 +2,7 @@ import { MeasurementPoint } from "~/models/measurement-point";
 import { Predicate } from "~/models/predicate";
 import { ResponseSpecification } from "~/models/response-specification";
 
-
+// endpoint for verifying the simulation (TBVerifier)
 export default defineEventHandler(async (event) => {
 
 	const config = useRuntimeConfig(event)

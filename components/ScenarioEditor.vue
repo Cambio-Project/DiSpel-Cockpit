@@ -28,7 +28,7 @@ export default {
   methods:{
     // get fields from DB object with simulationID
     async initFields() {
-      const res = await fetch("/api/getScenarios", {
+      const res = await fetch("/api/getScenario", {
         method: "POST",
         body: JSON.stringify({
           simulationID: this.simID

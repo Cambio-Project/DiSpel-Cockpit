@@ -1,10 +1,14 @@
 import crypto from "crypto";
 import {Event} from "~/server/models/event.model";
 
+// endpoint for pushing a scenario field to the Scenario MongoDB
+// difference to "setScenatioField": if field is an array, new entry gets appended instead of replaced (e.g. responses)
 export default defineEventHandler(async (event) => {
+    // read body
     var body = await readBody(event)
     body = JSON.parse(body)
 
+    // all inputs are required
     if (typeof body.simulationID === "undefined" || body.fieldName === "undefined" || body.fieldValue === "undefined") {
         return {
             "success": false,
@@ -16,6 +20,7 @@ export default defineEventHandler(async (event) => {
     const fieldValue = body.fieldValue
 
     try {
+        // get the scenario to update from the Scenario MongoDB table
         const scenario = await Scenario.findOne({ simulationID: simulationID });
 
         if (!scenario) {

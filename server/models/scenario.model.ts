@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 
+// data model for scenarios (used for MongoDB)
 const ScenarioSchema = new Schema({
     simulationID: String,
     name: String,

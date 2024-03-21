@@ -1,9 +1,13 @@
 import {Scenario} from "~/server/models/scenario.model";
+
+// endpoint for deleting a scenario in the Scenario MongoDB table
+// ID is required
 export default defineEventHandler(async (event) => {
-    // Read the request body
+    // read the request body
     var body = await readBody(event)
     body = JSON.parse(body)
 
+    // scenario ID is required
     if (typeof body.ID === "undefined") {
         return {
             "success": false,
@@ -14,15 +18,6 @@ export default defineEventHandler(async (event) => {
     const ID = body.ID
 
     try {
-        // const scenario = await Scenario.findOne({ _id: ID });
-
-        // if (!scenario) {
-        //     return {
-        //         success: false,
-        //         message: "Scenario not found",
-        //     };
-        // }
-
         // delete the value from the array
         // @ts-ignore
         await Scenario.deleteOne({ _id: ID });
