@@ -1,6 +1,5 @@
 <script>
 import JSZip from 'jszip';
-import {tryCatch} from "standard-as-callback/built/utils.js";
 
 export default {
   name: "ScenarioList",
@@ -154,6 +153,7 @@ export default {
       document.body.removeChild(a);
     },
   },
+  // gets executed on pageload
   async beforeMount() {
     // get all scenarios from the Scenario MongoDB table
     const response = await fetch("/api/allScenarios");
@@ -169,11 +169,6 @@ export default {
 
     console.log(this.scenarios)
   },
-  // async mounted() {
-  //   const res = await fetch("/api/allScenarios")
-  //   this.scenariosNew = await res.json();
-  //   console.log(this.scenariosNew)
-  // },
 };
 </script>
 
@@ -332,35 +327,6 @@ export default {
 
 <style scoped>
 
-.headline-frame {
-  background-color: #eaf6ff; 
-  padding: 0px; 
-  display:flex;
-  justify-content: center; 
-  align-items: center; 
-  width: 100%;
-  margin-top: -25px;
-}
-
-.headline {
-  color: #333; 
-}
-
-.main-frame {
-  background-color: #d3d3d3;
-  justify-content:center; 
-  align-items:center; 
-  display: block;
-  height: 90vh;
-  width: 100%;
-  margin-top: -22px;
-}
-
-.tool-frame {
-  height: 15%;
-  width: 100%;
-}
-
 .file-download-button {
   background-color: #aacbe9;
   border: none;
@@ -380,83 +346,8 @@ export default {
   background-color: #9bb8d3;
 }
 
-.all-file-download-button {
-  background-color: #aacbe9;
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 20px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.all-file-download-button:hover {
-  background-color: #9bb8d3;
-}
-
-.category-frame-0 {
-  background-color: #cfcfcf;
-  display: inline-block;
-  border: 2px solid #888888;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-.category-frame-1 {
-  background-color: #9a8fff;
-  display: inline-block;
-  border: 2px solid #6c5cff;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
-.category-frame-2 {
-  background-color: #98df9e;
-  display: inline-block;
-  border: 2px solid #1caf28;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
-.category-frame-3 {
-  background-color: #f0d98f;
-  display: inline-block;
-  border: 2px solid #ac9a61;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
 .sel-line {
   margin: 0.8vw;
-}
-
-.new-button {
-  background-color: rgb(114, 214, 101);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 20px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.new-button:hover {
-  background-color: rgb(73, 167, 61);
 }
 
 body {
@@ -503,24 +394,6 @@ body {
   border-radius: 4px;
 }
 .remove-button:hover {
-  background-color: rgb(160, 40, 40);
-}
-
-.remove-button-2 {
-  background-color: rgb(219, 65, 65);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin-top: -10px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-.remove-button-2:hover {
   background-color: rgb(160, 40, 40);
 }
 

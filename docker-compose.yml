@@ -23,8 +23,8 @@ services:
     pull_policy: always
 
   tqproprefiner:
-    #image: ghcr.io/cambio-project/transient-behavior-requirement-refiner:latest
-    build: /Users/marvin/WebstormProjects/transient-behavior-requirement-refiner
+    image: ghcr.io/cambio-project/transient-behavior-requirement-refiner:latest
+    #build: /Users/marvin/WebstormProjects/transient-behavior-requirement-refiner
     container_name: tqproprefiner
     ports:
       - 8082:80

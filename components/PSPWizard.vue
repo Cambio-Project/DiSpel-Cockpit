@@ -441,6 +441,7 @@ export default {
 
       this.handleInputChange();
     },
+    // set the event fields with initial values when an event is selected
     eventToChangeSelected() {
       setTimeout(this.setEventChangeFields,200)
     },
@@ -520,8 +521,8 @@ export default {
       this.pspSpecification.upperLimit = null;
       this.pspSpecification.lowerLimit = null;
     },
+    // Checks if probability is between 0 and 1
     checkProbability(){
-      //Checks if probability is between 0 and 1
       if(this.pspSpecification.probability<0)
       {
         this.pspSpecification.probability = 0;
@@ -531,6 +532,7 @@ export default {
         this.pspSpecification.probability = 1;
       }
     },
+    // Check if upper limit of time bound is higher than the lower limit
     checkTime(){
       if(this.pspSpecification.upperLimit != null && this.pspSpecification.lowerLimit != null)
       {
@@ -560,13 +562,8 @@ export default {
 
         this.forceRerender()
 
-        // Debug
-        console.log(responsePayload)
-        console.log(this.pspSpecification.mapping);
-        console.log('Transformation successful!');
-
       } catch (error) {
-        // Handle any errors that occur during the HTTP request
+        // Log any errors that occur during the HTTP request
         console.error('Error transforming to temporal logic:', error);
       }
     },
@@ -581,6 +578,7 @@ export default {
 
       this.forceRerender()
     },
+    // on any input change, transform to the selected temporal logic
     handleInputChange() {
       setTimeout(this.transformToTemporalLogic, 100)
     },
@@ -599,7 +597,7 @@ export default {
         this.showCopyFeedback = false;
       }, 2000);
     },
-    // add the chained event
+    // add the chained event to local array
     addChainedEvent() {
       this.pspSpecification.selectedChainedEvents.push({
         event: {
@@ -618,7 +616,7 @@ export default {
       });
       this.forceRerender()
     },
-    // delete the chained event
+    // delete the chained event from local array
     deleteChainedEvent(index) {
       if (index >= 0 && index < this.pspSpecification.selectedChainedEvents.length) {
         this.pspSpecification.selectedChainedEvents.splice(index, 1);
@@ -1588,12 +1586,6 @@ export default {
         </div>
         <div class="copy-feedback" v-if="showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
       </div>
-
-      <!--
-      <div>
-        <button @click="confirm" v-if="this.pspSpecification.mapping" class="commit-button">Confirm</button>
-      </div>
-      -->
 
       <div :class="{ 'grayed-out': !this.pspSpecification.mapping }">
         <button @click="confirm" class="commit-button">Confirm</button>

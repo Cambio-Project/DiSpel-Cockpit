@@ -1,7 +1,4 @@
 <script setup lang="ts">
-//TODO Add DB Ping
-const dbMissing = true
-
 
 //Setup (Check Connection)
 const serviceStatus = {
@@ -12,6 +9,7 @@ const serviceStatus = {
   miSim: "red",
 }
 
+// update the service states of the tools
 async function updateServiceState(){
   const res = await useFetch("/api/dbPing")
   const body = res.data.value
@@ -58,10 +56,3 @@ await updateServiceState()
   </UContainer>
 
 </template>
-
-<style>
-.dbMissingWarning{
-  background-color: red;
-  color: white;
-}
-</style>
