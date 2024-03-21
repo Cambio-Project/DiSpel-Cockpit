@@ -29,7 +29,7 @@ services:
       - dashboardNetwork
     pull_policy: always
     volumes:
-      - ./data/simulations_results:/simulations_results
+      - ./data/simulationResults:/usr/share/nginx/html/assets/simulations_results
 
   tbverifier:
     image: ghcr.io/cambio-project/transient-behavior-verifier:latest

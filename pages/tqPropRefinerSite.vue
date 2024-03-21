@@ -1,23 +1,19 @@
 <script setup lang="ts">
 
-const file = ref("chaos-exp-1-trace.csv")
+const simId = ref("")
 const pattern = ref("Absence")
 
 let TQPropRefinerActive = ref(false);
 
 const config = useRuntimeConfig()
 
-let src = computed(() => "http://"+config.public.tqPropRefinerDomain+":"+config.public.tqPropRefinerPort+"/requirement-refinement/shortcut?file="+file.value+"&pattern="+pattern.value)
+let src = computed(() => "http://"+config.public.tqPropRefinerDomain+":"+config.public.tqPropRefinerPort+"/requirement-refinement/shortcut?file-address=assets/simulations_results&sim_id="+simId.value+"&pattern="+pattern.value)
 
 </script>
 
 <template>
 
-  <select v-model="file">
-    <option value="chaos-exp-1-trace.csv" selected>chaos-exp-1-trace.csv</option>
-    <option value="chaos-exp-2-trace.csv">chaos-exp-2-trace.csv</option>
-    <option value="chaos-exp-3-trace.csv">chaos-exp-3-trace.csv</option>
-  </select>
+  <input v-model="simId" placeholder="enter simulation id...">
 
   <select v-model="pattern">
     <option value="Absence" selected>Absence</option>
