@@ -4,6 +4,7 @@
 // creates the scope part of the payload
 import * as events from "events";
 
+// creates the scope part of the payload to send
 function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events) {
   const scope = {
     type: selectedScope
@@ -214,6 +215,7 @@ export default {
           measurement_source: "resp_time_high"
         }
       } **/],
+      simID: this.$route.query.simID,
       customPredicateName: "",
       customPredicateLogic: "",
       customMeasurementSource: "",
@@ -243,6 +245,7 @@ export default {
     };
   },
   computed: {
+    // maps the technical predicate logic names to more readable variants
     displayPredicateLogics() {
       // Map technical names to better display names
       const logicMap = {
@@ -260,6 +263,7 @@ export default {
       // Create an array of objects with label and value properties
       return this.predicateLogicOptions.map(logic => ({ label: logicMap[logic], value: logic }));
     },
+    // maps the technical scope names to more readable variants
     displayScopes() {
       // Map technical names to better display names
       const scopeMap = {
@@ -273,6 +277,7 @@ export default {
       // Create an array of objects with label and value properties
       return this.scopeOptions.map(scope => ({ label: scopeMap[scope], value: scope }));
     },
+    // maps the technical occurrence options names to more readable variants
     displayOccurrenceOptions() {
       const occurenceMap = {
         "SteadyState": "Steady State",
@@ -287,6 +292,7 @@ export default {
       };
       return this.occurrenceOptions.map(option => ({ label: occurenceMap[option], value: option }));
     },
+    // maps the technical order options names to more readable variants
     displayOrderOptions() {
       const orderMap = {
         "Response": "Response",
@@ -300,6 +306,7 @@ export default {
       };
       return this.orderOptions.map(option => ({ label: orderMap[option], value: option }));
     },
+    // computes whether the time bound should be grayed out
     timeboundShouldGrayOut() {
       return !(this.pspSpecification.selectedPatternType === 'Order' ||
           this.pspSpecification.selectedOccurrence === 'Universality' ||
@@ -307,6 +314,7 @@ export default {
           this.pspSpecification.selectedOccurrence === 'Existence' ||
           this.pspSpecification.selectedOccurrence === 'BoundedExistence');
     },
+    // computes whether the comparison value should be grayed out in the create event section
     comparisonValueShouldGrayOut() {
       return !(this.customPredicateLogic === "bigger" ||
           this.customPredicateLogic === "biggerEqual" ||
@@ -314,6 +322,7 @@ export default {
           this.customPredicateLogic === "smallerEqual" ||
           this.customPredicateLogic === "equal");
     },
+    // computes whether the comparison value should be grayed out in the edit event section
     comparisonValueShouldGrayOutEdit() {
       return !(this.changedPredicateLogic === "bigger" ||
           this.changedPredicateLogic === "biggerEqual" ||
@@ -322,6 +331,7 @@ export default {
           this.changedPredicateLogic === "equal");
     },
   },
+  // called initially on page load
   setup() {
     const state = reactive({
       events: null,
@@ -330,8 +340,6 @@ export default {
     onMounted(async () => {
       const response = await fetch("/api/allEvents");
       state.events = await response.json();
-
-      console.log($store.state.stimuli)
     });
 
     return {
@@ -339,6 +347,7 @@ export default {
     };
   },
   methods: {
+    // resets all fields
     resetAllFields() {
       this.pspSpecification = {
         selectedPatternType: null,
@@ -385,6 +394,7 @@ export default {
       this.pspSpecification.selectedOccurrence = null;
       this.pspSpecification.selectedOrder = null;
     },
+    // adds the entered custom event to the Event MongoDB table
     async addCustomEvent() {
       // Add the custom event to the list if it is not empty
       if (this.customPredicateName.trim() !== "") {
@@ -431,30 +441,12 @@ export default {
 
       this.handleInputChange();
     },
+    // set the event fields with initial values when an event is selected
     eventToChangeSelected() {
       setTimeout(this.setEventChangeFields,200)
     },
+    // if an event is selected to be changed, initialize the fields with its values
     async setEventChangeFields() {
-      /*
-      // get the event id from the mongodb database
-      const body = {
-        event_name: this.customPredicateName + "(" + this.customMeasurementSource + ")",
-        predicate_name: this.customPredicateName,
-        predicate_logic: this.customPredicateLogic,
-        predicate_comparison_value: this.customPredicateComparisonValue,
-        measurement_source: this.customMeasurementSource,
-      }
-
-      const response = await fetch("/api/getEventByProperties", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
-
-      console.log(response);
-
-      this.changedEventId = await response.json();
-       */
-
       this.changedEventId = this.eventToChange._id;
 
       this.changedPredicateName = this.eventToChange.predicate_name
@@ -465,6 +457,7 @@ export default {
       this.forceRerender()
       this.handleInputChange()
     },
+    // update the event in the Event MongoDB table
     async changeEvent() {
       // write the event to the mongodb database
       const body = {
@@ -490,6 +483,7 @@ export default {
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
     },
+    // delete the event from the Event MongoDB table
     async deleteEvent() {
       // delete the event from the mongodb database
       const body = {
@@ -512,10 +506,6 @@ export default {
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
     },
-    addProbability() {
-      // Add the custom probabilitity
-      this.pspSpecification.probability.push()
-    },
     handleProbabilityChange() {
       // Reset probabilityBound and probability when unchecked
       this.pspSpecification.selectedProbabilityBound = null;
@@ -531,8 +521,8 @@ export default {
       this.pspSpecification.upperLimit = null;
       this.pspSpecification.lowerLimit = null;
     },
+    // Checks if probability is between 0 and 1
     checkProbability(){
-      //Checks if probability is between 0 and 1
       if(this.pspSpecification.probability<0)
       {
         this.pspSpecification.probability = 0;
@@ -542,6 +532,7 @@ export default {
         this.pspSpecification.probability = 1;
       }
     },
+    // Check if upper limit of time bound is higher than the lower limit
     checkTime(){
       if(this.pspSpecification.upperLimit != null && this.pspSpecification.lowerLimit != null)
       {
@@ -551,6 +542,7 @@ export default {
         }
       }
     },
+    // send the PSP transform request to the PSPWizard
     async sendTransformRequest(payload) {
       try {
         // Perform the HTTP request with the input data
@@ -570,30 +562,27 @@ export default {
 
         this.forceRerender()
 
-        // Debug
-        console.log(responsePayload)
-        console.log(this.pspSpecification.mapping);
-        console.log('Transformation successful!');
-
       } catch (error) {
-        // Handle any errors that occur during the HTTP request
+        // Log any errors that occur during the HTTP request
         console.error('Error transforming to temporal logic:', error);
       }
     },
+    // transform the PSP to the specified temporal logic
     async transformToTemporalLogic() {
 
+      // create the payload
       const payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
 
-      console.log(payload)
-      console.log(this.pspSpecification.selectedChainedEvents)
-
+      // send the request
       await this.sendTransformRequest(JSON.stringify(payload))
 
       this.forceRerender()
     },
+    // on any input change, transform to the selected temporal logic
     handleInputChange() {
       setTimeout(this.transformToTemporalLogic, 100)
     },
+    // copy the mapping from the result box
     copyToClipboard() {
       const textarea = document.createElement("textarea");
       textarea.value = this.pspSpecification.mapping;
@@ -608,6 +597,7 @@ export default {
         this.showCopyFeedback = false;
       }, 2000);
     },
+    // add the chained event to local array
     addChainedEvent() {
       this.pspSpecification.selectedChainedEvents.push({
         event: {
@@ -626,6 +616,7 @@ export default {
       });
       this.forceRerender()
     },
+    // delete the chained event from local array
     deleteChainedEvent(index) {
       if (index >= 0 && index < this.pspSpecification.selectedChainedEvents.length) {
         this.pspSpecification.selectedChainedEvents.splice(index, 1);
@@ -855,9 +846,20 @@ export default {
 
       this.forceRerender()
     },
-    // Save the mapping to the Vue store and direct to the Scenario Editor
+    // save the mapping to the MongoDB Database and direct to the Scenario Editor
     async confirm() {
-      var index;
+      let index;
+      let responseObject = {
+        SEL: '',
+        LTL:'',
+        MTL: '',
+        Prism: '',
+        Quantitative_Prism: '',
+        TBV_untimed: '',
+        TBV_timed: '',
+        target_logic: this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic),
+        predicates_info: []
+      };
 
       // add all mappings to the commit
       for (index in this.targetLogicOptions) {
@@ -873,15 +875,33 @@ export default {
 
         // if mapping is returned, display it, else display the error message
         if (responsePayload.payload.mapping) {
-          this.formulas.push(responsePayload.payload.mapping);
-        } else {
-          this.formulas.push("")
+          switch (this.targetLogicOptions[index]) {
+            case 'SEL':
+              responseObject.SEL = responsePayload.payload.mapping;
+              break;
+            case 'LTL':
+              responseObject.LTL = responsePayload.payload.mapping;
+              break;
+            case 'MTL':
+              responseObject.MTL = responsePayload.payload.mapping;
+              break;
+            case 'Prism':
+              responseObject.Prism = responsePayload.payload.mapping;
+              break;
+            case 'Quantitative Prism':
+              responseObject.Quantitative_Prism = responsePayload.payload.mapping;
+              break;
+            case 'TBV (untimed)':
+              responseObject.TBV_untimed = responsePayload.payload.mapping;
+              break;
+            case 'TBV (timed)':
+              responseObject.TBV_timed = responsePayload.payload.mapping;
+              break;
+            default:
+              console.log('This target logic doesnt exist');
+          }
         }
       }
-
-      // add target logic index to commit
-      var number = this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic)
-      this.formulas.push(number)
 
       // add predicates to commit
       var pl = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
@@ -901,17 +921,24 @@ export default {
             });
           }
       });
-      this.formulas.push(eventArray)
+      responseObject.predicates_info = eventArray;
 
-      if (this.$store.state.outputType === 'Stimulus') {
-        this.$store.commit('addStimulus', this.formulas)
-      }
+      // add the PSP to the responses scenario field of the Scenario MongoDB table entry
+      const res = await fetch("/api/pushScenarioField", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          fieldName: "responses",
+          fieldValue: responseObject
+        })
+      })
 
-      if (this.$store.state.outputType === 'Response') {
-        this.$store.commit('addResponse', this.formulas)
-      }
+      const body = await res.json()
+      console.log("Success: "+body.success);
+      console.log("Message: "+body.message);
 
-      this.$router.push('/scenarioeditorSite');
+      // send the user to the scenario editor page
+      this.$router.push('/scenarioeditorSite?simID='+this.simID);
     },
     forceRerender() {
       this.componentKey += 1;
@@ -922,7 +949,8 @@ export default {
 </script>
 
 <template :key="componentKey">
-  <h1>PSPWizard as {{ this.$store.state.outputType  }}</h1>
+  <h1>PSPWizard</h1>
+  {{ this.simID }}
   <div class="page-container">
     <div class="selection-container">
       <div class="file-upload-container">
@@ -1559,12 +1587,6 @@ export default {
         <div class="copy-feedback" v-if="showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
       </div>
 
-      <!--
-      <div>
-        <button @click="confirm" v-if="this.pspSpecification.mapping" class="commit-button">Confirm</button>
-      </div>
-      -->
-
       <div :class="{ 'grayed-out': !this.pspSpecification.mapping }">
         <button @click="confirm" class="commit-button">Confirm</button>
       </div>
@@ -1581,10 +1603,7 @@ export default {
 }
 
 .selection-container {
-  //max-width: 100vh;
-  //margin: auto;
   flex: 1;
-  //border: 1px solid black;
 }
 
 .selection-group {

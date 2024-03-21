@@ -1,7 +1,8 @@
 import {Event} from "~/server/models/event.model";
 
+// endpoint for deleting an event from the Event MongoDB table
 export default defineEventHandler(async (event) => {
-    // Read the request body
+    // read the request body
     const body = await readBody(event);
     const requestBody = JSON.parse(body);
 

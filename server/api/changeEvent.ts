@@ -1,5 +1,6 @@
 import {Event} from "~/server/models/event.model";
 
+// endpoint for updating an event in the Event MongoDB table
 export default defineEventHandler(async (event) => {
     // read the request body
     const body = await readBody(event);

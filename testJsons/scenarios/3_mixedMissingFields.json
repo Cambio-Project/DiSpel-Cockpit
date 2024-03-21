@@ -3,9 +3,19 @@
   "description": "After killing service and load peak response Time should be <1 s.",
   "responses": [
     {
+      "SEL": "Globally, it is always the case that {ResponseTime < 1s} [holds].",
       "LTL": "☐ (ResponseTime < 1s)",
-      "Prism": "[ G (ResponseTime < 1s) ]",
-      "TBV_timed": "always (ResponseTime < 1s)"
+      "Quantitative_Prism": "P=? [ G (ResponseTime < 1s) ]",
+      "TBV_timed": "always (ResponseTime < 1s)",
+      "target_logic": 1,
+      "predicates_info": [
+        {
+            "predicate_name": "cpu_temperature_rises",
+            "predicate_logic": "trendUpwardStrict",
+            "measurement_source": "example-service_1_I1_CPU_Utilization",
+            "predicate_comparison_value": 200
+        }
+      ]
     }
   ]
 }
