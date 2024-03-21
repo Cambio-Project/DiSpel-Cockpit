@@ -288,9 +288,9 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
   <!--Main Frame-->
   <div>
-       <div v-if="this.importErrorMessage">
-          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
-        </div>
+<!--       <div v-if="this.importErrorMessage">-->
+<!--          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>-->
+<!--        </div>-->
 
         <h3 class="center">
 

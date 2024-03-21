@@ -9,7 +9,9 @@ export default defineNuxtConfig({
       tqPropRefinerDomain: process.env.TQ_PROP_REFINER_DOMAINNAME || "localhost",
       tqPropRefinerPort: process.env.TQ_PROP_REFINER_PORT || "8084",
       miSimDomain: process.env.MI_SIM_DOMAINNAME || "localhost",
-      miSimPort: process.env.MI_SIM_PORT || "8084"
+      miSimPort: process.env.MI_SIM_PORT || "8084",
+      tbVerifierDomain: process.env.TB_VERIFIER_DOMAINNAME || "localhost",
+      tbVerifierPort: process.env.TB_VERIFIER_PRORT || "8083"
     }
   },
   devtools: { enabled: true },

@@ -2,11 +2,14 @@ import { MeasurementPoint } from "~/models/measurement-point";
 import { Predicate } from "~/models/predicate";
 import { ResponseSpecification } from "~/models/response-specification";
 
-const TBVERIFIER_URL = 'http://localhost:8083/monitor';
-//const TBVERIFIER_URL = 'http://localhost:5000/monitor';
-
 
 export default defineEventHandler(async (event) => {
+
+	const config = useRuntimeConfig(event)
+
+	const TBVERIFIER_URL = 'http://'+config.public.tbVerifierDomain+':'+config.public.tbVerifierPort+'/monitor';
+	//const TBVERIFIER_URL = 'http://localhost:5000/monitor';
+
 	const body = await readBody(event)
 
 	const scenario = body.scenario;
@@ -30,7 +33,7 @@ export default defineEventHandler(async (event) => {
 				store_combined_misim_results: false,
 			}
 		}
-		return sendVerificationRequest(responseSpecification);
+		return sendVerificationRequest(responseSpecification, TBVERIFIER_URL);
 	})
 
 	const responseVerificationResults = await Promise.all(responseVerificationResultPromises);
@@ -50,7 +53,7 @@ const getMeasurementPointsFromPredicates = (predicates: Predicate[]) => {
 	});
 }
 
-const sendVerificationRequest = async (responseSepcification: ResponseSpecification) => {
+const sendVerificationRequest = async (responseSepcification: ResponseSpecification, TBVERIFIER_URL: string) => {
 	const formdata = new FormData();
 	formdata.append("formula_json", JSON.stringify(responseSepcification));
 	const requestOptions: RequestInit = {

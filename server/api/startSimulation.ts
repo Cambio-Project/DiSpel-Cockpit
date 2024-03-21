@@ -36,7 +36,9 @@ export default defineEventHandler(async (event) => {
     formData.append("simulation_id", simulationID)
     console.log(formData)
 
-    const miSimResponse = await fetch("http://localhost:8084/simulate/upload", {
+    const config = useRuntimeConfig(event)
+
+    const miSimResponse = await fetch("http://"+config.public.miSimDomain+":"+config.public.miSimPort+"/simulate/upload", {
         method: "POST",
         body: formData
     });

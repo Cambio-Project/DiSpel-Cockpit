@@ -87,7 +87,7 @@ export default {
           return 'red';
         }
       } else {
-        return 'black';
+        return 'gray';
       }
       //return verificationResult ? verificationResult[responseIndex] : null;
     },
@@ -287,7 +287,9 @@ export default {
                 <div>
                 <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i>
                 <br>
-                <button @click="openRefinement(scenario.simulationID, index)" class="verify-button" :style="{ 'background-color': getVerificationTextColor(scenario, index) }">Refine Response</button>
+                  <UTooltip text="Please verify before Refinement!">
+                      <button @click="openRefinement(scenario.simulationID, index)" class="verify-button" :style="{ 'background-color': getVerificationTextColor(scenario, index) }">Refine Response</button>
+                  </UTooltip>
                 <br><br>
               </div>
 

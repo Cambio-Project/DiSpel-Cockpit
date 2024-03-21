@@ -2,21 +2,24 @@ import { User } from "~/server/models/user.model";
 import mongoose from "mongoose";
 
 export default defineEventHandler(async (event) => {
+
+    const config = useRuntimeConfig(event)
+
     const endpointStatus = {
         pspWizard: {
-            domain: "http://localhost:8081",
+            domain: "http://"+config.public.pspDomain+":"+config.public.pspPort,
             status: "red"
         },
         miSim: {
-            domain: "http://localhost:8084",
+            domain: "http://"+config.public.miSimDomain+":"+config.public.miSimPort,
             status: "red"
         },
         tbVerifier: {
-            domain: "http://localhost:8083",
+            domain: "http://"+config.public.tbVerifierDomain+":"+config.public.tbVerifierPort,
             status: "red"
         },
         tqPropRefiner: {
-            domain: "http://localhost:8082",
+            domain: "http://"+config.public.tqPropRefinerDomain+":"+config.public.tqPropRefinerPort,
             status: "red"
         },
         db: {
