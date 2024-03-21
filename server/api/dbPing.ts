@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
             status: "red"
         },
         tqPropRefiner: {
-            domain: "http://"+config.public.tqPropRefinerDomain+":"+config.public.tqPropRefinerPort,
+            domain: "http://tqproprefiner:80",
             status: "red"
         },
         db: {
@@ -35,7 +35,6 @@ export default defineEventHandler(async (event) => {
         try {
             // @ts-ignore
             const response = await fetch(endpointStatus[endpoint].domain, { method: 'POST' });
-            console.log(response.status)
             // @ts-ignore
             endpointStatus[endpoint].status = "green"
         } catch (error) {}

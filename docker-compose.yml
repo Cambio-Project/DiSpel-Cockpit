@@ -4,17 +4,18 @@ name: "dashboard-project"
 
 services:
   dashboard:
-    #image: ghcr.io/cambio-project/dashboard-vue-23:latest
-    build: .
+    image: ghcr.io/cambio-project/dashboard-vue-23:1.0.0
     container_name: dashboard
     ports:
       - 8080:3000
     networks:
       - dashboardNetwork
     pull_policy: always
+    depends_on:
+      - mongo
 
   pspwizard:
-    image: ghcr.io/cambio-project/pspwizardextended:latest
+    image: ghcr.io/cambio-project/pspwizardextended:1.1.0
     container_name: pspwizard
     ports:
       - 8081:8080
@@ -23,8 +24,7 @@ services:
     pull_policy: always
 
   tqproprefiner:
-    #image: ghcr.io/cambio-project/transient-behavior-requirement-refiner:latest
-    build: /Users/marvin/WebstormProjects/transient-behavior-requirement-refiner
+    image: ghcr.io/cambio-project/transient-behavior-requirement-refiner:1.0.0
     container_name: tqproprefiner
     ports:
       - 8082:80
@@ -32,10 +32,10 @@ services:
       - dashboardNetwork
     pull_policy: always
     volumes:
-      - ./data/simulationResults:/usr/share/nginx/html/assets/simulations_results
+      - ./data/simulations_results:/usr/share/nginx/html/assets/simulations_results
 
   tbverifier:
-    image: ghcr.io/cambio-project/transient-behavior-verifier:latest
+    image: ghcr.io/cambio-project/transient-behavior-verifier:1.0.0
     container_name: tbverifier
     ports:
       - 8083:5000
@@ -46,7 +46,7 @@ services:
       - ./data/simulations_results:/app/simulations_results
 
   misim:
-    image: ghcr.io/cambio-project/misim:latest
+    image: ghcr.io/cambio-project/misim:v4.0.0
     container_name: misim
     ports:
       - 8084:8080

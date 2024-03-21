@@ -4,6 +4,16 @@
 // creates the scope part of the payload
 import * as events from "events";
 
+/**
+ * Creates a scope object with the given parameters.
+ *
+ * @param {string} selectedScope - The selected scope type.
+ * @param {string} selectedScopeEventQ - The selected Q event for the scope.
+ * @param {string} selectedScopeEventR - The selected R event for the scope.
+ * @param {Object[]} events - An array of available events.
+ *
+ * @return {Object} - The created scope object.
+ */
 function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events) {
   const scope = {
     type: selectedScope
@@ -22,7 +32,21 @@ function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, ev
   return scope;
 }
 
+
+
 // creates the event part of the payload. Takes the predicate from the events-array based on the event name
+/**
+ * Creates an event object with the given name from an array of events.
+ *
+ * @param {string} name - The name of the event to create.
+ * @param {Array} events - An array of events.
+ *
+ * @return {Object} - An event object with the specified name and associated specification.
+ *                   The event object has the following properties:
+ *                   - name: The name of the event.
+ *                   - specification: An object containing the specifications of the event,
+ *                     including the predicate name, logic, comparison value, and measurement source.
+ */
 function createEvent(name, events) {
   const event = events.find(event => event.event_name === name);
   return {

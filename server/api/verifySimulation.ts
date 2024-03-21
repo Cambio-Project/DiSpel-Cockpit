@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
 			measurement_points: getMeasurementPointsFromPredicates(predicates),
 			options: {
 				create_plots: false,
-				store_combined_misim_results: false,
+				store_combined_misim_results: true,
 			}
 		}
 		return sendVerificationRequest(responseSpecification, TBVERIFIER_URL);

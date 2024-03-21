@@ -187,7 +187,7 @@ export default {
 
       <div class="mb-4">
         <UButton class="mr-4" @click="openEditor">New Scenario</UButton>
-        <UButton @click="downloadZip(index)">Download all Scenarios</UButton>
+        <UButton @click="downloadZip(index)" class="downloadScenarios">Download all Scenarios</UButton>
       </div>
 
       <div>
@@ -210,19 +210,19 @@ export default {
 
               <h3 class="text-2xl">Name: {{scenario.name}} </h3>
 
-              <UBadge v-if="scenario.category === 'None' " color="gray">
+              <UBadge v-if="scenario.category === 'None' " color="gray" class="customCategory">
                 {{ 'None category defined' }}
               </UBadge>
 
-              <UBadge v-if="scenario.category === 'Exploratory' " color="purple">
+              <UBadge v-if="scenario.category === 'Exploratory' " color="purple" class="customCategory">
                 {{ 'Exploratory' }}
              </UBadge>
 
-             <UBadge v-if="scenario.category === 'Growth' " color="blue">
+             <UBadge v-if="scenario.category === 'Growth' " color="blue" class="customCategory">
                 {{ 'Growth' }}
               </UBadge>
 
-              <UBadge v-if="scenario.category === 'UseCase' " color="yellow">
+              <UBadge v-if="scenario.category === 'UseCase' " color="yellow" class="customCategory">
                 {{ 'Use Case' }}
               </UBadge>
 
@@ -377,6 +377,14 @@ export default {
   background-color: #9bb8d3;
 }
 
+.downloadScenarios:hover{
+  background-color: #9bb8d3;
+}
+
+.downloadScenarios{
+  background-color: #aacbe9;
+}
+
 .all-file-download-button {
   background-color: #aacbe9;
   border: none;
@@ -422,6 +430,11 @@ export default {
   justify-content: center;
   align-items: center;
   border-radius: 32px;
+}
+
+
+.customCategory{
+  border-radius: 40px !important;
 }
 
 .category-frame-3 {
