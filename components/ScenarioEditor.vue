@@ -19,13 +19,16 @@ export default {
       category: "None",
       description: null,
       stimuli: null,
+      environmentArchitecture: null,
+      environmentExperiment: null,
+      environmentLoad: null,
       responses: null,
 
       importErrorMessage: null,
       componentKey: 0,
     }
   },
-  methods:{
+  methods: {
     // get fields from DB object with simulationID
     async initFields() {
       const res = await fetch("/api/getScenarios", {
@@ -50,41 +53,55 @@ export default {
       if (typeof body.Scenario.stimuli !== "undefined") {
         this.stimuli = body.Scenario.stimuli
       }
+      if (typeof body.Scenario.environment.architecture !== "undefined") {
+        this.environmentArchitecture = body.Scenario.environment.architecture
+      }
+      if (typeof body.Scenario.environment.experiment !== "undefined") {
+        this.environmentExperiment = body.Scenario.environment.experiment
+      }
+      if (typeof body.Scenario.environment.load !== "undefined") {
+        this.environmentLoad = body.Scenario.environment.load
+      }
       if (typeof body.Scenario.responses !== "undefined") {
         this.responses = body.Scenario.responses
       }
     },
     // create response with pspwizard
     openPSPResponse() {
-      this.$router.push('/pspwizardSite?simID='+ this.simID);
+      this.$router.push('/pspwizardSite?simID=' + this.simID);
     },
     // remove stimulus
-    async removeStimulus(index) {
-      const res = await fetch("/api/deleteScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: "stimuli",
-          fieldIndex: index
-        })
-      })
-    const body = await res.json()
-    console.log(body)
-    await this.initFields()
+    removeStimulus(index) {
+      this.deleteField("stimuli", index)
+    },
+    // remove architecture
+    removeEnvironmentArchitecture(index) {
+      this.deleteField("environment.architecture", index)
+    },
+    // remove experiment
+    removeEnvironmentExperiment(index) {
+      this.deleteField("environment.experiment", index)
+    },
+    // remove load
+    removeEnvironmentLoad(index) {
+      this.deleteField("environment.load", index)
     },
     // remove response
-    async removeResponse(index) {
+    removeResponse(index) {
+      this.deleteField("responses", index)
+    },
+    async deleteField(fieldName, index) {
       const res = await fetch("/api/deleteScenarioField", {
         method: "POST",
         body: JSON.stringify({
           simulationID: this.simID,
-          fieldName: "responses",
+          fieldName: fieldName,
           fieldIndex: index
         })
       })
-    const body = await res.json()
-    console.log(body)
-    await this.initFields()
+      const body = await res.json()
+      console.log(body)
+      await this.initFields()
     },
     // add scenario with metadata and stimuli and responses
     async complete() {
@@ -97,31 +114,51 @@ export default {
         response.target_logic = this.target;
       })
     },
-    async upload(type) {
+    uploadStimuli(type) {
       const fileInput = this.$refs.fileInputStimulus;
       this.stimuli = []
+      this.upload(type, fileInput)
+    },
+    uploadArchitecture(type) {
+      const fileInput = this.$refs.fileInputEnvironmentArchitecture;
+      this.environmentArchitecture = []
+      this.upload(type, fileInput)
+    },
+    uploadExperiment(type) {
+      const fileInput = this.$refs.fileInputEnvironmentExperiment;
+      this.environmentExperiment = []
+      this.upload(type, fileInput)
+    },
+    uploadLoad(type) {
+      const fileInput = this.$refs.fileInputEnvironmentLoad;
+      this.environmentLoad = []
+      this.upload(type, fileInput)
+    },
+    async upload(type, fileInput) {
       this.loadedFiles = []
+      console.log("HERE")
+      console.log(fileInput)
       for (const file of fileInput.files) {
         const filename = file.name
-        if (filename.split(".").pop() === "json"){
+        if (filename.split(".").pop() === "json") {
           const jsonAsText = await file.text()
           const json = JSON.parse(jsonAsText)
           const tmp = {
             [filename]: json
           }
-          this.addValue(type, tmp)
+          await this.addValue(type, tmp)
 
         } else {
           const formdata = new FormData()
           formdata.append(filename, file)
-          await fetch("/api/uploadAdditionalStimuliFile", {
+          await fetch("/api/uploadAdditionalEnvironmentFile", {
             method: "POST",
             body: formdata
           })
           const tmp = {
             [filename]: "external"
           }
-          this.addValue(type, tmp)
+          await this.addValue(type, tmp)
         }
         this.loadedFiles.push(filename)
       }
@@ -148,8 +185,8 @@ export default {
           console.log(jsonData);
 
           // check if at least one field for a scenario is available
-          if(jsonData.name==null && jsonData.category==null && jsonData.description==null && jsonData.stimuli==null && jsonData.responses==null) {
-            this.importErrorMessage = "The imported scenario has no valid field. Define either one or more of the fields name, category, description, stimuli and responses.";
+          if (jsonData.name == null && jsonData.category == null && jsonData.description == null && jsonData.stimuli == null && jsonData.environment.architecture == null && jsonData.environment.experiment == null && jsonData.environment.load == null && jsonData.responses == null) {
+            this.importErrorMessage = "The imported scenario has no valid field. Define either one or more of the fields name, category, description, stimuli, environment and responses.";
             return;
           }
 
@@ -157,26 +194,26 @@ export default {
           this.resetAllFields();
 
           // name
-          if(jsonData.name != null) {
+          if (jsonData.name != null) {
             this.name = jsonData.name;
             this.setValue("name", this.name)
           }
 
           // category
-          if(jsonData.category != null) {
+          if (jsonData.category != null) {
             this.category = jsonData.category;
             this.setValue("category", this.category)
           }
 
           // description
-          if(jsonData.description != null) {
+          if (jsonData.description != null) {
             this.description = jsonData.description;
             this.setValue("description", this.description)
           }
 
           // stimuli
           this.stimuli = []
-          if(jsonData.stimuli != null) {
+          if (jsonData.stimuli != null) {
             jsonData.stimuli.forEach(element => {
               this.stimuli.push(element);
             });
@@ -185,9 +222,42 @@ export default {
             this.setValue("stimuli", [])
           }
 
+          // environment architecture
+          this.environmentArchitecture = []
+          if (jsonData.environment.architecture != null) {
+            jsonData.environment.architecture.forEach(element => {
+              this.environmentArchitecture.push(element);
+            });
+            this.setValue("environment.architecture", this.environmentArchitecture)
+          } else {
+            this.setValue("environment.architecture", [])
+          }
+
+          // environment experiment
+          this.environmentExperiment = []
+          if (jsonData.environment.experiment != null) {
+            jsonData.environment.experiment.forEach(element => {
+              this.environmentExperiment.push(element);
+            });
+            this.setValue("environment.experiment", this.environmentExperiment)
+          } else {
+            this.setValue("environment.experiment", [])
+          }
+
+          // environment load
+          this.environmentLoad = []
+          if (jsonData.environment.load != null) {
+            jsonData.environment.load.forEach(element => {
+              this.environmentLoad.push(element);
+            });
+            this.setValue("environment.load", this.environmentLoad)
+          } else {
+            this.setValue("environment.load", [])
+          }
+
           // response
           this.responses = []
-          if(jsonData.responses != null) {
+          if (jsonData.responses != null) {
             jsonData.responses.forEach(element => {
               this.responses.push(element);
             });
@@ -208,7 +278,7 @@ export default {
 
         } catch (error) {
           // mapping not valid
-          this.importErrorMessage = "The imported scenario is not valid! Technical error message: \n "+error
+          this.importErrorMessage = "The imported scenario is not valid! Technical error message: \n " + error
           console.error('Error parsing JSON:', error);
         }
       };
@@ -216,16 +286,19 @@ export default {
       fileReader.readAsText(file);
     },
     resetAllFields() {
-      this.outputType = null,
-      this.target= null,
-      this.name= "",
-      this.category= "None",
-      this.description= null,
-      this.stimuli= null,
-      this.responses= null,
-      this.showTooltip= false
+      this.outputType = null
+      this.target = null
+      this.name = ""
+      this.category = "None"
+      this.description = null
+      this.stimuli = null
+      this.environmentArchitecture = null
+      this.environmentExperiment = null
+      this.environmentLoad = null
+      this.responses = null
+      this.showTooltip = false
     },
-    async addValue(field, newValue){
+    async addValue(field, newValue) {
       const res = await fetch("/api/pushScenarioField", {
         method: "POST",
         body: JSON.stringify({
@@ -237,7 +310,7 @@ export default {
       const body = await res.json()
       console.log(body)
     },
-    async setValue(field, newValue){
+    async setValue(field, newValue) {
       const res = await fetch("/api/setScenarioField", {
         method: "POST",
         body: JSON.stringify({
@@ -257,26 +330,25 @@ export default {
   beforeMount() {
     this.initFields();
   },
-  watch:{
-      name(newName) {
-        this.addValue("name", newName)
-      },
-      category(newCategory) {
-        this.addValue("category", newCategory)
-      },
-      description(newDescription) {
-        this.addValue("description", newDescription)
-      },
+  watch: {
+    name(newName) {
+      this.addValue("name", newName)
     },
-  }
-
+    category(newCategory) {
+      this.addValue("category", newCategory)
+    },
+    description(newDescription) {
+      this.addValue("description", newDescription)
+    },
+  },
+}
 
 
 </script>
 
 <script setup>
 const config = useRuntimeConfig()
-const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"/simulate/upload"
+const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSimPort + "/simulate/upload"
 
 </script>
 
@@ -288,79 +360,132 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 
   <!--Main Frame-->
   <div>
-<!--       <div v-if="this.importErrorMessage">-->
-<!--          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>-->
-<!--        </div>-->
+    <!--       <div v-if="this.importErrorMessage">-->
+    <!--          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>-->
+    <!--        </div>-->
 
-        <h3 class="center">
+    <h3 class="center">
 
-          <div class="file-upload-label">
-            <label for="fileInput" class="custom-file-upload">Import Scenario</label>
-            <input class="bg-gray-500" id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
-          </div>
-
-          <input v-model="name" type="text" placeholder="Enter scenario name" class="small-text-field p-1 border-2 rounded-xl"/>
-          Category:
-          <select v-model="category" class="select-box">
-            <option v-for="category in categories" :key="category">{{ category }}</option>
-          </select>
-        </h3>
-
-        <textarea v-model="description" type="text" placeholder="Enter description" class="larger-text-field p-1 border-2 rounded-xl" />
-
-        <div>
-        {{ "Transform all Target Logics to " }}
-        <select class="select-box" @change="changeAllTargets" v-model="target">
-            <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-        </select>
+      <div class="file-upload-label">
+        <label for="fileInput" class="custom-file-upload">Import Scenario</label>
+        <input class="bg-gray-500" id="fileInput" type="file" ref="fileInput" @change="handleFileChange"
+               style="display: none;">
       </div>
+
+      <input v-model="name" type="text" placeholder="Enter scenario name"
+             class="small-text-field p-1 border-2 rounded-xl"/>
+      Category:
+      <select v-model="category" class="select-box">
+        <option v-for="category in categories" :key="category">{{ category }}</option>
+      </select>
+    </h3>
+
+    <textarea v-model="description" type="text" placeholder="Enter description"
+              class="larger-text-field p-1 border-2 rounded-xl"/>
+
+    <div>
+      {{ "Transform all Target Logics to " }}
+      <select class="select-box" @change="changeAllTargets" v-model="target">
+        <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
+          {{ targetLogic }}
+        </option>
+      </select>
+    </div>
 
     <div class="message-container">
 
       <p>Stimuli:</p>
 
-      <input class="custom-stimuli-input" id="fileInput" type="file" ref="fileInputStimulus" @change="upload('stimuli')" multiple="multiple">
+      <input class="custom-file-input" id="fileInput" type="file" ref="fileInputStimulus"
+             @change="uploadStimuli('stimuli')"
+             multiple="multiple">
 
       <ul>
         <li v-for="(file, index) in stimuli">
-          {{Object.keys(file)}}
-        <button class="remove-button" @click="removeStimulus(index)">Remove</button> <br>
-      </li>
+          {{ Object.keys(file) }}
+          <button class="remove-button" @click="removeStimulus(index)">Remove</button>
+          <br>
+        </li>
       </ul>
-      
+
+    </div>
+
+    <div class="message-container">
+
+      <p>Environment:</p>
+
+      <p>Architecture:</p>
+      <input class="custom-file-input" id="fileInput" type="file"
+             ref="fileInputEnvironmentArchitecture" @change="uploadArchitecture('environment.architecture')">
+
+      <ul>
+        <li v-for="(file, index) in environmentArchitecture">
+          {{ Object.keys(file) }}
+          <button class="remove-button" @click="removeEnvironmentArchitecture(index)">Remove</button>
+          <br>
+        </li>
+      </ul>
+
+      <p>Experiment:</p>
+      <input class="custom-file-input" id="fileInput" type="file"
+             ref="fileInputEnvironmentExperiment" @change="uploadExperiment('environment.experiment')">
+
+      <ul>
+        <li v-for="(file, index) in environmentExperiment">
+          {{ Object.keys(file) }}
+          <button class="remove-button" @click="removeEnvironmentExperiment(index)">Remove</button>
+          <br>
+        </li>
+      </ul>
+
+      <p>Load:</p>
+      <input class="custom-file-input" id="fileInput" type="file"
+             ref="fileInputEnvironmentLoad" @change="uploadLoad('environment.load')" multiple="multiple">
+
+      <ul>
+        <li v-for="(file, index) in environmentLoad">
+          {{ Object.keys(file) }}
+          <button class="remove-button" @click="removeEnvironmentLoad(index)">Remove</button>
+          <br>
+        </li>
+      </ul>
+
     </div>
 
     <div class="message-container">
       <p class="mb-2">Responses:</p>
       <li v-for="(response, index) in responses" :key="response" class="left">
-        {{ index +1}}.
+        {{ index + 1 }}.
         <select v-model="response.target_logic" class="select-box">
-          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
+            {{ targetLogic }}
+          </option>
         </select>
 
         <span v-if="response.target_logic==0">
-          {{ response.SEL}}
+          {{ response.SEL }}
         </span>
         <span v-if="response.target_logic==1">
-          {{ response.LTL}}
+          {{ response.LTL }}
         </span>
         <span v-if="response.target_logic==2">
-          {{ response.MTL}}
+          {{ response.MTL }}
         </span>
         <span v-if="response.target_logic==3">
-          {{ response.Prism}}
+          {{ response.Prism }}
         </span>
         <span v-if="response.target_logic==4">
-          {{ response.Quantitative_Prism}}
+          {{ response.Quantitative_Prism }}
         </span>
         <span v-if="response.target_logic==5">
-          {{ response.TBV_untimed}}
+          {{ response.TBV_untimed }}
         </span>
         <span v-if="response.target_logic==6">
-          {{ response.TBV_timed}}
+          {{ response.TBV_timed }}
         </span>
-        
-        <button class="remove-button" @click="removeResponse(index)">Remove</button> <br>
+
+        <button class="remove-button" @click="removeResponse(index)">Remove</button>
+        <br>
         <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i> <br> <br>
 
       </li>
@@ -370,16 +495,17 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
     </div>
 
     <div class="mt-2">
-      <div v-if="name !== null && stimuli != null && responses != null">
+      <!-- TODO: add stimulus check again as soon as supported -->
+      <div v-if="name !== null && responses != null">
         <UButton @click="complete">Complete</UButton>
       </div>
 
       <div v-else>
         <div>
-          <UTooltip text="Minimum: Name, 1 Stimulus and 1 Response!">
+          <UTooltip text="Minimum: Name and 1 Response!">
             <UButton color="gray" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</UButton>
           </UTooltip>
-       </div>
+        </div>
       </div>
     </div>
   </div>
@@ -392,7 +518,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 .headline-frame {
   background-color: #eaf6ff;
   padding: 0px;
-  display:flex;
+  display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
@@ -402,10 +528,11 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 .headline {
   color: #333;
 }
+
 .box-frame {
   background-color: #d3d3d3;
-  justify-content:center;
-  align-items:center;
+  justify-content: center;
+  align-items: center;
   display: block;
   height: 87vh;
   width: 100%;
@@ -435,6 +562,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
 .file-upload-label:hover {
   background-color: #9bb8d3;
 }
+
 .new-button {
   background-color: rgb(114, 214, 101);
   border: none;
@@ -486,6 +614,7 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
   border-radius: 4px;
   z-index: 1;
 }
+
 .remove-button {
   background-color: rgb(219, 65, 65);
   border: none;
@@ -499,25 +628,26 @@ const domain = "http://"+config.public.miSimDomain+":"+config.public.miSimPort+"
   cursor: pointer;
   border-radius: 4px;
 }
+
 .remove-button:hover {
   background-color: rgb(160, 40, 40);
 }
 
 .message-container p {
-font-weight: bold;
+  font-weight: bold;
 }
 
 .message-container {
-background-color: #f2f2f2;
-border: 1px solid #ddd;
-border-radius: 1vw;
-padding-left: 2vw;
-padding-right: 2vw;
-padding-top: 0.5vw;
-padding-bottom: 1.5vw;
-margin: 1vw;
-height: 25%;
-overflow-y: auto;
+  background-color: #f2f2f2;
+  border: 1px solid #ddd;
+  border-radius: 1vw;
+  padding-left: 2vw;
+  padding-right: 2vw;
+  padding-top: 0.5vw;
+  padding-bottom: 1.5vw;
+  margin: 1vw;
+  height: 25%;
+  overflow-y: auto;
 }
 
 .larger-text-field {
@@ -534,7 +664,7 @@ overflow-y: auto;
   margin: 10px;
 }
 
-.left{
+.left {
   text-align: left;
   overflow: auto;
   display: block;
@@ -560,7 +690,7 @@ overflow-y: auto;
   cursor: pointer;
 }
 
-.custom-stimuli-input::file-selector-button{
+.custom-file-input::file-selector-button {
   background: #22C55E;
   border-radius: 5px;
   color: white;
@@ -569,7 +699,7 @@ overflow-y: auto;
   margin-right: 10px;
 }
 
-.custom-stimuli-input::file-selector-button:hover{
+.custom-file-input::file-selector-button:hover {
   background: #16A34A;
   border-radius: 5px;
   color: white;
