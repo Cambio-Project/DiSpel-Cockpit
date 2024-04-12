@@ -1,4 +1,5 @@
 import fs from 'fs';
+
 export default defineEventHandler(async (event) => {
 
     const body = await readBody(event)
@@ -7,30 +8,28 @@ export default defineEventHandler(async (event) => {
     var res;
     const scenario = await Scenario.findOne({simulationID: simulationID})
 
-    const stimuliArray = scenario!.stimuli;
+    const architectureArray = scenario!.environment!.architecture;
+    const experimentArray = scenario!.environment!.experiment;
+    const loadArray = scenario!.environment!.load;
 
-    //console.log(stimuliArray)
     const formData = new FormData();
 
-    for (const stimuli of stimuliArray) {
-        const fileName = Object.keys(stimuli)[0]
+    for (const architecture of architectureArray) {
+        const architectureName = Object.keys(architecture)[0]
+        const architectureContent = architecture[architectureName]
+        await appendFile(formData, architectureName, architectureContent)
+    }
 
-        if (fileName.split(".").pop() === "json"){
-            const fileContent = stimuli[fileName]
+    for (const experiment of experimentArray) {
+        const experimentName = Object.keys(experiment)[0]
+        const experimentContent = experiment[experimentName]
+        await appendFile(formData, experimentName, experimentContent)
+    }
 
-            await fs.promises.writeFile(fileName, JSON.stringify(fileContent));
-
-            const file = await fs.promises.readFile("./"+fileName)
-            const blob = new Blob([file], { type: 'application/octet-stream' });
-            formData.append("files", blob, fileName)
-            await fs.promises.unlink(fileName);
-
-
-        } else {
-            const file = await fs.promises.readFile("./uploaded/"+fileName)
-            const blob = new Blob([file], { type: 'application/octet-stream' });
-            formData.append("files", blob, fileName)
-        }
+    for (const load of loadArray) {
+        const loadName = Object.keys(load)[0]
+        const loadContent = load[loadName]
+        await appendFile(formData, loadName, loadContent)
     }
 
     formData.append("simulation_id", simulationID)
@@ -38,7 +37,7 @@ export default defineEventHandler(async (event) => {
 
     const config = useRuntimeConfig(event)
 
-    const miSimResponse = await fetch("http://"+config.public.miSimDomain+":"+config.public.miSimPort+"/simulate/upload", {
+    const miSimResponse = await fetch("http://" + config.public.miSimDomain + ":" + config.public.miSimPort + "/simulate/upload", {
         method: "POST",
         body: formData
     });
@@ -51,3 +50,20 @@ export default defineEventHandler(async (event) => {
         "status": resText,
     };
 })
+
+async function appendFile(formData: FormData, fileName: string, fileContent: any) {
+    if (fileName.split(".").pop() === "json") {
+        await fs.promises.writeFile(fileName, JSON.stringify(fileContent));
+
+        const file = await fs.promises.readFile("./" + fileName)
+        const blob = new Blob([file], {type: 'application/octet-stream'});
+        formData.append("files", blob, fileName)
+        await fs.promises.unlink(fileName);
+
+
+    } else {
+        const file = await fs.promises.readFile("./uploaded/" + fileName)
+        const blob = new Blob([file], {type: 'application/octet-stream'});
+        formData.append("files", blob, fileName)
+    }
+}
