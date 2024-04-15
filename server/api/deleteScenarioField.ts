@@ -1,21 +1,21 @@
 export default defineEventHandler(async (event) => {
     // Read the request body
-    var body = await readBody(event)
+    let body = await readBody(event)
     body = JSON.parse(body)
 
     if (typeof body.simulationID === "undefined" || body.fieldName === "undefined" || body.fieldIndex === "undefined") {
         return {
             "success": false,
-             "message": "simulationID, fieldName or fielIndex not defined"
-         }
-     }
+            "message": "simulationID, fieldName or fieldIndex not defined"
+        }
+    }
 
     const simulationID = body.simulationID
-    const fieldName = body.fieldName
+    const fullFieldName = body.fieldName
     const fieldIndex = body.fieldIndex
 
     try {
-        const scenario = await Scenario.findOne({ simulationID: simulationID });
+        const scenario = await Scenario.findOne({simulationID: simulationID});
 
         if (!scenario) {
             return {
@@ -24,19 +24,26 @@ export default defineEventHandler(async (event) => {
             };
         }
 
-        // check if the field exists
-        // @ts-ignore
-        if (fieldName in scenario) {
-            // delete the value from the array
-            // @ts-ignore
-            const responses = scenario[fieldName];
-            responses.splice(fieldIndex, 1)
-        } else {
-            return {
-                "success": false,
-                "message": "Error finding the entry"
-            };
+        // Handle nested elements
+        let field = scenario;
+        const allFieldNames = fullFieldName.split(".");
+        for (const partFieldName of allFieldNames) {
+            if (partFieldName in field) {
+                // @ts-ignore
+                field = field[partFieldName];
+            } else {
+                return {
+                    success: false,
+                    message: "Field not found",
+                };
+            }
         }
+
+        // delete the value from the array
+        // @ts-ignore
+        const responses = field;
+        // @ts-ignore
+        responses.splice(fieldIndex, 1)
 
         await scenario.save();
 

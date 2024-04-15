@@ -46,7 +46,7 @@ services:
       - ./data/simulations_results:/app/simulations_results
 
   misim:
-    image: ghcr.io/cambio-project/misim:v4.0.0
+    image: ghcr.io/cambio-project/misim:v4.1.0
     container_name: misim
     ports:
       - 8084:8080

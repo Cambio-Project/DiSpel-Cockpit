@@ -5,6 +5,11 @@ const ScenarioSchema = new Schema({
     name: String,
     category: String,
     description: String,
+    environment: {
+        architecture: [{}],
+        experiment: [{}],
+        load: [{}]
+    },
     stimuli: [{}],
     responses: [{}]
 });
