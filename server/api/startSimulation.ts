@@ -17,19 +17,19 @@ export default defineEventHandler(async (event) => {
     for (const architecture of architectureArray) {
         const architectureName = Object.keys(architecture)[0]
         const architectureContent = architecture[architectureName]
-        await appendFile(formData, architectureName, architectureContent)
+        await appendFile(formData, "architectures", architectureName, architectureContent)
     }
 
     for (const experiment of experimentArray) {
         const experimentName = Object.keys(experiment)[0]
         const experimentContent = experiment[experimentName]
-        await appendFile(formData, experimentName, experimentContent)
+        await appendFile(formData, "experiments", experimentName, experimentContent)
     }
 
     for (const load of loadArray) {
         const loadName = Object.keys(load)[0]
         const loadContent = load[loadName]
-        await appendFile(formData, loadName, loadContent)
+        await appendFile(formData, "loads", loadName, loadContent)
     }
 
     formData.append("simulation_id", simulationID)
@@ -51,19 +51,19 @@ export default defineEventHandler(async (event) => {
     };
 })
 
-async function appendFile(formData: FormData, fileName: string, fileContent: any) {
+async function appendFile(formData: FormData, type: string, fileName: string, fileContent: any) {
     if (fileName.split(".").pop() === "json") {
         await fs.promises.writeFile(fileName, JSON.stringify(fileContent));
 
         const file = await fs.promises.readFile("./" + fileName)
         const blob = new Blob([file], {type: 'application/octet-stream'});
-        formData.append("files", blob, fileName)
+        formData.append(type, blob, fileName)
         await fs.promises.unlink(fileName);
 
 
     } else {
         const file = await fs.promises.readFile("./uploaded/" + fileName)
         const blob = new Blob([file], {type: 'application/octet-stream'});
-        formData.append("files", blob, fileName)
+        formData.append(type, blob, fileName)
     }
 }
