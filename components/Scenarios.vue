@@ -16,9 +16,6 @@ export default {
     };
   },
   methods: {
-    tryCatch() {
-      return tryCatch
-    },
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
       const res = await fetch("/api/initScenario", {
@@ -112,7 +109,7 @@ export default {
         })
       })
       const body = await res.json()
-      var scenario = body.Scenario
+      const scenario = body.Scenario
 
       const jsonStr = JSON.stringify(scenario, null, 2);
       const blob = new Blob([jsonStr], {type: 'application/json'})
@@ -132,9 +129,9 @@ export default {
     //Download all scenarios as zip file
     async downloadZip() {
       const zip = new JSZip();
-      var c = 1
+      let c = 1
       this.scenarios.forEach((scenario, index) => {
-        var name = c + " - " + scenario.name;
+        const name = c + " - " + scenario.name;
         const jsonData = this.scenarios[index];
         zip.file('Scenario_' + name + '.json', JSON.stringify(jsonData, null, 2));
         c++;
@@ -209,7 +206,7 @@ export default {
         <div v-if="scenarios">
           <ul>
 
-            <li v-for="(scenario, index) in scenarios" class="list-item">
+            <li v-for="scenario in scenarios" class="list-item">
 
               <h3 class="text-2xl">Name: {{ scenario.name }} </h3>
 
@@ -285,25 +282,25 @@ export default {
                           :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                 </select>
 
-                <span v-if="response.target_logic==0">
+                <span v-if="response.target_logic===0">
                   {{ response.SEL }}
                 </span>
-                <span v-if="response.target_logic==1">
+                <span v-if="response.target_logic===1">
                   {{ response.LTL }}
                 </span>
-                <span v-if="response.target_logic==2">
+                <span v-if="response.target_logic===2">
                   {{ response.MTL }}
                 </span>
-                <span v-if="response.target_logic==3">
+                <span v-if="response.target_logic===3">
                   {{ response.Prism }}
                 </span>
-                <span v-if="response.target_logic==4">
+                <span v-if="response.target_logic===4">
                   {{ response.Quantitative_Prism }}
                 </span>
-                <span v-if="response.target_logic==5">
+                <span v-if="response.target_logic===5">
                   {{ response.TBV_untimed }}
                 </span>
-                <span v-if="response.target_logic==6">
+                <span v-if="response.target_logic===6">
                   {{ response.TBV_timed }}
                 </span>
                 
@@ -358,7 +355,7 @@ export default {
 
 .headline-frame {
   background-color: #eaf6ff;
-  padding: 0px;
+  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -394,8 +391,7 @@ export default {
   text-decoration: none;
   display: inline-block;
   font-size: 10px;
-  margin: 5px;
-  margin-top: 20px;
+  margin: 20px 5px 5px;
   cursor: pointer;
   border-radius: 4px;
 }

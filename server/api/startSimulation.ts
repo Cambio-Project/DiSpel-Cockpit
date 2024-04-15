@@ -5,7 +5,6 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const simulationID = JSON.parse(body).simulationID
 
-    var res;
     const scenario = await Scenario.findOne({simulationID: simulationID})
 
     const architectureArray = scenario!.environment!.architecture;

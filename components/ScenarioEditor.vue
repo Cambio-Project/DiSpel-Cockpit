@@ -462,25 +462,25 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
           </option>
         </select>
 
-        <span v-if="response.target_logic==0">
+        <span v-if="response.target_logic===0">
           {{ response.SEL }}
         </span>
-        <span v-if="response.target_logic==1">
+        <span v-if="response.target_logic===1">
           {{ response.LTL }}
         </span>
-        <span v-if="response.target_logic==2">
+        <span v-if="response.target_logic===2">
           {{ response.MTL }}
         </span>
-        <span v-if="response.target_logic==3">
+        <span v-if="response.target_logic===3">
           {{ response.Prism }}
         </span>
-        <span v-if="response.target_logic==4">
+        <span v-if="response.target_logic===4">
           {{ response.Quantitative_Prism }}
         </span>
-        <span v-if="response.target_logic==5">
+        <span v-if="response.target_logic===5">
           {{ response.TBV_untimed }}
         </span>
-        <span v-if="response.target_logic==6">
+        <span v-if="response.target_logic===6">
           {{ response.TBV_timed }}
         </span>
 
@@ -517,7 +517,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
 .headline-frame {
   background-color: #eaf6ff;
-  padding: 0px;
+  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -554,8 +554,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
   display: inline-block;
   font-size: 16px;
   font-weight: normal;
-  margin: 2px;
-  margin-top: 20px;
+  margin: 20px 2px 2px;
   border-radius: 4px;
 }
 
@@ -641,10 +640,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
   background-color: #f2f2f2;
   border: 1px solid #ddd;
   border-radius: 1vw;
-  padding-left: 2vw;
-  padding-right: 2vw;
-  padding-top: 0.5vw;
-  padding-bottom: 1.5vw;
+  padding: 0.5vw 2vw 1.5vw;
   margin: 1vw;
   height: 25%;
   overflow-y: auto;

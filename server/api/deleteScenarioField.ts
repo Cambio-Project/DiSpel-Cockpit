@@ -1,12 +1,12 @@
 export default defineEventHandler(async (event) => {
     // Read the request body
-    var body = await readBody(event)
+    let body = await readBody(event)
     body = JSON.parse(body)
 
     if (typeof body.simulationID === "undefined" || body.fieldName === "undefined" || body.fieldIndex === "undefined") {
         return {
             "success": false,
-            "message": "simulationID, fieldName or fielIndex not defined"
+            "message": "simulationID, fieldName or fieldIndex not defined"
         }
     }
 
