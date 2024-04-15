@@ -396,18 +396,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
       <p>Stimuli:</p>
 
-      <input class="custom-file-input" id="fileInput" type="file" ref="fileInputStimulus"
-             @change="uploadStimuli('stimuli')"
-             multiple="multiple">
-
-      <ul>
-        <li v-for="(file, index) in stimuli">
-          {{ Object.keys(file) }}
-          <button class="remove-button" @click="removeStimulus(index)">Remove</button>
-          <br>
-        </li>
-      </ul>
-
     </div>
 
     <div class="message-container">

@@ -238,12 +238,6 @@ export default {
                 <h4 class="text-mb font-bold mb-1">
                   Stimuli:
                 </h4>
-
-                <ul>
-                  <li v-for="stimuli in scenario.stimuli">
-                    - {{ Object.keys(stimuli)[0] }}
-                  </li>
-                </ul>
               </div>
 
               <div class="left mb-8">
