@@ -8,7 +8,9 @@ const ScenarioSchema = new Schema({
     environment: {
         architecture: [{}],
         experiment: [{}],
-        load: [{}]
+        load: [{}],
+        monitoringData: [{}],
+        mtlFiles: [{}]
     },
     stimuli: [{}],
     responses: [{}]
