@@ -47,6 +47,27 @@ export default {
 
       return 'done'
     },
+    async startSearch(simulationID, scenario) {
+
+      this.popUp.add({
+        title: 'Search Started',
+        description: 'SimID: ' + scenario.simulationID
+      });
+      scenario.mosimState = 'running';
+
+      const res = await fetch("/api/startSearch", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: simulationID
+        })
+      })
+      const body = await res.json();
+      scenario.mosimState = 'done';
+
+      console.log("MiSim Response for simulationID: " + simulationID + ": ", body)
+
+      return 'done'
+    },
     // Open the ScenarioEditor to edit a scenario
     async editScenario(simID) {
       this.$router.push('/scenarioEditorSite/?simID=' + simID);
@@ -158,6 +179,7 @@ export default {
 
     for (let i = 0; i < this.scenarios.length; i++) {
       this.scenarios[i].simState = "none"
+      this.scenarios[i].mosimState = "none"
     }
 
     this.popUp = useToast()
@@ -331,6 +353,17 @@ export default {
                 </div>
                 <div v-if="scenario.simState === 'done'">
                   <p>Simulation is Done, you can now start the verify process</p>
+                </div>
+
+                <UButton v-if="scenario.mosimState === 'none'" @click="startSearch(scenario.simulationID, scenario);">
+                  Start Search
+                </UButton>
+                <div v-if="scenario.mosimState === 'running'">
+                  <UProgress animation="carousel"></UProgress>
+                  <p>Search is running</p>
+                </div>
+                <div v-if="scenario.mosimState === 'done'">
+                  <p>Search is Done, you can now start the verify process</p>
                 </div>
               </div>
 
