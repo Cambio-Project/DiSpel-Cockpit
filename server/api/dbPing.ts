@@ -14,6 +14,10 @@ export default defineEventHandler(async (event) => {
             domain: "http://"+config.public.miSimDomain+":"+config.public.miSimPort,
             status: "red"
         },
+        moSim: {
+            domain: "http://"+config.public.moSimDomain+":"+config.public.moSimPort,
+            status: "red"
+        },
         tbVerifier: {
             domain: "http://"+config.public.tbVerifierDomain+":"+config.public.tbVerifierPort,
             status: "red"
