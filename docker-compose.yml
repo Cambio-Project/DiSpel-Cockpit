@@ -57,13 +57,15 @@ services:
       - ./data/simulations_results:/simulations_results
 
   mosim:
-    image: ghcr.io/cambio-project/mosim:0.1.0
+    image: ghcr.io/cambio-project/mosim:0.2.0
     container_name: mosim
     ports:
       - 8087:8080
     networks:
       - dashboardNetwork
     pull_policy: always
+    volumes:
+      - ./data/search_results:/search_results
 
   mongo:
     image: mongo
