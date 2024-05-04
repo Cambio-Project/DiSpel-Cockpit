@@ -428,8 +428,8 @@ export default {
       this.pspSpecification.selectedOrder = null;
     },
     async addCustomMeasurementSource() {
-      if (this.newMeasurementSource.trim() !== "" && !this.measurementSourceOptions.includes(this.newMeasurementSource)) {
-        this.measurementSourceOptions.push(this.newMeasurementSource)
+      if (this.newMeasurementSource.trim() !== "" && !this.measurementSourceOptions.includes(this.newMeasurementSource.trim())) {
+        this.measurementSourceOptions.push(this.newMeasurementSource.trim())
         await this.addValue("specification.measurementSources", this.newMeasurementSource)
         if (this.customMeasurementSource.trim() === "") { // set as current selected
           this.customMeasurementSource = this.newMeasurementSource
