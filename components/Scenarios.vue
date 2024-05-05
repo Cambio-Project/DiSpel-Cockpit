@@ -1,6 +1,5 @@
 <script>
 import JSZip from 'jszip';
-import {tryCatch} from "standard-as-callback/built/utils.js";
 
 export default {
   name: "ScenarioList",
@@ -11,6 +10,9 @@ export default {
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
       verificationResults: {},
+      searchResults: {},
+      searchResultsTotal: {},
+      searchResultsSuccesses: {},
       scenarios: null,
       popUp: null,
     };
@@ -94,8 +96,42 @@ export default {
           scenario,
         })
       });
-      const responsePayload = response.data.value.result;
-      this.verificationResults[scenario._id] = responsePayload;
+      this.verificationResults[scenario._id] = response.data.value.result;
+    },
+    async verifySearch(scenario) {
+      const response = await useFetch("/api/verifySearch", {
+        method: "POST",
+        body: JSON.stringify({
+          scenario,
+        })
+      });
+      this.searchResults[scenario._id] = response.data.value.results;
+      this.updateSearchResultTotal(scenario)
+      this.updateSearchResultSuccesses(scenario)
+    },
+    updateSearchResultTotal(scenario) {
+      const verificationResults = this.searchResults[scenario._id];
+      if (verificationResults === undefined) {
+        return
+      }
+      this.searchResultsTotal[scenario._id] = verificationResults.length
+    },
+    updateSearchResultSuccesses(scenario) {
+      const verificationResults = this.searchResults[scenario._id];
+      if (verificationResults === undefined) {
+        return
+      }
+      let successNumbers = []
+      successNumbers.length = scenario.responses.length
+      successNumbers.fill(0)
+      for (let verificationResult of verificationResults) {
+        for (let responseIndex in scenario.responses) {
+          if (verificationResult[responseIndex]) {
+            successNumbers[responseIndex] = successNumbers[responseIndex] + 1
+          }
+        }
+      }
+      this.searchResultsSuccesses[scenario._id] = successNumbers
     },
     getVerificationTextColor(scenario, responseIndex) {
       const verificationResult = this.verificationResults[scenario._id];
@@ -109,6 +145,14 @@ export default {
         return 'gray';
       }
       //return verificationResult ? verificationResult[responseIndex] : null;
+    },
+    getSearchVerificationResultsPerResponse(scenario, responseIndex) {
+      const totals = this.searchResultsTotal[scenario._id];
+      const successes = this.searchResultsSuccesses[scenario._id];
+      if (totals === undefined || successes === undefined) {
+        return "0 / 0"
+      }
+      return successes[responseIndex] + " / " + totals
     },
     openRefinement(simID, responseIndex) {
       this.$router.push('/tqPropRefinerSiteDynamic?sim_id=' + simID + '&response_index=' + responseIndex);
@@ -307,7 +351,6 @@ export default {
                   <option v-for="targetLogic in targetLogics" :key="targetLogic"
                           :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                 </select>
-
                 <span v-if="response.target_logic===0">
                   {{ response.SEL }}
                 </span>
@@ -329,10 +372,15 @@ export default {
                 <span v-if="response.target_logic===6">
                   {{ response.TBV_timed }}
                 </span>
-                
+
                 <div>
                 <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i>
                 <br>
+                  <span class="sel-line">Monitoring: {{
+                      getSearchVerificationResultsPerResponse(scenario, index)
+                    }} </span>
+                  <br>
+
                   <UTooltip text="Please verify before Refinement!">
                       <button @click="openRefinement(scenario.simulationID, index)" class="verify-button"
                               :style="{ 'background-color': getVerificationTextColor(scenario, index) }">Refine Response</button>
@@ -373,6 +421,7 @@ export default {
 
               <div>
                 <button class="verify-button" @click="verifyScenario(scenario)">Verify Scenario</button>
+                <button class="verify-button" @click="verifySearch(scenario)">Verify Search</button>
                 <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
                 <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
                 <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON
