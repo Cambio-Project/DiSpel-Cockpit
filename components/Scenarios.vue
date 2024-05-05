@@ -1,6 +1,5 @@
 <script>
 import JSZip from 'jszip';
-import {tryCatch} from "standard-as-callback/built/utils.js";
 
 export default {
   name: "ScenarioList",
@@ -11,6 +10,9 @@ export default {
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
       verificationResults: {},
+      searchResults: {},
+      searchResultsTotal: {},
+      searchResultsSuccesses: {},
       scenarios: null,
       popUp: null,
     };
@@ -47,6 +49,27 @@ export default {
 
       return 'done'
     },
+    async startSearch(simulationID, scenario) {
+
+      this.popUp.add({
+        title: 'Search Started',
+        description: 'SimID: ' + scenario.simulationID
+      });
+      scenario.mosimState = 'running';
+
+      const res = await fetch("/api/startSearch", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: simulationID
+        })
+      })
+      const body = await res.json();
+      scenario.mosimState = 'done';
+
+      console.log("MiSim Response for simulationID: " + simulationID + ": ", body)
+
+      return 'done'
+    },
     // Open the ScenarioEditor to edit a scenario
     async editScenario(simID) {
       this.$router.push('/scenarioEditorSite/?simID=' + simID);
@@ -73,8 +96,42 @@ export default {
           scenario,
         })
       });
-      const responsePayload = response.data.value.result;
-      this.verificationResults[scenario._id] = responsePayload;
+      this.verificationResults[scenario._id] = response.data.value.result;
+    },
+    async verifySearch(scenario) {
+      const response = await useFetch("/api/verifySearch", {
+        method: "POST",
+        body: JSON.stringify({
+          scenario,
+        })
+      });
+      this.searchResults[scenario._id] = response.data.value.results;
+      this.updateSearchResultTotal(scenario)
+      this.updateSearchResultSuccesses(scenario)
+    },
+    updateSearchResultTotal(scenario) {
+      const verificationResults = this.searchResults[scenario._id];
+      if (verificationResults === undefined) {
+        return
+      }
+      this.searchResultsTotal[scenario._id] = verificationResults.length
+    },
+    updateSearchResultSuccesses(scenario) {
+      const verificationResults = this.searchResults[scenario._id];
+      if (verificationResults === undefined) {
+        return
+      }
+      let successNumbers = []
+      successNumbers.length = scenario.responses.length
+      successNumbers.fill(0)
+      for (let verificationResult of verificationResults) {
+        for (let responseIndex in scenario.responses) {
+          if (verificationResult[responseIndex]) {
+            successNumbers[responseIndex] = successNumbers[responseIndex] + 1
+          }
+        }
+      }
+      this.searchResultsSuccesses[scenario._id] = successNumbers
     },
     getVerificationTextColor(scenario, responseIndex) {
       const verificationResult = this.verificationResults[scenario._id];
@@ -88,6 +145,14 @@ export default {
         return 'gray';
       }
       //return verificationResult ? verificationResult[responseIndex] : null;
+    },
+    getSearchVerificationResultsPerResponse(scenario, responseIndex) {
+      const totals = this.searchResultsTotal[scenario._id];
+      const successes = this.searchResultsSuccesses[scenario._id];
+      if (totals === undefined || successes === undefined) {
+        return "0 / 0"
+      }
+      return successes[responseIndex] + " / " + totals
     },
     openRefinement(simID, responseIndex) {
       this.$router.push('/tqPropRefinerSiteDynamic?sim_id=' + simID + '&response_index=' + responseIndex);
@@ -158,6 +223,7 @@ export default {
 
     for (let i = 0; i < this.scenarios.length; i++) {
       this.scenarios[i].simState = "none"
+      this.scenarios[i].mosimState = "none"
     }
 
     this.popUp = useToast()
@@ -260,6 +326,16 @@ export default {
                     - Load Profile: <i>{{ Object.keys(load)[0] }}</i>
                   </li>
                 </ul>
+                <ul>
+                  <li v-for="monitoringData in scenario.environment.monitoringData">
+                    - Monitoring Data: <i>{{ Object.keys(monitoringData)[0] }}</i>
+                  </li>
+                </ul>
+                <ul>
+                  <li v-for="mtlFile in scenario.environment.mtlFiles">
+                    - MTL-File: <i>{{ Object.keys(mtlFile)[0] }}</i>
+                  </li>
+                </ul>
               </div>
 
               <h4 class="left text-mb font-bold mb-1">
@@ -275,7 +351,6 @@ export default {
                   <option v-for="targetLogic in targetLogics" :key="targetLogic"
                           :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                 </select>
-
                 <span v-if="response.target_logic===0">
                   {{ response.SEL }}
                 </span>
@@ -297,10 +372,15 @@ export default {
                 <span v-if="response.target_logic===6">
                   {{ response.TBV_timed }}
                 </span>
-                
+
                 <div>
                 <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i>
                 <br>
+                  <span class="sel-line">Monitoring: {{
+                      getSearchVerificationResultsPerResponse(scenario, index)
+                    }} </span>
+                  <br>
+
                   <UTooltip text="Please verify before Refinement!">
                       <button @click="openRefinement(scenario.simulationID, index)" class="verify-button"
                               :style="{ 'background-color': getVerificationTextColor(scenario, index) }">Refine Response</button>
@@ -322,6 +402,17 @@ export default {
                 <div v-if="scenario.simState === 'done'">
                   <p>Simulation is Done, you can now start the verify process</p>
                 </div>
+
+                <UButton v-if="scenario.mosimState === 'none'" @click="startSearch(scenario.simulationID, scenario);">
+                  Start Search
+                </UButton>
+                <div v-if="scenario.mosimState === 'running'">
+                  <UProgress animation="carousel"></UProgress>
+                  <p>Search is running</p>
+                </div>
+                <div v-if="scenario.mosimState === 'done'">
+                  <p>Search is Done, you can now start the verify process</p>
+                </div>
               </div>
 
               <div class="text-gray-300">
@@ -330,6 +421,7 @@ export default {
 
               <div>
                 <button class="verify-button" @click="verifyScenario(scenario)">Verify Scenario</button>
+                <button class="verify-button" @click="verifySearch(scenario)">Verify Search</button>
                 <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
                 <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
                 <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON

@@ -10,6 +10,7 @@ const serviceStatus = {
   tqPropRefiner: "red",
   tbVerifier: "red",
   miSim: "red",
+  moSim: "red",
 }
 
 async function updateServiceState(){
@@ -46,6 +47,7 @@ await updateServiceState()
         <UChip :color="serviceStatus.miSim" size="lg"><UBadge color="white" class="text-sm	">MiSim</UBadge></UChip>
         <UChip :color="serviceStatus.tbVerifier" size="lg"><UBadge color="white" class="text-sm	">TBVerifier</UBadge></UChip>
         <UChip :color="serviceStatus.tqPropRefiner" size="lg"><UBadge color="white" class="text-sm	">TQPropRefiner</UBadge></UChip>
+        <UChip :color="serviceStatus.moSim" size="lg"><UBadge color="white" class="text-sm	">MoSIM</UBadge></UChip>
       </div>
     </div>
     <UDivider label="" />

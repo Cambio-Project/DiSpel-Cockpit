@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import {Schema, model} from "mongoose";
 
 const ScenarioSchema = new Schema({
     simulationID: String,
@@ -8,10 +8,15 @@ const ScenarioSchema = new Schema({
     environment: {
         architecture: [{}],
         experiment: [{}],
-        load: [{}]
+        load: [{}],
+        monitoringData: [{}],
+        mtlFiles: [{}]
     },
     stimuli: [{}],
-    responses: [{}]
+    responses: [{}],
+    specification: {
+        measurementSources: [{}]
+    }
 });
 
 export const Scenario = model("Scenario", ScenarioSchema);

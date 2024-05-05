@@ -4,7 +4,7 @@ name: "dashboard-project"
 
 services:
   dashboard:
-    image: ghcr.io/cambio-project/dashboard-vue-23:1.0.0
+    image: ghcr.io/cambio-project/dashboard-vue-23:1.0.2
     container_name: dashboard
     ports:
       - 8080:3000
@@ -13,6 +13,9 @@ services:
     pull_policy: always
     depends_on:
       - mongo
+    volumes:
+      - ./data/simulations_results:/data/simulations_results
+      - ./data/search_results:/data/search_results
 
   pspwizard:
     image: ghcr.io/cambio-project/pspwizardextended:1.1.0
@@ -35,7 +38,7 @@ services:
       - ./data/simulations_results:/usr/share/nginx/html/assets/simulations_results
 
   tbverifier:
-    image: ghcr.io/cambio-project/transient-behavior-verifier:1.0.0
+    image: ghcr.io/cambio-project/transient-behavior-verifier:1.0.1
     container_name: tbverifier
     ports:
       - 8083:5000
@@ -44,6 +47,7 @@ services:
     pull_policy: always
     volumes:
       - ./data/simulations_results:/app/simulations_results
+      - ./data/search_results:/app/search_results
 
   misim:
     image: ghcr.io/cambio-project/misim:v4.1.0
@@ -55,6 +59,17 @@ services:
     pull_policy: always
     volumes:
       - ./data/simulations_results:/simulations_results
+
+  mosim:
+    image: ghcr.io/cambio-project/mosim:0.2.0
+    container_name: mosim
+    ports:
+      - 8087:8080
+    networks:
+      - dashboardNetwork
+    pull_policy: always
+    volumes:
+      - ./data/search_results:/search_results
 
   mongo:
     image: mongo
