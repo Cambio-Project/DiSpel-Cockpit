@@ -11,9 +11,9 @@ export default defineNuxtConfig({
             miSimDomain: process.env.MI_SIM_DOMAINNAME || "localhost",
             miSimPort: process.env.MI_SIM_PORT || "8084",
             tbVerifierDomain: process.env.TB_VERIFIER_DOMAINNAME || "localhost",
-            tbVerifierPort: process.env.TB_VERIFIER_PRORT || "8083",
+            tbVerifierPort: process.env.TB_VERIFIER_PORT || "8083",
             moSimDomain: process.env.MO_SIM_DOMAINNAME || "localhost",
-            moSimPort: process.env.MO_SIM_PRORT || "8087"
+            moSimPort: process.env.MO_SIM_PORT || "8087"
         }
     },
     devtools: {enabled: true},
