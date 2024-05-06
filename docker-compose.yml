@@ -4,7 +4,7 @@ name: "dashboard-project"
 
 services:
   dashboard:
-    image: ghcr.io/cambio-project/dashboard-vue-23:1.0.2
+    image: ghcr.io/cambio-project/dashboard-vue-23:1.0.3
     container_name: dashboard
     ports:
       - 8080:3000
@@ -14,8 +14,8 @@ services:
     depends_on:
       - mongo
     volumes:
-      - ./data/simulations_results:/data/simulations_results
-      - ./data/search_results:/data/search_results
+      - ./data/simulations_results:/app/data/simulations_results
+      - ./data/search_results:/app/data/search_results
 
   pspwizard:
     image: ghcr.io/cambio-project/pspwizardextended:1.1.0
