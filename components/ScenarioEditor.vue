@@ -76,7 +76,10 @@ export default {
     },
     // create response with pspwizard
     openPSPResponse() {
-      this.$router.push('/pspwizardSite?simID=' + this.simID);
+      this.$router.push('/pspwizardSite?simID=' + this.simID + '&type=response');
+    },
+    openPSPStimulus() {
+      this.$router.push('/pspwizardSite?simID=' + this.simID + '&type=stimulus');
     },
     // remove stimulus
     removeStimulus(index) {
@@ -423,7 +426,43 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
     <div class="message-container">
 
       <p>Stimuli:</p>
+      <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">
+        {{ index + 1 }}.
+        <select v-model="stimulus.target_logic" class="select-box">
+          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
+            {{ targetLogic }}
+          </option>
+        </select>
 
+        <span v-if="stimulus.target_logic===0">
+          {{ stimulus.SEL }}
+        </span>
+        <span v-if="stimulus.target_logic===1">
+          {{ stimulus.LTL }}
+        </span>
+        <span v-if="stimulus.target_logic===2">
+          {{ stimulus.MTL }}
+        </span>
+        <span v-if="stimulus.target_logic===3">
+          {{ stimulus.Prism }}
+        </span>
+        <span v-if="stimulus.target_logic===4">
+          {{ stimulus.Quantitative_Prism }}
+        </span>
+        <span v-if="stimulus.target_logic===5">
+          {{ stimulus.TBV_untimed }}
+        </span>
+        <span v-if="stimulus.target_logic===6">
+          {{ stimulus.TBV_timed }}
+        </span>
+
+        <button class="remove-button" @click="removeStimulus(index)">Remove</button>
+        <br>
+        <i class="sel-line"> <strong>SEL:</strong> {{ stimulus.SEL }} </i> <br> <br>
+
+      </li>
+
+      <UButton @click="openPSPStimulus">Add Stimulus</UButton>
     </div>
 
     <div class="message-container">

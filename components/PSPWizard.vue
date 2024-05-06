@@ -232,6 +232,7 @@ export default {
        }
        } **/],
       simID: this.$route.query.simID,
+      type: this.$route.query.type,
       customPredicateName: "",
       customPredicateLogic: "",
       customMeasurementSource: "",
@@ -997,11 +998,23 @@ export default {
       });
       responseObject.predicates_info = eventArray;
 
+      var type
+      switch(this.type) {
+        case 'response':
+          type = "responses"
+          break;
+        case 'stimulus':
+          type = "stimuli"
+          break;
+        default:
+          console.log("Unknown type: " + this.type)
+      }
+
       const res = await fetch("/api/pushScenarioField", {
         method: "POST",
         body: JSON.stringify({
           simulationID: this.simID,
-          fieldName: "responses",
+          fieldName: type,
           fieldValue: responseObject
         })
       })
