@@ -1,4 +1,6 @@
-import fs from 'fs';
+import {exportStimuli} from "~/server/utils/exportStimuli";
+import {appendExistingFile} from "~/server/utils/appendExistingFile";
+import {exportJsonAsFile} from "~/server/utils/appendJsonAsFile";
 
 export default defineEventHandler(async (event) => {
 
@@ -13,56 +15,36 @@ export default defineEventHandler(async (event) => {
 
     const formData = new FormData();
 
+    await exportStimuli(formData, "mtls", scenario)
+
     for (const architecture of architectureArray) {
         const architectureName = Object.keys(architecture)[0]
         const architectureContent = architecture[architectureName]
-        await appendFile(formData, "architectures", architectureName, architectureContent)
+        await exportJsonAsFile(formData, "architectures", architectureName, architectureContent)
     }
 
     for (const experiment of experimentArray) {
         const experimentName = Object.keys(experiment)[0]
         const experimentContent = experiment[experimentName]
-        await appendFile(formData, "experiments", experimentName, experimentContent)
+        await exportJsonAsFile(formData, "experiments", experimentName, experimentContent)
     }
 
     for (const load of loadArray) {
         const loadName = Object.keys(load)[0]
-        const loadContent = load[loadName]
-        await appendFile(formData, "loads", loadName, loadContent)
+        await appendExistingFile(formData, "loads", loadName, "./uploaded/")
     }
 
     formData.append("simulation_id", simulationID)
-    console.log(formData)
 
     const config = useRuntimeConfig(event)
-
     const miSimResponse = await fetch("http://" + config.public.miSimDomain + ":" + config.public.miSimPort + "/simulate/upload", {
         method: "POST",
         body: formData
     });
 
     const resText = await miSimResponse.text()
-    console.log(resText)
-
     return {
         "simulationID": simulationID,
         "status": resText,
     };
 })
-
-async function appendFile(formData: FormData, type: string, fileName: string, fileContent: any) {
-    if (fileName.split(".").pop() === "json") {
-        await fs.promises.writeFile(fileName, JSON.stringify(fileContent));
-
-        const file = await fs.promises.readFile("./" + fileName)
-        const blob = new Blob([file], {type: 'application/octet-stream'});
-        formData.append(type, blob, fileName)
-        await fs.promises.unlink(fileName);
-
-
-    } else {
-        const file = await fs.promises.readFile("./uploaded/" + fileName)
-        const blob = new Blob([file], {type: 'application/octet-stream'});
-        formData.append(type, blob, fileName)
-    }
-}
