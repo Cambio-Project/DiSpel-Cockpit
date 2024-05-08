@@ -23,7 +23,6 @@ export default {
       environmentExperiment: null,
       environmentLoad: null,
       environmentMonitoringData: null,
-      environmentMTLFiles: null,
       responses: null,
 
       importErrorMessage: null,
@@ -67,9 +66,6 @@ export default {
       if (typeof body.Scenario.environment.monitoringData !== "undefined") {
         this.environmentMonitoringData = body.Scenario.environment.monitoringData
       }
-      if (typeof body.Scenario.environment.mtlFiles !== "undefined") {
-        this.environmentMTLFiles = body.Scenario.environment.mtlFiles
-      }
       if (typeof body.Scenario.responses !== "undefined") {
         this.responses = body.Scenario.responses
       }
@@ -97,13 +93,9 @@ export default {
     removeEnvironmentLoad(index) {
       this.deleteField("environment.load", index)
     },
-    // remove load
+    // remove monitoring data
     removeEnvironmentMonitoringData(index) {
       this.deleteField("environment.monitoringData", index)
-    },
-    // remove load
-    removeEnvironmentMTLFiles(index) {
-      this.deleteField("environment.mtlFiles", index)
     },
     // remove response
     removeResponse(index) {
@@ -156,11 +148,6 @@ export default {
     uploadMonitoringData(type) {
       const fileInput = this.$refs.fileInputEnvironmentMonitoringData;
       this.environmentMonitoringData = []
-      this.upload(type, fileInput)
-    },
-    uploadMTLFiles(type) {
-      const fileInput = this.$refs.fileInputEnvironmentMTLFiles;
-      this.environmentMTLFiles = []
       this.upload(type, fileInput)
     },
     async upload(type, fileInput) {
@@ -325,7 +312,6 @@ export default {
       this.environmentExperiment = null
       this.environmentLoad = null
       this.environmentMonitoringData = null
-      this.environmentMTLFiles = null
       this.responses = null
       this.showTooltip = false
     },
@@ -513,18 +499,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
         <li v-for="(file, index) in environmentMonitoringData">
           {{ Object.keys(file) }}
           <button class="remove-button" @click="removeEnvironmentMonitoringData(index)">Remove</button>
-          <br>
-        </li>
-      </ul>
-
-      <p>MTL-Files:</p>
-      <input class="custom-file-input" id="fileInput" type="file"
-             ref="fileInputEnvironmentMTLFiles" @change="uploadMTLFiles('environment.mtlFiles')">
-
-      <ul>
-        <li v-for="(file, index) in environmentMTLFiles">
-          {{ Object.keys(file) }}
-          <button class="remove-button" @click="removeEnvironmentMTLFiles(index)">Remove</button>
           <br>
         </li>
       </ul>

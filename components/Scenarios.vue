@@ -372,11 +372,6 @@ export default {
                     - Monitoring Data: <i>{{ Object.keys(monitoringData)[0] }}</i>
                   </li>
                 </ul>
-                <ul>
-                  <li v-for="mtlFile in scenario.environment.mtlFiles">
-                    - MTL-File: <i>{{ Object.keys(mtlFile)[0] }}</i>
-                  </li>
-                </ul>
               </div>
 
               <h4 class="left text-mb font-bold mb-1">
