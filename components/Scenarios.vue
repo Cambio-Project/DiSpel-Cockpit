@@ -66,7 +66,7 @@ export default {
       const body = await res.json();
       scenario.mosimState = 'done';
 
-      console.log("MiSim Response for simulationID: " + simulationID + ": ", body)
+      console.log("MoSim Response for simulationID: " + simulationID + ": ", body)
 
       return 'done'
     },
@@ -162,6 +162,9 @@ export default {
       this.scenarios.forEach(scenario => {
         scenario.responses.forEach(response => {
           response.target_logic = this.target;
+        })
+        scenario.stimuli.forEach(stimulus => {
+          stimulus.target_logic = this.target;
         })
       });
     },
@@ -304,6 +307,44 @@ export default {
                 <h4 class="text-mb font-bold mb-1">
                   Stimuli:
                 </h4>
+                <span>
+                <!--{{scenario.responses[0]}}-->
+                <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus"
+                    :style="{ color: getVerificationTextColor(scenario, index)}" class="left">
+                {{ index + 1 }}.
+                <select v-model="stimulus.target_logic" class="select-box">
+                  <option v-for="targetLogic in targetLogics" :key="targetLogic"
+                          :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
+                </select>
+                <span v-if="stimulus.target_logic===0">
+                  {{ stimulus.SEL }}
+                </span>
+                <span v-if="stimulus.target_logic===1">
+                  {{ stimulus.LTL }}
+                </span>
+                <span v-if="stimulus.target_logic===2">
+                  {{ stimulus.MTL }}
+                </span>
+                <span v-if="stimulus.target_logic===3">
+                  {{ stimulus.Prism }}
+                </span>
+                <span v-if="stimulus.target_logic===4">
+                  {{ stimulus.Quantitative_Prism }}
+                </span>
+                <span v-if="stimulus.target_logic===5">
+                  {{ stimulus.TBV_untimed }}
+                </span>
+                <span v-if="stimulus.target_logic===6">
+                  {{ stimulus.TBV_timed }}
+                </span>
+
+                <div>
+                <i class="sel-line"> <strong>SEL:</strong> {{ stimulus.SEL }} </i>
+                <br> <br>
+                </div>
+              </li>
+              </span>
+
               </div>
 
               <div class="left mb-8">
@@ -329,11 +370,6 @@ export default {
                 <ul>
                   <li v-for="monitoringData in scenario.environment.monitoringData">
                     - Monitoring Data: <i>{{ Object.keys(monitoringData)[0] }}</i>
-                  </li>
-                </ul>
-                <ul>
-                  <li v-for="mtlFile in scenario.environment.mtlFiles">
-                    - MTL-File: <i>{{ Object.keys(mtlFile)[0] }}</i>
                   </li>
                 </ul>
               </div>

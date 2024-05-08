@@ -1,199 +1,4 @@
 <script>
-//import axios from "core-js/internals/queue";
-
-// creates the scope part of the payload
-import * as events from "events";
-
-/**
- * Creates a scope object with the given parameters.
- *
- * @param {string} selectedScope - The selected scope type.
- * @param {string} selectedScopeEventQ - The selected Q event for the scope.
- * @param {string} selectedScopeEventR - The selected R event for the scope.
- * @param {Object[]} events - An array of available events.
- *
- * @return {Object} - The created scope object.
- */
-function createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events) {
-  const scope = {
-    type: selectedScope
-  };
-
-  // include q_event if it exists
-  if (selectedScopeEventQ && selectedScopeEventQ.trim() !== "") {
-    scope.q_event = createEvent(selectedScopeEventQ, events);
-  }
-
-  // include r_event if it exists
-  if (selectedScopeEventR && selectedScopeEventR.trim() !== "") {
-    scope.r_event = createEvent(selectedScopeEventR, events);
-  }
-
-  return scope;
-}
-
-
-// creates the event part of the payload. Takes the predicate from the events-array based on the event name
-/**
- * Creates an event object with the given name from an array of events.
- *
- * @param {string} name - The name of the event to create.
- * @param {Array} events - An array of events.
- *
- * @return {Object} - An event object with the specified name and associated specification.
- *                   The event object has the following properties:
- *                   - name: The name of the event.
- *                   - specification: An object containing the specifications of the event,
- *                     including the predicate name, logic, comparison value, and measurement source.
- */
-function createEvent(name, events) {
-  const event = events.find(event => event.event_name === name);
-  return {
-    name: name,
-    specification: {
-      predicateName: event.predicate_name,
-      predicateLogic: event.predicate_logic,
-      predicateComparisonValue: event.predicate_comparison_value,
-      measurementSource: event.measurement_source
-    }
-  };
-}
-
-// creates the time_bound part of the payload
-function createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
-  return {
-    type: type,
-    time_unit: timeUnit,
-    upper_limit: upperLimit,
-    lower_limit: lowerLimit
-  };
-}
-
-// creates probability part of the payload
-function createProbabiltiyBound(type, probability) {
-  return {
-    type: type,
-    probability: probability
-  };
-}
-
-// creates the pattern part of the payload
-function createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
-  const pattern = {
-    type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
-    p_event: createEvent(selectedEventP, events)
-  };
-
-  // include s_event if exists
-  if (selectedEventS && selectedEventS.trim() !== "") {
-    pattern.s_event = createEvent(selectedEventS, events)
-  }
-
-  // include chained_events if one exists
-  if (!selectedChainedEvents.isEmpty) {
-    pattern.chained_events = selectedChainedEvents.map(chainedEvent => {
-
-      let ch_event = {
-        // event is required
-        event: createEvent(chainedEvent.event.name, events),
-        //constrain_event: createEvent(chainedEvent.constrain_event.name, events),
-        //time_bound: time_bound(chainedEvent)
-      };
-
-      // constrain_event is optional
-      if (chainedEvent.constrain_event && chainedEvent.constrain_event.name !== "Constraint") {
-        ch_event.constrain_event = createEvent(chainedEvent.constrain_event.name, events)
-      }
-
-      // time_bound is optional
-      if (chainedEvent.time_bound && chainedEvent.time_bound.type !== "none") {
-        ch_event.time_bound = {
-          type: chainedEvent.time_bound.type,
-          lower_limit: chainedEvent.time_bound.lower_limit,
-          upper_limit: chainedEvent.time_bound.upper_limit,
-          time_unit: chainedEvent.time_bound.time_unit
-        }
-      }
-
-      return ch_event
-    });
-  }
-
-  // include pattern_specifications if one exists
-  if (selectedTime || selectedInterval) {
-    pattern.pattern_specifications = {
-      time_unit: selectedTimeUnitType
-    };
-    // time and interval need to be 0 if not instantiated (not null)
-    if (selectedTime) {
-      pattern.pattern_specifications.upper_limit = selectedTime
-    } else {
-      pattern.pattern_specifications.upper_limit = 0
-    }
-    if (selectedInterval) {
-      pattern.pattern_specifications.frequency = selectedInterval
-    } else {
-      pattern.pattern_specifications.frequency = 0
-    }
-  }
-
-  // include pattern_constrains if one exists (Response always needs constrainEvent) ((selectedConstraintEvent && selectedConstraintEvent != "Constraint") || )
-  if (selectedProbabilityBound || selectedTimeBound || (selectedConstraintEvent && selectedConstraintEvent !== "Constraint")) {
-    pattern.pattern_constrains = {}
-
-    if (selectedProbabilityBound !== null && probability !== null) {
-      if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !== null) {
-        pattern.pattern_constrains = {
-          time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
-          probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
-        };
-      } else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
-        pattern.pattern_constrains = {
-          time_bound: createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
-          probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
-        };
-      } else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
-        pattern.pattern_constrains = {
-          time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
-          probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
-        };
-      } else {
-        pattern.pattern_constrains = {
-          probability_bound: createProbabiltiyBound(selectedProbabilityBound, probability),
-        };
-      }
-    } else if (selectedProbabilityBound === null || probability === null) {
-      if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !== null) {
-        pattern.pattern_constrains = {
-          time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
-        };
-      } else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
-        pattern.pattern_constrains = {
-          time_bound: createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
-        };
-      } else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
-        pattern.pattern_constrains = {
-          time_bound: createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
-        };
-      }
-    }
-
-    if (selectedConstraintEvent && selectedConstraintEvent !== "Constraint") {
-      pattern.pattern_constrains.constrain_event = createEvent(selectedConstraintEvent, events)
-    }
-  }
-
-  return pattern;
-}
-
-// creates the payload
-function createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
-  return {
-    scope: createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events),
-    pattern: createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events),
-    target_logic: selectedTargetLogic
-  };
-}
 
 export default {
   data() {
@@ -232,6 +37,11 @@ export default {
        }
        } **/],
       simID: this.$route.query.simID,
+      type: this.$route.query.type,
+      customCommandName: "",
+      customCommandContent: "",
+      customListenerName: "",
+      customListenerContent: "",
       customPredicateName: "",
       customPredicateLogic: "",
       customMeasurementSource: "",
@@ -240,11 +50,19 @@ export default {
       customPredicateComparisonValue: "",
       isCustomEventExpanded: false,
       eventToChange: "",
+      commandToChange: "",
+      listenerToChange: "",
+      changedCommandName: "",
+      changedCommandContent: "",
+      changedListenerName: "",
+      changedListenerContent: "",
       changedPredicateName: "",
       changedPredicateLogic: "",
       changedMeasurementSource: "",
       changedPredicateComparisonValue: "",
       changedEventId: "",
+      changedCommandId: "",
+      changedListenerId: "",
       predicateLogicOptions: ['equal', 'smallerEqual', 'smaller', 'biggerEqual', 'bigger', 'trendUpward', 'trendUpwardStrict', 'trendDownward', 'trendDownwardStrict',],
       measurementSourceOptions: null,
       scopeOptions: ["Globally", "BeforeR", "AfterQ", "BetweenQandR", "AfterQUntilR"],
@@ -345,11 +163,21 @@ export default {
   setup() {
     const state = reactive({
       events: null,
+      commands: null,
+      listeners: null,
     });
 
     onMounted(async () => {
       const response = await fetch("/api/allEvents");
       state.events = await response.json();
+    });
+    onMounted(async () => {
+      const response = await fetch("/api/allCommands");
+      state.commands = await response.json();
+    });
+    onMounted(async () => {
+      const response = await fetch("/api/allListeners");
+      state.listeners = await response.json();
     });
 
     return {
@@ -369,7 +197,224 @@ export default {
         this.measurementSourceOptions = body.Scenario.specification.measurementSources
       }
     },
-    resetAllFields() {
+    /**
+     * Creates a scope object with the given parameters.
+     *
+     * @param {string} selectedScope - The selected scope type.
+     * @param {string} selectedScopeEventQ - The selected Q event for the scope.
+     * @param {string} selectedScopeEventR - The selected R event for the scope.
+     * @param {Object[]} events - An array of available events.
+     *
+     * @return {Object} - The created scope object.
+     */
+    createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events) {
+  const scope = {
+    type: selectedScope
+  };
+
+  // include q_event if it exists
+  if (selectedScopeEventQ && selectedScopeEventQ.trim() !== "") {
+    scope.q_event = this.createEvent(selectedScopeEventQ, events);
+  }
+
+  // include r_event if it exists
+  if (selectedScopeEventR && selectedScopeEventR.trim() !== "") {
+    scope.r_event = this.createEvent(selectedScopeEventR, events);
+  }
+
+  return scope;
+},
+
+// creates the time_bound part of the payload
+createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
+  return {
+    type: type,
+    time_unit: timeUnit,
+    upper_limit: upperLimit,
+    lower_limit: lowerLimit
+  };
+},
+
+// creates probability part of the payload
+createProbabilityBound(type, probability) {
+  return {
+    type: type,
+    probability: probability
+  };
+},
+
+// creates the pattern part of the payload
+createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
+  const pattern = {
+    type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
+    p_event: this.createEvent(selectedEventP, events)
+  };
+
+  // include s_event if exists
+  if (selectedEventS && selectedEventS.trim() !== "") {
+    pattern.s_event = this.createEvent(selectedEventS, events)
+  }
+
+  // include chained_events if one exists
+  if (!selectedChainedEvents.isEmpty) {
+    pattern.chained_events = selectedChainedEvents.map(chainedEvent => {
+
+      let ch_event = {
+        // event is required
+        event: this.createEvent(chainedEvent.event.name, events),
+        //constrain_event: createEvent(chainedEvent.constrain_event.name, events),
+        //time_bound: time_bound(chainedEvent)
+      };
+
+      // constrain_event is optional
+      if (chainedEvent.constrain_event && chainedEvent.constrain_event.name !== "Constraint") {
+        ch_event.constrain_event = this.createEvent(chainedEvent.constrain_event.name, events)
+      }
+
+      // time_bound is optional
+      if (chainedEvent.time_bound && chainedEvent.time_bound.type !== "none") {
+        ch_event.time_bound = {
+          type: chainedEvent.time_bound.type,
+          lower_limit: chainedEvent.time_bound.lower_limit,
+          upper_limit: chainedEvent.time_bound.upper_limit,
+          time_unit: chainedEvent.time_bound.time_unit
+        }
+      }
+
+      return ch_event
+    });
+  }
+
+  // include pattern_specifications if one exists
+  if (selectedTime || selectedInterval) {
+    pattern.pattern_specifications = {
+      time_unit: selectedTimeUnitType
+    };
+    // time and interval need to be 0 if not instantiated (not null)
+    if (selectedTime) {
+      pattern.pattern_specifications.upper_limit = selectedTime
+    } else {
+      pattern.pattern_specifications.upper_limit = 0
+    }
+    if (selectedInterval) {
+      pattern.pattern_specifications.frequency = selectedInterval
+    } else {
+      pattern.pattern_specifications.frequency = 0
+    }
+  }
+
+  // include pattern_constrains if one exists (Response always needs constrainEvent) ((selectedConstraintEvent && selectedConstraintEvent != "Constraint") || )
+  if (selectedProbabilityBound || selectedTimeBound || (selectedConstraintEvent && selectedConstraintEvent !== "Constraint")) {
+    pattern.pattern_constrains = {}
+
+    if (selectedProbabilityBound !== null && probability !== null) {
+      if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !== null) {
+        pattern.pattern_constrains = {
+          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
+          probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
+        };
+      } else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
+        pattern.pattern_constrains = {
+          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
+          probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
+        };
+      } else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
+        pattern.pattern_constrains = {
+          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
+          probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
+        };
+      } else {
+        pattern.pattern_constrains = {
+          probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
+        };
+      }
+    } else if (selectedProbabilityBound === null || probability === null) {
+      if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !== null) {
+        pattern.pattern_constrains = {
+          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
+        };
+      } else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
+        pattern.pattern_constrains = {
+          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
+        };
+      } else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
+        pattern.pattern_constrains = {
+          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
+        };
+      }
+    }
+
+    if (selectedConstraintEvent && selectedConstraintEvent !== "Constraint") {
+      pattern.pattern_constrains.constrain_event = this.createEvent(selectedConstraintEvent, events)
+    }
+  }
+
+  return pattern;
+},
+
+// creates the payload
+createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
+  return {
+    scope: this.createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events),
+    pattern: this.createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events),
+    target_logic: selectedTargetLogic
+  };
+},
+// creates the event part of the payload. Takes the predicate from the events-array based on the event name
+    /**
+     * Creates an event object with the given name from an array of events.
+     *
+     * @param {string} name - The name of the event to create.
+     * @param {Array} events - An array of events.
+     *
+     * @return {Object} - An event object with the specified name and associated specification.
+     *                   The event object has the following properties:
+     *                   - name: The name of the event.
+     *                   - specification: An object containing the specifications of the event,
+     *                     including the predicate name, logic, comparison value, and measurement source.
+     */
+    createEvent(name, events) {
+  if (this.type === "response") {
+    const event = this.state.events.find(event => event.event_name === name);
+    return {
+      name: name,
+      specification: {
+        predicateName: event.predicate_name,
+        predicateLogic: event.predicate_logic,
+        predicateComparisonValue: event.predicate_comparison_value,
+        measurementSource: event.measurement_source
+      }
+    };
+  }
+  if (this.type === "stimulus") {
+    const command = this.state.commands.find(command => command.command_name === name);
+    if(command === undefined){
+      const listener = this.state.listeners.find(listener => listener.listener_name === name);
+      // send mock specification as it is not used anyway
+      return {
+        name: listener.listener_content,
+        specification: {
+          predicateName: listener.listener_name,
+          predicateLogic: listener.listener_name,
+          predicateComparisonValue: listener.listener_name,
+          measurementSource: listener.listener_name
+        }
+      }
+    }else{
+      // send mock specification as it is not used anyway
+      return {
+        name: command.command_content,
+        specification: {
+          predicateName: command.command_name,
+          predicateLogic: command.command_name,
+          predicateComparisonValue: command.command_name,
+          measurementSource: command.command_name
+        }
+      };
+    }
+  }
+},
+resetAllFields() {
       this.pspSpecification = {
         selectedPatternType: null,
         selectedScope: null,
@@ -476,6 +521,51 @@ export default {
         this.customMeasurementSource = "";
       }
     },
+    async addCustomCommand() {
+      // Add the custom command to the list if it is not empty
+      if (this.customCommandName.trim() !== "") {
+
+        // write the event to the mongodb database
+        const body = {
+          command_name: this.customCommandName,
+          command_content: this.customCommandContent,
+        }
+        const res = await fetch("/api/saveCommand", {
+          method: "POST",
+          body: JSON.stringify(body)
+        })
+
+        // also add this event to the local event array
+        const response = await fetch("/api/allCommands");
+        this.state.commands = await response.json();
+
+        // clear the input fields after adding the custom event
+        this.customCommandName = "";
+        this.customCommandContent = "";
+      }
+    },
+    async addCustomListener() {
+      // Add the custom event to the list if it is not empty
+      if (this.customListenerName.trim() !== "") {
+        // write the event to the mongodb database
+        const body = {
+          listener_name: this.customListenerName,
+          listener_content: this.customListenerContent,
+        }
+        const res = await fetch("/api/saveListener", {
+          method: "POST",
+          body: JSON.stringify(body)
+        })
+
+        // also add this event to the local event array
+        const response = await fetch("/api/allListeners");
+        this.state.listeners = await response.json();
+
+        // clear the input fields after adding the custom event
+        this.customListenerName = "";
+        this.customListenerContent = "";
+      }
+    },
     handleComparisonInputChange() {
       // remove non-numeric characters from the input
       this.customPredicateComparisonValue = this.customPredicateComparisonValue.replace(/\D/g, '');
@@ -517,6 +607,30 @@ export default {
       this.forceRerender()
       this.handleInputChange()
     },
+    commandToChangeSelected() {
+      setTimeout(this.setCommandChangeFields, 200)
+    },
+    async setCommandChangeFields() {
+      this.changedCommandId = this.commandToChange._id;
+
+      this.changedCommandName = this.commandToChange.command_name
+      this.changedCommandContent = this.commandToChange.command_content
+
+      this.forceRerender()
+      this.handleInputChange()
+    },
+    listenerToChangeSelected() {
+      setTimeout(this.setListenerChangeFields, 200)
+    },
+    async setListenerChangeFields() {
+      this.changedListenerId = this.listenerToChange._id;
+
+      this.changedListenerName = this.listenerToChange.listener_name
+      this.changedListenerContent = this.listenerToChange.listener_content
+
+      this.forceRerender()
+      this.handleInputChange()
+    },
     async changeEvent() {
       // write the event to the mongodb database
       const body = {
@@ -542,6 +656,46 @@ export default {
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
     },
+    async changeCommand() {
+      // write the command to the mongodb database
+      const body = {
+        _id: this.commandToChange._id,
+        command_name: this.changedCommandName,
+        command_content: this.changedCommandContent,
+      }
+      const res = await fetch("/api/changeCommand", {
+        method: "POST",
+        body: JSON.stringify(body)
+      })
+
+      // also add this command to the local command array
+      const response = await fetch("/api/allCommands");
+      this.state.commands = await response.json();
+
+      // clear the input fields after adding the custom command
+      this.changedCommandName = "";
+      this.changedCommandContent = "";
+    },
+    async changeListener() {
+      // write the listener to the mongodb database
+      const body = {
+        _id: this.listenerToChange._id,
+        listener_name: this.changedListenerName,
+        listener_content: this.changedListenerContent,
+      }
+      const res = await fetch("/api/changeListener", {
+        method: "POST",
+        body: JSON.stringify(body)
+      })
+
+      // also add this listener to the local listener array
+      const response = await fetch("/api/allListeners");
+      this.state.listeners = await response.json();
+
+      // clear the input fields after adding the custom listtener
+      this.changedListenerName = "";
+      this.changedListenerContent = "";
+    },
     async deleteEvent() {
       // delete the event from the mongodb database
       const body = {
@@ -563,6 +717,46 @@ export default {
       this.changedPredicateLogic = "";
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
+    },
+    async deleteCommand() {
+      // delete the command from the mongodb database
+      const body = {
+        _id: this.commandToChange._id
+      }
+
+      // send a POST request to delete the command
+      const deleteResponse = await fetch("/api/deleteCommand", {
+        method: "POST",
+        body: JSON.stringify(body)
+      })
+
+      // also add this event to the local command array
+      const response = await fetch("/api/allCommands");
+      this.state.commands = await response.json();
+
+      // clear the input fields after adding the custom command
+      this.changedCommandName = "";
+      this.changedCommandContent = "";
+    },
+    async deleteListener() {
+      // delete the listener from the mongodb database
+      const body = {
+        _id: this.listenerToChange._id
+      }
+
+      // send a POST request to delete the event
+      const deleteResponse = await fetch("/api/deleteListener", {
+        method: "POST",
+        body: JSON.stringify(body)
+      })
+
+      // also add this listener to the local listener array
+      const response = await fetch("/api/allListeners");
+      this.state.listeners = await response.json();
+
+      // clear the input fields after adding the custom event
+      this.changedListenerName = "";
+      this.changedListenerContent = "";
     },
     async deleteMeasurementSource() {
       const deleteIndex = this.measurementSourceOptions.indexOf(this.deleteMarkedMeasurementSource)
@@ -647,7 +841,7 @@ export default {
     },
     async transformToTemporalLogic() {
 
-      const payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
+      const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
 
       console.log(payload)
       console.log(this.pspSpecification.selectedChainedEvents)
@@ -937,7 +1131,7 @@ export default {
 
       // add all mappings to the commit
       for (index in this.targetLogicOptions) {
-        var payload = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
+        var payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
 
         // Perform the HTTP request with the input data
         const response = await useFetch("/api/getPSPMapping", {
@@ -978,7 +1172,7 @@ export default {
       }
 
       // add predicates to commit
-      var pl = createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
+      var pl = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
       const response = await useFetch("/api/getPSPMapping", {
         method: "POST",
         body: pl
@@ -997,11 +1191,23 @@ export default {
       });
       responseObject.predicates_info = eventArray;
 
+      var type
+      switch (this.type) {
+        case 'response':
+          type = "responses"
+          break;
+        case 'stimulus':
+          type = "stimuli"
+          break;
+        default:
+          console.log("Unknown type: " + this.type)
+      }
+
       const res = await fetch("/api/pushScenarioField", {
         method: "POST",
         body: JSON.stringify({
           simulationID: this.simID,
-          fieldName: "responses",
+          fieldName: type,
           fieldValue: responseObject
         })
       })
@@ -1176,84 +1382,163 @@ export default {
         </div>
       </div>
 
-      <div class="grouping-container">
-        <br><label class="title">Add Custom Event:</label> <br><br>
-        <div class="selection-group" v-show="isCustomEventExpanded">
-          <label class="subtitle">Predicate Name: </label>
-          <input v-model="customPredicateName" type="text" @input="handleInputChange" class="select-event-box"/>
-          <br><br>
-          <label class="subtitle">Predicate Logic: </label>
-          <select v-model="customPredicateLogic" @input="handleInputChange" class="select-box">
-            <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{
-                logic.label
-              }}
-            </option>
-          </select> <br><br>
-          <label class="subtitle">Measurement Source: </label>
-          <select v-model="customMeasurementSource" @input="handleInputChange" class="select-box">
-            <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{ source }}</option>
-          </select> <br><br>
-          <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison Value: </label>
-          <input v-model="customPredicateComparisonValue" type="text" @input="handleComparisonInputChange"
-                 :class="{ 'grayed-out': comparisonValueShouldGrayOut }" class="select-event-box"/> <br><br>
-          <button class="add-event-button event-button" @click="addCustomEvent">Add Custom Event</button>
-        </div>
-        <div class="expand-icon" v-show="!isCustomEventExpanded"
-             @click="isCustomEventExpanded = !isCustomEventExpanded">
-          <img src="public/expand-icon.png" alt="Expand Icon" style="width: 3vh; height: 3vh;" class="expand-icon"/>
-        </div>
-        <div class="expand-icon" v-show="isCustomEventExpanded" @click="isCustomEventExpanded = !isCustomEventExpanded">
-          <img src="public/reverse-expand-icon.png" alt="Expand Icon" style="width: 3vh; height: 3vh;"
-               class="expand-icon"/>
-        </div>
-      </div>
+      <div v-if="this.type === 'response'">
 
-      <div class="grouping-container">
-        <div class="selection-group">
-          <label class="title">Edit an Event:</label> <br><br>
-          <label class="subtitle">Choose Event: </label>
-          <select v-model="this.eventToChange" @input="eventToChangeSelected">
-            <option v-for="event of state.events" :key="event.event_name" :value="event">{{
-                event.predicate_name
-              }}
-            </option>
-          </select> <br><br>
-          <div v-if="this.eventToChange !== ''">
+        <div class="grouping-container">
+          <br><label class="title">Add Custom Event:</label> <br><br>
+          <div class="selection-group" v-show="isCustomEventExpanded">
             <label class="subtitle">Predicate Name: </label>
-            <input v-model="changedPredicateName" type="text" @input="handleInputChange" class="select-event-box"/> <br><br>
+            <input v-model="customPredicateName" type="text" @input="handleInputChange" class="select-event-box"/>
+            <br><br>
             <label class="subtitle">Predicate Logic: </label>
-            <select v-model="changedPredicateLogic" @input="handleInputChange" class="select-box">
+            <select v-model="customPredicateLogic" @input="handleInputChange" class="select-box">
               <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{
                   logic.label
                 }}
               </option>
             </select> <br><br>
             <label class="subtitle">Measurement Source: </label>
-            <select v-model="changedMeasurementSource" @input="handleInputChange" class="select-box">
+            <select v-model="customMeasurementSource" @input="handleInputChange" class="select-box">
               <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{ source }}</option>
             </select> <br><br>
-            <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }">Comparison
-              Value: </label>
-            <input v-model="changedPredicateComparisonValue" type="text" @input="handleComparisonInputChange"
-                   :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }" class="select-event-box"/> <br><br>
-            <button class="add-event-button event-button" @click="changeEvent">Save Changes</button>
-            <button class="delete-event-button event-button" @click="deleteEvent">Delete this event</button>
+            <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison Value: </label>
+            <input v-model="customPredicateComparisonValue" type="text" @input="handleComparisonInputChange"
+                   :class="{ 'grayed-out': comparisonValueShouldGrayOut }" class="select-event-box"/> <br><br>
+            <button class="add-event-button event-button" @click="addCustomEvent">Add Custom Event</button>
+          </div>
+          <div class="expand-icon" v-show="!isCustomEventExpanded"
+               @click="isCustomEventExpanded = !isCustomEventExpanded">
+            <img src="public/expand-icon.png" alt="Expand Icon" style="width: 3vh; height: 3vh;" class="expand-icon"/>
+          </div>
+          <div class="expand-icon" v-show="isCustomEventExpanded"
+               @click="isCustomEventExpanded = !isCustomEventExpanded">
+            <img src="public/reverse-expand-icon.png" alt="Expand Icon" style="width: 3vh; height: 3vh;"
+                 class="expand-icon"/>
           </div>
         </div>
+
+        <div class="grouping-container">
+          <div class="selection-group">
+            <label class="title">Edit an Event:</label> <br><br>
+            <label class="subtitle">Choose Event: </label>
+            <select v-model="this.eventToChange" @input="eventToChangeSelected">
+              <option v-for="event of state.events" :key="event.event_name" :value="event">{{
+                  event.predicate_name
+                }}
+              </option>
+            </select> <br><br>
+            <div v-if="this.eventToChange !== ''">
+              <label class="subtitle">Predicate Name: </label>
+              <input v-model="changedPredicateName" type="text" @input="handleInputChange" class="select-event-box"/>
+              <br><br>
+              <label class="subtitle">Predicate Logic: </label>
+              <select v-model="changedPredicateLogic" @input="handleInputChange" class="select-box">
+                <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{
+                    logic.label
+                  }}
+                </option>
+              </select> <br><br>
+              <label class="subtitle">Measurement Source: </label>
+              <select v-model="changedMeasurementSource" @input="handleInputChange" class="select-box">
+                <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{ source }}</option>
+              </select> <br><br>
+              <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }">Comparison
+                Value: </label>
+              <input v-model="changedPredicateComparisonValue" type="text" @input="handleComparisonInputChange"
+                     :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }" class="select-event-box"/> <br><br>
+              <button class="add-event-button event-button" @click="changeEvent">Save Changes</button>
+              <button class="delete-event-button event-button" @click="deleteEvent">Delete this event</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grouping-container">
+          <br><label class="title">Manage Measurement Sources:</label> <br><br>
+          <input v-model="newMeasurementSource" type="text" class="select-event-box"/>
+          <button class="add-event-button event-button" @click="addCustomMeasurementSource">Add</button>
+          <br>
+          <select v-model="deleteMarkedMeasurementSource" class="select-box">
+            <option v-for="option in measurementSourceOptions">{{
+                option
+              }}
+            </option>
+          </select>
+          <button class="delete-event-button event-button" @click="deleteMeasurementSource">Delete</button>
+        </div>
+
       </div>
 
-      <div class="grouping-container">
-        <br><label class="title">Manage Measurement Sources:</label> <br><br>
-        <input v-model="newMeasurementSource" type="text" class="select-event-box"/>
-        <button class="add-event-button event-button" @click="addCustomMeasurementSource">Add</button>
-        <br>
-        <select v-model="deleteMarkedMeasurementSource" class="select-box">
-          <option v-for="option in measurementSourceOptions">{{
-              option
-            }}
-          </option>
-        </select>
-        <button class="delete-event-button event-button" @click="deleteMeasurementSource">Delete</button>
+
+      <div v-if="this.type === 'stimulus'">
+
+        <div class="grouping-container">
+          <br><label class="title">Add Custom Command:</label> <br><br>
+          <label class="subtitle">Command Name: </label>
+          <input v-model="customCommandName" type="text" @input="handleInputChange" class="select-event-box"/>
+          <br><br>
+          <label class="subtitle">Command Content: </label>
+          <input v-model="customCommandContent" type="text" @input="handleInputChange" class="select-event-box"/>
+          <br>
+          <button class="add-event-button event-button" @click="addCustomCommand">Add</button>
+        </div>
+
+        <div class="grouping-container">
+          <br><label class="title">Add Custom Listener:</label> <br><br>
+          <label class="subtitle">Listener Name: </label>
+          <input v-model="customListenerName" type="text" @input="handleInputChange" class="select-event-box"/>
+          <br><br>
+          <label class="subtitle">Listener Content: </label>
+          <input v-model="customListenerContent" type="text" @input="handleInputChange" class="select-event-box"/>
+          <br>
+          <button class="add-event-button event-button" @click="addCustomListener">Add</button>
+        </div>
+
+        <div class="grouping-container">
+          <div class="selection-group">
+            <label class="title">Edit Command:</label> <br><br>
+            <label class="subtitle">Choose Command: </label>
+            <select v-model="this.commandToChange" @input="commandToChangeSelected">
+              <option v-for="command of state.commands" :key="command.command_name" :value="command">{{
+                  command.command_name
+                }}
+              </option>
+            </select> <br><br>
+            <div v-if="this.commandToChange !== ''">
+              <label class="subtitle">Command Name: </label>
+              <input v-model="changedCommandName" type="text" @input="handleInputChange" class="select-event-box"/>
+              <br><br>
+              <label class="subtitle">Command Content: </label>
+              <input v-model="changedCommandContent" type="text" @input="handleInputChange" class="select-event-box"/>
+              <br>
+              <button class="add-event-button event-button" @click="changeCommand">Save</button>
+              <button class="delete-event-button event-button" @click="deleteCommand">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grouping-container">
+          <div class="selection-group">
+            <label class="title">Edit Listener:</label> <br><br>
+            <label class="subtitle">Choose Listener: </label>
+            <select v-model="this.listenerToChange" @input="listenerToChangeSelected">
+              <option v-for="listener of state.listeners" :key="listener.event_name" :value="listener">{{
+                  listener.listener_name
+                }}
+              </option>
+            </select> <br><br>
+            <div v-if="this.listenerToChange !== ''">
+              <label class="subtitle">Listener Name: </label>
+              <input v-model="changedListenerName" type="text" @input="handleInputChange" class="select-event-box"/>
+              <br><br>
+              <label class="subtitle">Listener Content: </label>
+              <input v-model="changedListenerContent" type="text" @input="handleInputChange" class="select-event-box"/>
+              <br>
+              <button class="add-event-button event-button" @click="changeListener">Save</button>
+              <button class="delete-event-button event-button" @click="deleteListener">Delete</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -1266,44 +1551,98 @@ export default {
         <div v-if="this.pspSpecification.selectedScope === 'BeforeR'">
           Before
           <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
         </div>
         <div v-if="this.pspSpecification.selectedScope === 'AfterQ'">
           After
           <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
         </div>
         <div v-if="this.pspSpecification.selectedScope === 'BetweenQandR'">
           Between
           <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           and
           <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
         </div>
         <div v-if="this.pspSpecification.selectedScope === 'AfterQUntilR'">
           After
           <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           until
           <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
         </div>
@@ -1312,8 +1651,17 @@ export default {
 
         <div v-if="this.pspSpecification.selectedOccurrence === 'SteadyState'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds] in the long run.
@@ -1321,8 +1669,17 @@ export default {
         <div v-if="this.pspSpecification.selectedOccurrence === 'MinimumDuration'">
           once
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [becomes satisfied] <br>
@@ -1335,8 +1692,17 @@ export default {
         <div v-if="this.pspSpecification.selectedOccurrence === 'MaximumDuration'">
           once
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [becomes satisfied] <br>
@@ -1348,8 +1714,17 @@ export default {
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'Recurrence'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds] repeatedly <br>
@@ -1363,8 +1738,17 @@ export default {
         <div v-if="this.pspSpecification.selectedOccurrence === 'Universality'">
           it is always the case that
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           holds.
@@ -1372,24 +1756,51 @@ export default {
         <div v-if="this.pspSpecification.selectedOccurrence === 'Absence'">
           it is never the case that
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           holds.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'Existence'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds] eventually.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'BoundedExistence'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds] at most
@@ -1399,8 +1810,17 @@ export default {
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'TransientState'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds] after
@@ -1412,15 +1832,33 @@ export default {
         <div v-if="this.pspSpecification.selectedOrder=== 'Response'">
           if
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [has occurred] <br>
           then in response
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [eventually holds]. <br>
@@ -1436,23 +1874,50 @@ export default {
           </div>
           <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
         </div>
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChain1N'">
           if
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [has occurred] <br>
           then in response
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [eventually holds] <br>
@@ -1468,8 +1933,17 @@ export default {
           </div>
           <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select> <br>
 
@@ -1477,8 +1951,17 @@ export default {
                class="chained-event-section">
             <label class="title">followed by </label>
             <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                      :value="event.event_name">
                 {{ event.predicate_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                      :value="command.command_name">
+                {{ command.command_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                      :value="listener.listener_name">
+                {{ listener.listener_name }}
               </option>
             </select> <br>
             <div>
@@ -1507,8 +1990,17 @@ export default {
             </div>
             <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
               <option value="Constraint">Constraint</option>
-              <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                      :value="event.event_name">
                 {{ event.predicate_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                      :value="command.command_name">
+                {{ command.command_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                      :value="listener.listener_name">
+                {{ listener.listener_name }}
               </option>
             </select> <br>
             <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
@@ -1522,8 +2014,17 @@ export default {
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChainN1'">
           if
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select> <br>
 
@@ -1531,8 +2032,17 @@ export default {
                class="chained-event-section">
             <label class="title">followed by </label>
             <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                      :value="event.event_name">
                 {{ event.predicate_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                      :value="command.command_name">
+                {{ command.command_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                      :value="listener.listener_name">
+                {{ listener.listener_name }}
               </option>
             </select> <br>
             <div>
@@ -1561,8 +2071,17 @@ export default {
             </div>
             <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
               <option value="Constraint">Constraint</option>
-              <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                      :value="event.event_name">
                 {{ event.predicate_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                      :value="command.command_name">
+                {{ command.command_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                      :value="listener.listener_name">
+                {{ listener.listener_name }}
               </option>
             </select> <br>
             <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
@@ -1573,8 +2092,17 @@ export default {
           [have occured] <br>
           then in response
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [eventually holds] <br>
@@ -1590,23 +2118,50 @@ export default {
           </div>
           <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
         </div>
         <div v-if="this.pspSpecification.selectedOrder=== 'ResponseInvariance'">
           if
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [has occurred] <br>
           then in response
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds] continually.
@@ -1624,15 +2179,33 @@ export default {
         <div v-if="this.pspSpecification.selectedOrder=== 'Precedence'">
           if
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds] then it must have been the case <br>
           that
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [has occured] <br>
@@ -1642,8 +2215,17 @@ export default {
           </div>
           before
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds].
@@ -1651,8 +2233,17 @@ export default {
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChain1N'">
           if
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [has occurred] <br>
@@ -1661,8 +2252,17 @@ export default {
                class="chained-event-section">
             <label class="title">and afterwards </label>
             <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                      :value="event.event_name">
                 {{ event.predicate_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                      :value="command.command_name">
+                {{ command.command_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                      :value="listener.listener_name">
+                {{ listener.listener_name }}
               </option>
             </select> <br>
             <div>
@@ -1681,8 +2281,17 @@ export default {
             </div>
             <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
               <option value="Constraint">Constraint</option>
-              <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                      :value="event.event_name">
                 {{ event.predicate_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                      :value="command.command_name">
+                {{ command.command_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                      :value="listener.listener_name">
+                {{ listener.listener_name }}
               </option>
             </select> <br>
             <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
@@ -1695,8 +2304,17 @@ export default {
           [holds] <br>
           then it must be the case that
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [has occured] <br>
@@ -1706,30 +2324,66 @@ export default {
           </div>
           before
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select> <br>
           [holds].
           <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
         </div>
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChainN1'">
           if
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds] <br>
           then it must be the case that
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select> <br>
 
@@ -1737,8 +2391,17 @@ export default {
                class="chained-event-section">
             <label class="title">and afterwards </label>
             <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                      :value="event.event_name">
                 {{ event.predicate_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                      :value="command.command_name">
+                {{ command.command_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                      :value="listener.listener_name">
+                {{ listener.listener_name }}
               </option>
             </select> <br>
             <div>
@@ -1757,8 +2420,17 @@ export default {
             </div>
             <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
               <option value="Constraint">Constraint</option>
-              <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                      :value="event.event_name">
                 {{ event.predicate_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                      :value="command.command_name">
+                {{ command.command_name }}
+              </option>
+              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                      :value="listener.listener_name">
+                {{ listener.listener_name }}
               </option>
             </select> <br>
             <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
@@ -1775,28 +2447,64 @@ export default {
           </div>
           <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
             <option value="Constraint">Constraint</option>
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select> <br>
           before
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds] <br>
         </div>
         <div v-if="this.pspSpecification.selectedOrder=== 'Until'">
           <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds] without interruption until <br>
           <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-for="event of state.events" :key="event.event_name" :value="event.event_name">
+            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
+                    :value="event.event_name">
               {{ event.predicate_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
+                    :value="command.command_name">
+              {{ command.command_name }}
+            </option>
+            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
+                    :value="listener.listener_name">
+              {{ listener.listener_name }}
             </option>
           </select>
           [holds]

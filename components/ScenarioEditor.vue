@@ -23,7 +23,6 @@ export default {
       environmentExperiment: null,
       environmentLoad: null,
       environmentMonitoringData: null,
-      environmentMTLFiles: null,
       responses: null,
 
       importErrorMessage: null,
@@ -67,16 +66,16 @@ export default {
       if (typeof body.Scenario.environment.monitoringData !== "undefined") {
         this.environmentMonitoringData = body.Scenario.environment.monitoringData
       }
-      if (typeof body.Scenario.environment.mtlFiles !== "undefined") {
-        this.environmentMTLFiles = body.Scenario.environment.mtlFiles
-      }
       if (typeof body.Scenario.responses !== "undefined") {
         this.responses = body.Scenario.responses
       }
     },
     // create response with pspwizard
     openPSPResponse() {
-      this.$router.push('/pspwizardSite?simID=' + this.simID);
+      this.$router.push('/pspwizardSite?simID=' + this.simID + '&type=response');
+    },
+    openPSPStimulus() {
+      this.$router.push('/pspwizardSite?simID=' + this.simID + '&type=stimulus');
     },
     // remove stimulus
     removeStimulus(index) {
@@ -94,13 +93,9 @@ export default {
     removeEnvironmentLoad(index) {
       this.deleteField("environment.load", index)
     },
-    // remove load
+    // remove monitoring data
     removeEnvironmentMonitoringData(index) {
       this.deleteField("environment.monitoringData", index)
-    },
-    // remove load
-    removeEnvironmentMTLFiles(index) {
-      this.deleteField("environment.mtlFiles", index)
     },
     // remove response
     removeResponse(index) {
@@ -153,11 +148,6 @@ export default {
     uploadMonitoringData(type) {
       const fileInput = this.$refs.fileInputEnvironmentMonitoringData;
       this.environmentMonitoringData = []
-      this.upload(type, fileInput)
-    },
-    uploadMTLFiles(type) {
-      const fileInput = this.$refs.fileInputEnvironmentMTLFiles;
-      this.environmentMTLFiles = []
       this.upload(type, fileInput)
     },
     async upload(type, fileInput) {
@@ -322,7 +312,6 @@ export default {
       this.environmentExperiment = null
       this.environmentLoad = null
       this.environmentMonitoringData = null
-      this.environmentMTLFiles = null
       this.responses = null
       this.showTooltip = false
     },
@@ -423,7 +412,43 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
     <div class="message-container">
 
       <p>Stimuli:</p>
+      <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">
+        {{ index + 1 }}.
+        <select v-model="stimulus.target_logic" class="select-box">
+          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
+            {{ targetLogic }}
+          </option>
+        </select>
 
+        <span v-if="stimulus.target_logic===0">
+          {{ stimulus.SEL }}
+        </span>
+        <span v-if="stimulus.target_logic===1">
+          {{ stimulus.LTL }}
+        </span>
+        <span v-if="stimulus.target_logic===2">
+          {{ stimulus.MTL }}
+        </span>
+        <span v-if="stimulus.target_logic===3">
+          {{ stimulus.Prism }}
+        </span>
+        <span v-if="stimulus.target_logic===4">
+          {{ stimulus.Quantitative_Prism }}
+        </span>
+        <span v-if="stimulus.target_logic===5">
+          {{ stimulus.TBV_untimed }}
+        </span>
+        <span v-if="stimulus.target_logic===6">
+          {{ stimulus.TBV_timed }}
+        </span>
+
+        <button class="remove-button" @click="removeStimulus(index)">Remove</button>
+        <br>
+        <i class="sel-line"> <strong>SEL:</strong> {{ stimulus.SEL }} </i> <br> <br>
+
+      </li>
+
+      <UButton @click="openPSPStimulus">Add Stimulus</UButton>
     </div>
 
     <div class="message-container">
@@ -474,18 +499,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
         <li v-for="(file, index) in environmentMonitoringData">
           {{ Object.keys(file) }}
           <button class="remove-button" @click="removeEnvironmentMonitoringData(index)">Remove</button>
-          <br>
-        </li>
-      </ul>
-
-      <p>MTL-Files:</p>
-      <input class="custom-file-input" id="fileInput" type="file"
-             ref="fileInputEnvironmentMTLFiles" @change="uploadMTLFiles('environment.mtlFiles')">
-
-      <ul>
-        <li v-for="(file, index) in environmentMTLFiles">
-          {{ Object.keys(file) }}
-          <button class="remove-button" @click="removeEnvironmentMTLFiles(index)">Remove</button>
           <br>
         </li>
       </ul>
