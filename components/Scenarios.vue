@@ -66,7 +66,7 @@ export default {
       const body = await res.json();
       scenario.mosimState = 'done';
 
-      console.log("MiSim Response for simulationID: " + simulationID + ": ", body)
+      console.log("MoSim Response for simulationID: " + simulationID + ": ", body)
 
       return 'done'
     },
