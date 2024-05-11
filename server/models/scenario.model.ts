@@ -9,8 +9,9 @@ const ScenarioSchema = new Schema({
         architecture: [{}],
         experiment: [{}],
         load: [{}],
-        monitoringData: [{}]
+        monitoringData: [{}],
     },
+    searchWindowSize: String,
     stimuli: [{}],
     responses: [{}],
     specification: {

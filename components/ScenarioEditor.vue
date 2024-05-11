@@ -24,6 +24,7 @@ export default {
       environmentLoad: null,
       environmentMonitoringData: null,
       responses: null,
+      searchWindowSize: null,
 
       importErrorMessage: null,
       componentKey: 0,
@@ -65,6 +66,9 @@ export default {
       }
       if (typeof body.Scenario.environment.monitoringData !== "undefined") {
         this.environmentMonitoringData = body.Scenario.environment.monitoringData
+      }
+      if (typeof body.Scenario.searchWindowSize !== "undefined"){
+        this.searchWindowSize = body.Scenario.searchWindowSize
       }
       if (typeof body.Scenario.responses !== "undefined") {
         this.responses = body.Scenario.responses
@@ -227,6 +231,12 @@ export default {
             this.setValue("description", this.description)
           }
 
+          // search window size
+          if (jsonData.searchWindowSize != null) {
+            this.searchWindowSize = jsonData.searchWindowSize;
+            this.setValue("searchWindowSize", this.searchWindowSize)
+          }
+
           // stimuli
           this.stimuli = []
           if (jsonData.stimuli != null) {
@@ -312,6 +322,7 @@ export default {
       this.environmentExperiment = null
       this.environmentLoad = null
       this.environmentMonitoringData = null
+      this.searchWindowSize = null
       this.responses = null
       this.showTooltip = false
     },
@@ -357,6 +368,9 @@ export default {
     description(newDescription) {
       this.addValue("description", newDescription)
     },
+    searchWindowSize(newSearchWindowSize){
+      this.addValue("searchWindowSize", newSearchWindowSize)
+    }
   },
 }
 
@@ -502,6 +516,9 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
           <br>
         </li>
       </ul>
+
+      <textarea v-model="searchWindowSize" type="text" placeholder="Enter Search Window Size"
+                class="larger-text-field p-1 border-2 rounded-xl"/>
 
     </div>
 
