@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
     await exportStimuli(formData, "mtls", scenario)
 
     formData.append("simulation_id", simulationID)
+    formData.append("search_window_size", scenario!.searchWindowSize!)
     const config = useRuntimeConfig(event)
     const moSimResponse = await fetch("http://" + config.public.moSimDomain + ":" + config.public.moSimPort + "/search/upload", {
         method: "POST",
