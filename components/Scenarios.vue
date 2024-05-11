@@ -372,6 +372,10 @@ export default {
                     - Monitoring Data: <i>{{ Object.keys(monitoringData)[0] }}</i>
                   </li>
                 </ul>
+                <div class="left mb-8">
+                    - Search Window Size: {{ scenario.searchWindowSize }}
+                </div>
+
               </div>
 
               <h4 class="left text-mb font-bold mb-1">
