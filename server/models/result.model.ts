@@ -2,6 +2,7 @@ import {Schema, model} from "mongoose";
 
 const ResultSchema = new Schema({
     simulationID: String,
+    resilienceScore: Number,
     simulationNames: [String],
     simulationResults: [[Boolean]],
     simulationResultsTotal: Number,

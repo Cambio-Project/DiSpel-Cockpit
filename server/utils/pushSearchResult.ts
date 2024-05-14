@@ -19,7 +19,7 @@ export async function pushSearchResult(simulationID: string, searchNames: string
         result.searchResultsTotal = searchResults.length
 
         var responsesCount = 0
-        if(searchResults.length > 0){
+        if (searchResults.length > 0) {
             responsesCount = searchResults[0].length
         }
 
@@ -51,6 +51,23 @@ export async function pushSearchResult(simulationID: string, searchNames: string
         }
         result.searchResultsScenarioSuccesses = scenarioSuccesses
         result.searchResultsScenarioSuccessesTotal = scenarioSuccesses.length
+
+        // compute resilience score
+        var resilienceScore = 0
+        var testSum = 0
+        var testSuccesses = 0
+        if (result.searchResultsTotal !== undefined && result.searchResultsScenarioSuccessesTotal != undefined) {
+            testSum += result.searchResultsTotal
+            testSuccesses += result.searchResultsScenarioSuccessesTotal
+        }
+        if (result.simulationResultsTotal !== undefined && result.simulationResultsTotal !== null && result.simulationResultsScenarioSuccessesTotal != undefined) {
+            testSum += result.simulationResultsTotal
+            testSuccesses += result.simulationResultsScenarioSuccessesTotal
+        }
+        if (testSum > 0){
+            resilienceScore = Math.floor(100 * testSuccesses / testSum)
+        }
+        result.resilienceScore = resilienceScore
 
         await result.save();
 

@@ -159,6 +159,20 @@ export default {
       }
       return successes[responseIndex] + " / " + totals
     },
+    getResilienceScore(scenario) {
+      let resilienceScore = 0;
+      const result = this.findResults(scenario.simulationID)
+      if (result !== undefined && result.resilienceScore !== undefined) {
+        resilienceScore = result.resilienceScore
+      }
+      return resilienceScore
+    },
+    getResilienceScoreColor(scenario) {
+      //value from 0 to 1
+      const value = this.getResilienceScore(scenario)
+      const hue = ((value) * 12).toString(10);
+      return ["hsl(", hue, ",100%,50%)"].join("");
+    },
     getSearchVerificationResultsPerResponse(scenario, responseIndex) {
       const defaultResult = "0 / 0"
       const result = this.findResults(scenario.simulationID)
@@ -340,6 +354,15 @@ export default {
                 {{ 'Use Case' }}
               </UBadge>
 
+
+              <div class="left mb-8">
+                <h4 class="text-mb font-bold mb-1">
+                  Resilience Score:
+                </h4>
+                <span :style="{ 'background-color': getResilienceScoreColor(scenario)}">
+                  {{ getResilienceScore(scenario) }}
+                </span>
+              </div>
 
               <div class="left mb-8">
                 <h4 class="text-mb font-bold mb-1">
