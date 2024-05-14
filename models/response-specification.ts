@@ -7,7 +7,8 @@ export interface ResponseSpecification {
     specification_type: 'mtl' | 'psp' | 'tbv';
     predicates_info: Predicate[],
     "remote-misim-address"?: string;
-    measurement_source: 'csv' | 'misim';
+    measurement_source: 'remote-csv' | 'misim';
+    "remote-csv-address"?: string;
     measurement_points: MeasurementPoint[];
     options?: {
         create_plots?: boolean;
