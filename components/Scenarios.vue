@@ -9,10 +9,7 @@ export default {
     return {
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
-      verificationResults: {},
-      searchResults: {},
-      searchResultsTotal: {},
-      searchResultsSuccesses: {},
+      results: null,
       scenarios: null,
       popUp: null,
     };
@@ -27,6 +24,9 @@ export default {
       console.log(body)
 
       this.$router.push('/scenarioEditorSite/?simID=' + body.simulationID);
+    },
+    async printResults() {
+      console.log(this.results)
     },
     async startSimulation(simulationID, scenario) {
 
@@ -74,6 +74,21 @@ export default {
     async editScenario(simID) {
       this.$router.push('/scenarioEditorSite/?simID=' + simID);
     },
+    async updateResults() {
+      const response = await fetch("/api/allResults");
+      const bodyResults = await response.json();
+      this.results = bodyResults.results
+    },
+    findResults(simID) {
+      if (this.results === undefined) {
+        return
+      }
+      for (let result of this.results) {
+        if (result.simulationID === simID) {
+          return result
+        }
+      }
+    },
     // Remove one scenario
     async removeScenario(ID) {
       const res = await fetch("/api/deleteScenario", {
@@ -96,7 +111,7 @@ export default {
           scenario,
         })
       });
-      this.verificationResults[scenario._id] = response.data.value.result;
+      await this.updateResults()
     },
     async verifySearch(scenario) {
       const response = await useFetch("/api/verifySearch", {
@@ -105,54 +120,83 @@ export default {
           scenario,
         })
       });
-      this.searchResults[scenario._id] = response.data.value.results;
-      this.updateSearchResultTotal(scenario)
-      this.updateSearchResultSuccesses(scenario)
-    },
-    updateSearchResultTotal(scenario) {
-      const verificationResults = this.searchResults[scenario._id];
-      if (verificationResults === undefined) {
-        return
-      }
-      this.searchResultsTotal[scenario._id] = verificationResults.length
-    },
-    updateSearchResultSuccesses(scenario) {
-      const verificationResults = this.searchResults[scenario._id];
-      if (verificationResults === undefined) {
-        return
-      }
-      let successNumbers = []
-      successNumbers.length = scenario.responses.length
-      successNumbers.fill(0)
-      for (let verificationResult of verificationResults) {
-        for (let responseIndex in scenario.responses) {
-          if (verificationResult[responseIndex]) {
-            successNumbers[responseIndex] = successNumbers[responseIndex] + 1
-          }
-        }
-      }
-      this.searchResultsSuccesses[scenario._id] = successNumbers
+      await this.updateResults()
     },
     getVerificationTextColor(scenario, responseIndex) {
-      const verificationResult = this.verificationResults[scenario._id];
-      if (verificationResult) {
-        if (verificationResult[responseIndex]) {
+      const defaultColor = 'gray';
+      if (scenario === undefined) {
+        return defaultColor;
+      }
+      const result = this.findResults(scenario.simulationID)
+      if (result === undefined) {
+        return defaultColor;
+      }
+      const verificationResult = result.simulationResults;
+      if (verificationResult === undefined) {
+        return defaultColor;
+      }
+      if (verificationResult && verificationResult[0]) {
+        if (verificationResult[0][responseIndex]) {
           return 'green';
         } else {
           return 'red';
         }
       } else {
-        return 'gray';
+        return defaultColor;
       }
       //return verificationResult ? verificationResult[responseIndex] : null;
     },
-    getSearchVerificationResultsPerResponse(scenario, responseIndex) {
-      const totals = this.searchResultsTotal[scenario._id];
-      const successes = this.searchResultsSuccesses[scenario._id];
+    getSimulationVerificationResultsPerResponse(scenario, responseIndex) {
+      const defaultResult = "0 / 0"
+      const result = this.findResults(scenario.simulationID)
+      if (result === undefined) {
+        return defaultResult;
+      }
+      const totals = result.simulationResultsTotal;
+      const successes = result.simulationResultsResponseSuccesses;
       if (totals === undefined || successes === undefined) {
-        return "0 / 0"
+        return defaultResult
       }
       return successes[responseIndex] + " / " + totals
+    },
+    getSearchVerificationResultsPerResponse(scenario, responseIndex) {
+      const defaultResult = "0 / 0"
+      const result = this.findResults(scenario.simulationID)
+      if (result === undefined) {
+        return defaultResult;
+      }
+      const totals = result.searchResultsTotal;
+      const successes = result.searchResultsResponseSuccesses;
+      if (totals === undefined || successes === undefined) {
+        return defaultResult
+      }
+      return successes[responseIndex] + " / " + totals
+    },
+    getSearchVerificationResultsPerScenario(scenario, responseIndex) {
+      const defaultResult = "0 / 0"
+      const result = this.findResults(scenario.simulationID)
+      if (result === undefined) {
+        return defaultResult;
+      }
+      const totals = result.searchResultsTotal;
+      const successes = result.searchResultsScenarioSuccessesTotal;
+      if (totals === undefined || successes === undefined) {
+        return defaultResult
+      }
+      return successes + " / " + totals
+    },
+    getSimulationVerificationResultsPerScenario(scenario, responseIndex) {
+      const defaultResult = "0 / 0"
+      const result = this.findResults(scenario.simulationID)
+      if (result === undefined) {
+        return defaultResult;
+      }
+      const totals = result.simulationResultsTotal;
+      const successes = result.simulationResultsScenarioSuccessesTotal;
+      if (totals === undefined || successes === undefined) {
+        return defaultResult
+      }
+      return successes + " / " + totals
     },
     openRefinement(simID, responseIndex) {
       this.$router.push('/tqPropRefinerSiteDynamic?sim_id=' + simID + '&response_index=' + responseIndex);
@@ -220,6 +264,7 @@ export default {
     },
   },
   async beforeMount() {
+    await this.updateResults()
     const response = await fetch("/api/allScenarios");
     const body = await response.json();
     this.scenarios = body.scenarios
@@ -373,7 +418,7 @@ export default {
                   </li>
                 </ul>
                 <div class="left mb-8">
-                    - Search Window Size: {{ scenario.searchWindowSize }}
+                  - Search Window Size: {{ scenario.searchWindowSize }}
                 </div>
 
               </div>
@@ -381,6 +426,13 @@ export default {
               <h4 class="left text-mb font-bold mb-1">
                 Responses:
               </h4>
+              <span class="left">Monitoring: {{
+                  getSearchVerificationResultsPerScenario(scenario, index)
+                }} </span>
+              <span class="left">Simulation: {{
+                  getSimulationVerificationResultsPerScenario(scenario, index)
+                }} </span>
+              <br>
 
               <span>
                 <!--{{scenario.responses[0]}}-->
@@ -420,6 +472,10 @@ export default {
                       getSearchVerificationResultsPerResponse(scenario, index)
                     }} </span>
                   <br>
+                  <span class="sel-line">Simulation: {{
+                      getSimulationVerificationResultsPerResponse(scenario, index)
+                    }} </span>
+                  <br>
 
                   <UTooltip text="Please verify before Refinement!">
                       <button @click="openRefinement(scenario.simulationID, index)" class="verify-button"
@@ -432,6 +488,9 @@ export default {
               </span>
 
               <div>
+                <UButton @click="printResults();">
+                  Print
+                </UButton>
                 <UButton v-if="scenario.simState === 'none'" @click="startSimulation(scenario.simulationID, scenario);">
                   Start Simulation
                 </UButton>
