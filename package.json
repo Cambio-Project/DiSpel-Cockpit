@@ -10,7 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "@nuxt/ui": "^2.14.2",
+    "@nuxt/ui": "^2.16.0",
     "nuxt": "^3.11.1",
     "nuxt-mongoose": "^1.0.5",
     "vue": "^3.4.14",
