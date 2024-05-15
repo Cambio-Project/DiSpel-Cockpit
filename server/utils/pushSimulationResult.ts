@@ -36,6 +36,7 @@ export async function pushSimulationResult(simulationID: string, simulationNames
 
         // update scenario successes
         let scenarioSuccesses = Array<boolean>(simulationResults.length)
+        let scenarioSuccessCounter = 0
         let verificationRunIndex = 0
         for (let verificationResult of simulationResults) {
             let verificationRunSuccess = true
@@ -46,10 +47,13 @@ export async function pushSimulationResult(simulationID: string, simulationNames
                 }
             }
             scenarioSuccesses[verificationRunIndex] = verificationRunSuccess
+            if(verificationRunSuccess){
+                scenarioSuccessCounter++
+            }
             verificationRunIndex++
         }
-        result.searchResultsScenarioSuccesses = scenarioSuccesses
-        result.searchResultsScenarioSuccessesTotal = scenarioSuccesses.length
+        result.simulationResultsScenarioSuccesses = scenarioSuccesses
+        result.simulationResultsScenarioSuccessesTotal = scenarioSuccessCounter
 
         // compute resilience score
         var resilienceScore = 0
