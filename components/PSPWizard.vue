@@ -1,8 +1,54 @@
 <script>
-
 export default {
   data() {
     return {
+      stimulusItems: [{
+        key: 'addCommand',
+        label: 'Add Command',
+        description: 'Add a new command as predicate to become available in the specification.'
+      }, {
+        key: 'editCommand',
+        label: 'Edit Command',
+        description: 'Edit an existing command.'
+      }, {
+        key: 'addListener',
+        label: 'Add Listener',
+        description: 'Add a new listener as predicate to become available in the specification.'
+      }, {
+        key: 'editListener',
+        label: 'Edit Listener',
+        description: 'Edit an existing listener.'
+      }],
+      responseItems: [{
+        key: 'addEvent',
+        label: 'Add Event',
+        description: 'Add a new event as predicate to become available in the specification.'
+      }, {
+        key: 'editEvent',
+        label: 'Edit Event',
+        description: 'Edit an existing event.'
+      }, {
+        key: 'manageMeasurementSource',
+        label: 'Manage Measurement Source',
+        description: 'Create and Delete Measurement Sources.'
+      }],
+      patternItems: [{
+        key: 'scope',
+        label: 'Scope',
+        description: 'Select the scope within the specification should hold.'
+      }, {
+        key: 'pattern',
+        label: 'Pattern',
+        description: 'Select the type of the pattern to be used.'
+      }, {
+        key: 'time-bound',
+        label: 'Time Bound',
+        description: 'Add a time bound to the pattern.'
+      }, {
+        key: 'probability-bound',
+        label: 'Probability Bound',
+        description: 'Add a probability bound to the pattern.'
+      }],
       pspSpecification: {
         selectedPatternType: null,
         selectedScope: null,
@@ -48,7 +94,6 @@ export default {
       newMeasurementSource: "",
       deleteMarkedMeasurementSource: "",
       customPredicateComparisonValue: "",
-      isCustomEventExpanded: false,
       eventToChange: "",
       commandToChange: "",
       listenerToChange: "",
@@ -208,158 +253,158 @@ export default {
      * @return {Object} - The created scope object.
      */
     createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events) {
-  const scope = {
-    type: selectedScope
-  };
-
-  // include q_event if it exists
-  if (selectedScopeEventQ && selectedScopeEventQ.trim() !== "") {
-    scope.q_event = this.createEvent(selectedScopeEventQ, events);
-  }
-
-  // include r_event if it exists
-  if (selectedScopeEventR && selectedScopeEventR.trim() !== "") {
-    scope.r_event = this.createEvent(selectedScopeEventR, events);
-  }
-
-  return scope;
-},
-
-// creates the time_bound part of the payload
-createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
-  return {
-    type: type,
-    time_unit: timeUnit,
-    upper_limit: upperLimit,
-    lower_limit: lowerLimit
-  };
-},
-
-// creates probability part of the payload
-createProbabilityBound(type, probability) {
-  return {
-    type: type,
-    probability: probability
-  };
-},
-
-// creates the pattern part of the payload
-createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
-  const pattern = {
-    type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
-    p_event: this.createEvent(selectedEventP, events)
-  };
-
-  // include s_event if exists
-  if (selectedEventS && selectedEventS.trim() !== "") {
-    pattern.s_event = this.createEvent(selectedEventS, events)
-  }
-
-  // include chained_events if one exists
-  if (!selectedChainedEvents.isEmpty) {
-    pattern.chained_events = selectedChainedEvents.map(chainedEvent => {
-
-      let ch_event = {
-        // event is required
-        event: this.createEvent(chainedEvent.event.name, events),
-        //constrain_event: createEvent(chainedEvent.constrain_event.name, events),
-        //time_bound: time_bound(chainedEvent)
+      const scope = {
+        type: selectedScope
       };
 
-      // constrain_event is optional
-      if (chainedEvent.constrain_event && chainedEvent.constrain_event.name !== "Constraint") {
-        ch_event.constrain_event = this.createEvent(chainedEvent.constrain_event.name, events)
+      // include q_event if it exists
+      if (selectedScopeEventQ && selectedScopeEventQ.trim() !== "") {
+        scope.q_event = this.createEvent(selectedScopeEventQ, events);
       }
 
-      // time_bound is optional
-      if (chainedEvent.time_bound && chainedEvent.time_bound.type !== "none") {
-        ch_event.time_bound = {
-          type: chainedEvent.time_bound.type,
-          lower_limit: chainedEvent.time_bound.lower_limit,
-          upper_limit: chainedEvent.time_bound.upper_limit,
-          time_unit: chainedEvent.time_bound.time_unit
+      // include r_event if it exists
+      if (selectedScopeEventR && selectedScopeEventR.trim() !== "") {
+        scope.r_event = this.createEvent(selectedScopeEventR, events);
+      }
+
+      return scope;
+    },
+
+// creates the time_bound part of the payload
+    createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
+      return {
+        type: type,
+        time_unit: timeUnit,
+        upper_limit: upperLimit,
+        lower_limit: lowerLimit
+      };
+    },
+
+// creates probability part of the payload
+    createProbabilityBound(type, probability) {
+      return {
+        type: type,
+        probability: probability
+      };
+    },
+
+// creates the pattern part of the payload
+    createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
+      const pattern = {
+        type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
+        p_event: this.createEvent(selectedEventP, events)
+      };
+
+      // include s_event if exists
+      if (selectedEventS && selectedEventS.trim() !== "") {
+        pattern.s_event = this.createEvent(selectedEventS, events)
+      }
+
+      // include chained_events if one exists
+      if (!selectedChainedEvents.isEmpty) {
+        pattern.chained_events = selectedChainedEvents.map(chainedEvent => {
+
+          let ch_event = {
+            // event is required
+            event: this.createEvent(chainedEvent.event.name, events),
+            //constrain_event: createEvent(chainedEvent.constrain_event.name, events),
+            //time_bound: time_bound(chainedEvent)
+          };
+
+          // constrain_event is optional
+          if (chainedEvent.constrain_event && chainedEvent.constrain_event.name !== "Constraint") {
+            ch_event.constrain_event = this.createEvent(chainedEvent.constrain_event.name, events)
+          }
+
+          // time_bound is optional
+          if (chainedEvent.time_bound && chainedEvent.time_bound.type !== "none") {
+            ch_event.time_bound = {
+              type: chainedEvent.time_bound.type,
+              lower_limit: chainedEvent.time_bound.lower_limit,
+              upper_limit: chainedEvent.time_bound.upper_limit,
+              time_unit: chainedEvent.time_bound.time_unit
+            }
+          }
+
+          return ch_event
+        });
+      }
+
+      // include pattern_specifications if one exists
+      if (selectedTime || selectedInterval) {
+        pattern.pattern_specifications = {
+          time_unit: selectedTimeUnitType
+        };
+        // time and interval need to be 0 if not instantiated (not null)
+        if (selectedTime) {
+          pattern.pattern_specifications.upper_limit = selectedTime
+        } else {
+          pattern.pattern_specifications.upper_limit = 0
+        }
+        if (selectedInterval) {
+          pattern.pattern_specifications.frequency = selectedInterval
+        } else {
+          pattern.pattern_specifications.frequency = 0
         }
       }
 
-      return ch_event
-    });
-  }
+      // include pattern_constrains if one exists (Response always needs constrainEvent) ((selectedConstraintEvent && selectedConstraintEvent != "Constraint") || )
+      if (selectedProbabilityBound || selectedTimeBound || (selectedConstraintEvent && selectedConstraintEvent !== "Constraint")) {
+        pattern.pattern_constrains = {}
 
-  // include pattern_specifications if one exists
-  if (selectedTime || selectedInterval) {
-    pattern.pattern_specifications = {
-      time_unit: selectedTimeUnitType
-    };
-    // time and interval need to be 0 if not instantiated (not null)
-    if (selectedTime) {
-      pattern.pattern_specifications.upper_limit = selectedTime
-    } else {
-      pattern.pattern_specifications.upper_limit = 0
-    }
-    if (selectedInterval) {
-      pattern.pattern_specifications.frequency = selectedInterval
-    } else {
-      pattern.pattern_specifications.frequency = 0
-    }
-  }
+        if (selectedProbabilityBound !== null && probability !== null) {
+          if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !== null) {
+            pattern.pattern_constrains = {
+              time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
+              probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
+            };
+          } else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
+            pattern.pattern_constrains = {
+              time_bound: this.createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
+              probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
+            };
+          } else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
+            pattern.pattern_constrains = {
+              time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
+              probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
+            };
+          } else {
+            pattern.pattern_constrains = {
+              probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
+            };
+          }
+        } else if (selectedProbabilityBound === null || probability === null) {
+          if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !== null) {
+            pattern.pattern_constrains = {
+              time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
+            };
+          } else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
+            pattern.pattern_constrains = {
+              time_bound: this.createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
+            };
+          } else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
+            pattern.pattern_constrains = {
+              time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
+            };
+          }
+        }
 
-  // include pattern_constrains if one exists (Response always needs constrainEvent) ((selectedConstraintEvent && selectedConstraintEvent != "Constraint") || )
-  if (selectedProbabilityBound || selectedTimeBound || (selectedConstraintEvent && selectedConstraintEvent !== "Constraint")) {
-    pattern.pattern_constrains = {}
-
-    if (selectedProbabilityBound !== null && probability !== null) {
-      if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !== null) {
-        pattern.pattern_constrains = {
-          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
-          probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
-        };
-      } else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
-        pattern.pattern_constrains = {
-          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
-          probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
-        };
-      } else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
-        pattern.pattern_constrains = {
-          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
-          probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
-        };
-      } else {
-        pattern.pattern_constrains = {
-          probability_bound: this.createProbabilityBound(selectedProbabilityBound, probability),
-        };
+        if (selectedConstraintEvent && selectedConstraintEvent !== "Constraint") {
+          pattern.pattern_constrains.constrain_event = this.createEvent(selectedConstraintEvent, events)
+        }
       }
-    } else if (selectedProbabilityBound === null || probability === null) {
-      if (selectedTimeBound !== null && upperLimit !== null && lowerLimit !== null) {
-        pattern.pattern_constrains = {
-          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, lowerLimit),
-        };
-      } else if (selectedTimeBound !== null && upperLimit === null && lowerLimit !== null) {
-        pattern.pattern_constrains = {
-          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, 0, lowerLimit),
-        };
-      } else if (selectedTimeBound !== null && upperLimit !== null && lowerLimit === null) {
-        pattern.pattern_constrains = {
-          time_bound: this.createTimeBound(selectedTimeBound, timeUnit, upperLimit, 0),
-        };
-      }
-    }
 
-    if (selectedConstraintEvent && selectedConstraintEvent !== "Constraint") {
-      pattern.pattern_constrains.constrain_event = this.createEvent(selectedConstraintEvent, events)
-    }
-  }
-
-  return pattern;
-},
+      return pattern;
+    },
 
 // creates the payload
-createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
-  return {
-    scope: this.createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events),
-    pattern: this.createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events),
-    target_logic: selectedTargetLogic
-  };
-},
+    createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
+      return {
+        scope: this.createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events),
+        pattern: this.createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events),
+        target_logic: selectedTargetLogic
+      };
+    },
 // creates the event part of the payload. Takes the predicate from the events-array based on the event name
     /**
      * Creates an event object with the given name from an array of events.
@@ -374,47 +419,47 @@ createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selection
      *                     including the predicate name, logic, comparison value, and measurement source.
      */
     createEvent(name, events) {
-  if (this.type === "response") {
-    const event = this.state.events.find(event => event.event_name === name);
-    return {
-      name: name,
-      specification: {
-        predicateName: event.predicate_name,
-        predicateLogic: event.predicate_logic,
-        predicateComparisonValue: event.predicate_comparison_value,
-        measurementSource: event.measurement_source
+      if (this.type === "response") {
+        const event = this.state.events.find(event => event.event_name === name);
+        return {
+          name: name,
+          specification: {
+            predicateName: event.predicate_name,
+            predicateLogic: event.predicate_logic,
+            predicateComparisonValue: event.predicate_comparison_value,
+            measurementSource: event.measurement_source
+          }
+        };
       }
-    };
-  }
-  if (this.type === "stimulus") {
-    const command = this.state.commands.find(command => command.command_name === name);
-    if(command === undefined){
-      const listener = this.state.listeners.find(listener => listener.listener_name === name);
-      // send mock specification as it is not used anyway
-      return {
-        name: listener.listener_content,
-        specification: {
-          predicateName: listener.listener_name,
-          predicateLogic: listener.listener_name,
-          predicateComparisonValue: listener.listener_name,
-          measurementSource: listener.listener_name
+      if (this.type === "stimulus") {
+        const command = this.state.commands.find(command => command.command_name === name);
+        if (command === undefined) {
+          const listener = this.state.listeners.find(listener => listener.listener_name === name);
+          // send mock specification as it is not used anyway
+          return {
+            name: listener.listener_content,
+            specification: {
+              predicateName: listener.listener_name,
+              predicateLogic: listener.listener_name,
+              predicateComparisonValue: listener.listener_name,
+              measurementSource: listener.listener_name
+            }
+          }
+        } else {
+          // send mock specification as it is not used anyway
+          return {
+            name: command.command_content,
+            specification: {
+              predicateName: command.command_name,
+              predicateLogic: command.command_name,
+              predicateComparisonValue: command.command_name,
+              measurementSource: command.command_name
+            }
+          };
         }
       }
-    }else{
-      // send mock specification as it is not used anyway
-      return {
-        name: command.command_content,
-        specification: {
-          predicateName: command.command_name,
-          predicateLogic: command.command_name,
-          predicateComparisonValue: command.command_name,
-          measurementSource: command.command_name
-        }
-      };
-    }
-  }
-},
-resetAllFields() {
+    },
+    resetAllFields() {
       this.pspSpecification = {
         selectedPatternType: null,
         selectedScope: null,
@@ -1218,6 +1263,9 @@ resetAllFields() {
 
       this.$router.push('/scenarioeditorSite?simID=' + this.simID);
     },
+    async cancel() {
+      this.$router.push('/scenarioeditorSite?simID=' + this.simID);
+    },
     forceRerender() {
       this.componentKey += 1;
     }
@@ -1226,325 +1274,372 @@ resetAllFields() {
     this.initFields()
   },
 };
-
 </script>
 
 <template :key="componentKey">
-  <h1>PSPWizard</h1>
-  {{ this.simID }}
+  <div class="mb-4 mt-2">
+    <h1 class="text-3xl"> PSPWizard </h1>
+  </div>
+
+
+  <div class="page-container">
+    <div class="file-upload-container">
+      <div class="file-upload">
+        <div class="file-upload-button">
+          <label for="fileInput" class="custom-file-upload">Import Specification</label>
+          <input id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
+        </div>
+        <div class="info-icon">
+          <i>i</i>
+          <span class="info-text">Browse your local files to import a specification JSON matching the schema.</span>
+        </div>
+        <div class="download-schema">
+          <a href="/request_schema.json" download="">Download schema</a>
+        </div>
+      </div>
+    </div>
+    <div v-if="this.importErrorMessage">
+      <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
+    </div>
+  </div>
+
   <div class="page-container">
     <div class="selection-container">
-      <div class="file-upload-container">
-        <div class="file-upload">
-          <div class="file-upload-button">
-            <label for="fileInput" class="custom-file-upload">Import Specification</label>
-            <input id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
-          </div>
-          <div class="info-icon">
-            <i>i</i>
-            <span class="info-text">Browse your local files to import a specification JSON matching the schema.</span>
-          </div>
-          <div class="download-schema">
-            <a href="/request_schema.json" download="">Download schema</a>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="this.importErrorMessage">
-        <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
-      </div>
-
       <div class="grouping-container">
-        <div class="selection-group">
-          <label class="title">Scope:</label><br>
-          <select v-model="this.pspSpecification.selectedScope" @input="handleInputChange(state.events)"
-                  class="select-box">
-            <option v-for="scope in displayScopes" :key="scope.value" :value="scope.value">{{ scope.label }}</option>
-          </select>
-        </div>
+        <UDivider label="Pattern Selection"></UDivider>
 
-        <div class="selection-group">
-          <label class="title">Pattern Type:</label>
-          <div class="radio-group">
-            <div class="radio">
-              <input type="radio" v-model="this.pspSpecification.selectedPatternType" value="Occurrence" id="occurrence"
-                     @change="handleTypeChange" @input="handleInputChange"/>
-              <label for="occurrence">Occurrence</label>
-            </div>
-            <div class="radio">
-              <input type="radio" v-model="this.pspSpecification.selectedPatternType" value="Order" id="order"
-                     @change="handleTypeChange" @input="handleInputChange"/>
-              <label for="order">Order</label>
-            </div>
-          </div>
-        </div>
+        <UTabs :items="patternItems" class="w-full">
+          <template #item="{ item }">
+            <UCard>
+              <p class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                {{ item.label }}
+              </p>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{ item.description }}
+              </p>
 
-        <div
-            v-if="this.pspSpecification.selectedPatternType !== 'Occurrence' && this.pspSpecification.selectedPatternType !== 'Order'"
-            class="fake-selection-group">
-          <label class="title">Pattern:</label><br>
-          <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange"
-                  @input="handleInputChange" class="select-box">
-            <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value" :value="occurrence.value">
-              {{ occurrence.label }}
-            </option>
-          </select>
-        </div>
+              <div v-if="item.key === 'scope'" class="selection-group">
+                <select v-model="this.pspSpecification.selectedScope" @input="handleInputChange(state.events)"
+                        class="select-box">
+                  <option v-for="scope in displayScopes" :key="scope.value" :value="scope.value" class="option">
+                    {{ scope.label }}
+                  </option>
+                </select>
+              </div>
 
-        <div v-if="this.pspSpecification.selectedPatternType === 'Occurrence'" class="selection-group">
-          <label class="title">Pattern:</label><br>
-          <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange"
-                  @input="handleInputChange" class="select-box">
-            <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value" :value="occurrence.value">
-              {{ occurrence.label }}
-            </option>
-          </select>
-        </div>
+              <div v-if="item.key === 'pattern'" class="selection-group">
+                <div class="radio-group">
+                  <div class="radio">
+                    <input type="radio" v-model="this.pspSpecification.selectedPatternType" value="Occurrence"
+                           id="occurrence"
+                           @change="handleTypeChange" @input="handleInputChange"/>
+                    <label for="occurrence">Occurrence</label>
+                  </div>
+                  <div class="radio">
+                    <input type="radio" v-model="this.pspSpecification.selectedPatternType" value="Order" id="order"
+                           @change="handleTypeChange" @input="handleInputChange"/>
+                    <label for="order">Order</label>
+                  </div>
+                </div>
+                <div
+                    v-if="this.pspSpecification.selectedPatternType !== 'Occurrence' && this.pspSpecification.selectedPatternType !== 'Order'"
+                    class="fake-selection-group">
+                  <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange"
+                          @input="handleInputChange" class="select-box">
+                    <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value"
+                            :value="occurrence.value">
+                      {{ occurrence.label }}
+                    </option>
+                  </select>
+                </div>
 
-        <div v-if="this.pspSpecification.selectedPatternType === 'Order'" class="selection-group">
-          <label class="title">Pattern:</label><br>
-          <select v-model="this.pspSpecification.selectedOrder" @change="handleOccurrenceChange"
-                  @input="handleInputChange" class="select-box">
-            <option v-for="order in displayOrderOptions" :key="order.value" :value="order.value">{{
-                order.label
-              }}
-            </option>
-          </select>
-        </div>
+                <div v-if="this.pspSpecification.selectedPatternType === 'Occurrence'" class="selection-group">
+                  <label class="title">Pattern:</label><br>
+                  <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange"
+                          @input="handleInputChange" class="select-box">
+                    <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value"
+                            :value="occurrence.value">
+                      {{ occurrence.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <div v-if="this.pspSpecification.selectedPatternType === 'Order'" class="selection-group">
+                  <select v-model="this.pspSpecification.selectedOrder" @change="handleOccurrenceChange"
+                          @input="handleInputChange" class="select-box">
+                    <option v-for="order in displayOrderOptions" :key="order.value" :value="order.value">{{
+                        order.label
+                      }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div v-if="item.key === 'probability-bound'" class="selection-group">
+                <input type="checkbox" id="checkboxProb" v-model="this.checkedProbability"
+                       @change="handleProbabilityChange"
+                       @input="handleInputChange">
+                <label class="title">Probability Bound</label>
+              </div>
+
+              <div class="selection-group">
+                <div v-show="this.checkedProbability">
+                  <select v-model="this.pspSpecification.selectedProbabilityBound" @input="handleInputChange"
+                          class="select-box">
+                    <option v-for="prob in probabilityBoundOptions" :key="prob">{{ prob }}</option>
+                  </select> <br><br>
+                  <input v-model="this.pspSpecification.probability" :min="0" :max="1" step="0.1" type="number"
+                         placeholder="Enter Probability" @change="checkProbability" @input="handleInputChange">
+                </div>
+              </div>
+              <div v-if="item.key === 'time-bound'" class="selection-group">
+                <div class="selection-group" :class="{ 'grayed-out': timeboundShouldGrayOut }">
+                  <input type="checkbox" id="checkboxTime" v-model="this.checkedTime" @change="handleTimeChange"
+                         @input="handleInputChange">
+                  <label class="title">Time Bound</label>
+                </div>
+
+                <div class="selection-group">
+                  <div
+                      v-show="this.checkedTime && this.pspSpecification.selectedOrder !== 'Precedence' && this.pspSpecification.selectedOrder !== 'PrecedenceChain1N' && this.pspSpecification.selectedOrder !== 'PrecedenceChainN1'">
+                    <select v-model="this.pspSpecification.selectedTimeBound" @change="handleLimitChange"
+                            @input="handleInputChange" class="select-box">
+                      <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
+                    </select> <br><br>
+                    <div v-if="this.pspSpecification.selectedTimeBound === 'Upper' ">
+                      <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
+                             placeholder="Within"
+                             @input="handleInputChange">
+                      <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
+                    </div>
+                    <div v-if="this.pspSpecification.selectedTimeBound === 'Lower' ">
+                      <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
+                             placeholder="After"
+                             @input="handleInputChange">
+                      <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
+                    </div>
+                    <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
+                      <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
+                             placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
+                      <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
+                             placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
+                      <input v-model="this.pspSpecification.timeUnit" type="text">
+                    </div>
+                  </div>
+                </div>
+                <div class="selection-group">
+                  <div
+                      v-show="this.checkedTime && (this.pspSpecification.selectedOrder === 'Precedence' || this.pspSpecification.selectedOrder === 'PrecedenceChain1N' || this.pspSpecification.selectedOrder === 'PrecedenceChainN1')">
+                    <select v-model="this.pspSpecification.selectedTimeBound" @change="handleLimitChange"
+                            @input="handleInputChange" class="select-box">
+                      <option v-for="time in this.pspSpecification.interval" :key="time">{{ time }}</option>
+                    </select>
+                    <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
+                      <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
+                             placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
+                      <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
+                             placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
+                      <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </UCard>
+          </template>
+        </UTabs>
       </div>
-
+    </div>
+    <div class="selection-container">
       <div class="grouping-container">
-        <div class="selection-group">
-          <input type="checkbox" id="checkboxProb" v-model="this.checkedProbability" @change="handleProbabilityChange"
-                 @input="handleInputChange">
-          <label class="title">Probability Bound</label>
+        <UDivider label="Predicate Builder"></UDivider>
+        <div v-if="this.type === 'response'">
+          <UTabs :items="responseItems" class="w-full">
+            <template #item="{ item }">
+              <UCard>
+                <p class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                  {{ item.label }}
+                </p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {{ item.description }}
+                </p>
+
+                <div v-if="item.key === 'addEvent'">
+                  <br/>
+                  <label class="subtitle">Predicate Name: </label>
+                  <input v-model="customPredicateName" type="text" @input="handleInputChange" class="select-event-box"/>
+                  <br><br>
+                  <label class="subtitle">Predicate Logic: </label>
+                  <select v-model="customPredicateLogic" @input="handleInputChange" class="select-box">
+                    <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{
+                        logic.label
+                      }}
+                    </option>
+                  </select> <br><br>
+                  <label class="subtitle">Measurement Source: </label>
+                  <select v-model="customMeasurementSource" @input="handleInputChange" class="select-box">
+                    <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{
+                        source
+                      }}
+                    </option>
+                  </select> <br><br>
+                  <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison
+                    Value: </label>
+                  <input v-model="customPredicateComparisonValue" type="text" @input="handleComparisonInputChange"
+                         :class="{ 'grayed-out': comparisonValueShouldGrayOut }" class="select-event-box"/> <br><br>
+                  <button class="add-event-button event-button" @click="addCustomEvent">Add Event</button>
+                </div>
+
+                <div v-if="item.key === 'editEvent'">
+                  <br/>
+                  <label class="subtitle">Choose Event: </label>
+                  <select v-model="this.eventToChange" class="select-box" @input="eventToChangeSelected">
+                    <option v-for="event of state.events" :key="event.event_name" :value="event">{{
+                        event.predicate_name
+                      }}
+                    </option>
+                  </select> <br><br>
+                  <div v-if="this.eventToChange !== ''">
+                    <label class="subtitle">Predicate Name: </label>
+                    <input v-model="changedPredicateName" type="text" @input="handleInputChange"
+                           class="select-event-box"/>
+                    <br><br>
+                    <label class="subtitle">Predicate Logic: </label>
+                    <select v-model="changedPredicateLogic" @input="handleInputChange" class="select-box">
+                      <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{
+                          logic.label
+                        }}
+                      </option>
+                    </select> <br><br>
+                    <label class="subtitle">Measurement Source: </label>
+                    <select v-model="changedMeasurementSource" @input="handleInputChange" class="select-box">
+                      <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{
+                          source
+                        }}
+                      </option>
+                    </select> <br><br>
+                    <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }">Comparison
+                      Value: </label>
+                    <input v-model="changedPredicateComparisonValue" type="text" @input="handleComparisonInputChange"
+                           :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }" class="select-event-box"/>
+                    <br><br>
+                    <button class="add-event-button event-button" @click="changeEvent">Save Changes</button>
+                    <button class="delete-event-button event-button" @click="deleteEvent">Delete this event</button>
+                  </div>
+                </div>
+
+                <div v-if="item.key === 'manageMeasurementSource'">
+                  <br/>
+                  <input v-model="newMeasurementSource" type="text" class="select-event-box"/>
+                  <button class="add-event-button event-button" @click="addCustomMeasurementSource">Add</button>
+                  <br>
+                  <select v-model="deleteMarkedMeasurementSource" class="select-box">
+                    <option v-for="option in measurementSourceOptions">{{
+                        option
+                      }}
+                    </option>
+                  </select>
+                  <button class="delete-event-button event-button" @click="deleteMeasurementSource">Delete</button>
+                </div>
+              </UCard>
+            </template>
+          </UTabs>
         </div>
 
-        <div class="selection-group">
-          <div v-show="this.checkedProbability">
-            <select v-model="this.pspSpecification.selectedProbabilityBound" @input="handleInputChange"
-                    class="select-box">
-              <option v-for="prob in probabilityBoundOptions" :key="prob">{{ prob }}</option>
-            </select> <br><br>
-            <input v-model="this.pspSpecification.probability" :min="0" :max="1" step="0.1" type="number"
-                   placeholder="Enter Probability" @change="checkProbability" @input="handleInputChange">
-          </div>
+
+        <div v-if="this.type === 'stimulus'">
+
+          <UTabs :items="stimulusItems" class="w-full">
+            <template #item="{ item }">
+              <UCard>
+                <p class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                  {{ item.label }}
+                </p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {{ item.description }}
+                </p>
+
+                <div v-if="item.key === 'addCommand'">
+                  <br/>
+                  <label class="subtitle">Command Name: </label>
+                  <input v-model="customCommandName" type="text" @input="handleInputChange" class="select-event-box"/>
+                  <br><br>
+                  <label class="subtitle">Command Content: </label>
+                  <input v-model="customCommandContent" type="text" @input="handleInputChange"
+                         class="select-event-box"/>
+                  <br>
+                  <button class="add-event-button event-button" @click="addCustomCommand">Add</button>
+                </div>
+
+                <div v-if="item.key === 'editCommand'">
+                  <br/>
+                  <label class="subtitle">Choose Command: </label>
+                  <select v-model="this.commandToChange" class="select-box" @input="commandToChangeSelected">
+                    <option v-for="command of state.commands" :key="command.command_name" :value="command">{{
+                        command.command_name
+                      }}
+                    </option>
+                  </select> <br><br>
+                  <div v-if="this.commandToChange !== ''">
+                    <label class="subtitle">Command Name: </label>
+                    <input v-model="changedCommandName" type="text" @input="handleInputChange"
+                           class="select-event-box"/>
+                    <br><br>
+                    <label class="subtitle">Command Content: </label>
+                    <input v-model="changedCommandContent" type="text" @input="handleInputChange"
+                           class="select-event-box"/>
+                    <br>
+                    <button class="add-event-button event-button" @click="changeCommand">Save</button>
+                    <button class="delete-event-button event-button" @click="deleteCommand">Delete</button>
+                  </div>
+                </div>
+
+                <div v-if="item.key === 'addListener'">
+                  <br/>
+                  <label class="subtitle">Listener Name: </label>
+                  <input v-model="customListenerName" type="text" @input="handleInputChange" class="select-event-box"/>
+                  <br><br>
+                  <label class="subtitle">Listener Content: </label>
+                  <input v-model="customListenerContent" type="text" @input="handleInputChange"
+                         class="select-event-box"/>
+                  <br>
+                  <button class="add-event-button event-button" @click="addCustomListener">Add</button>
+                </div>
+
+                <div v-if="item.key === 'editListener'">
+                  <br/>
+                  <label class="subtitle">Choose Listener: </label>
+                  <select v-model="this.listenerToChange" class="select-box" @input="listenerToChangeSelected">
+                    <option v-for="listener of state.listeners" :key="listener.event_name" :value="listener">{{
+                        listener.listener_name
+                      }}
+                    </option>
+                  </select> <br><br>
+                  <div v-if="this.listenerToChange !== ''">
+                    <label class="subtitle">Listener Name: </label>
+                    <input v-model="changedListenerName" type="text" @input="handleInputChange"
+                           class="select-event-box"/>
+                    <br><br>
+                    <label class="subtitle">Listener Content: </label>
+                    <input v-model="changedListenerContent" type="text" @input="handleInputChange"
+                           class="select-event-box"/>
+                    <br>
+                    <button class="add-event-button event-button" @click="changeListener">Save</button>
+                    <button class="delete-event-button event-button" @click="deleteListener">Delete</button>
+                  </div>
+                </div>
+              </UCard>
+            </template>
+          </UTabs>
+
         </div>
-
-        <div class="selection-group" :class="{ 'grayed-out': timeboundShouldGrayOut }">
-          <input type="checkbox" id="checkboxTime" v-model="this.checkedTime" @change="handleTimeChange"
-                 @input="handleInputChange">
-          <label class="title">Time Bound</label>
-        </div>
-
-        <div class="selection-group">
-          <div
-              v-show="this.checkedTime && this.pspSpecification.selectedOrder !== 'Precedence' && this.pspSpecification.selectedOrder !== 'PrecedenceChain1N' && this.pspSpecification.selectedOrder !== 'PrecedenceChainN1'">
-            <select v-model="this.pspSpecification.selectedTimeBound" @change="handleLimitChange"
-                    @input="handleInputChange" class="select-box">
-              <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
-            </select> <br><br>
-            <div v-if="this.pspSpecification.selectedTimeBound === 'Upper' ">
-              <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number" placeholder="Within"
-                     @input="handleInputChange">
-              <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
-            </div>
-            <div v-if="this.pspSpecification.selectedTimeBound === 'Lower' ">
-              <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number" placeholder="After"
-                     @input="handleInputChange">
-              <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
-            </div>
-            <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
-              <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
-                     placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
-              <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
-                     placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
-              <input v-model="this.pspSpecification.timeUnit" type="text">
-            </div>
-          </div>
-        </div>
-
-        <div class="selection-group">
-          <div
-              v-show="this.checkedTime && (this.pspSpecification.selectedOrder === 'Precedence' || this.pspSpecification.selectedOrder === 'PrecedenceChain1N' || this.pspSpecification.selectedOrder === 'PrecedenceChainN1')">
-            <select v-model="this.pspSpecification.selectedTimeBound" @change="handleLimitChange"
-                    @input="handleInputChange" class="select-box">
-              <option v-for="time in this.pspSpecification.interval" :key="time">{{ time }}</option>
-            </select>
-            <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
-              <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
-                     placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
-              <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
-                     placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
-              <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="this.type === 'response'">
-
-        <div class="grouping-container">
-          <br><label class="title">Add Custom Event:</label> <br><br>
-          <div class="selection-group" v-show="isCustomEventExpanded">
-            <label class="subtitle">Predicate Name: </label>
-            <input v-model="customPredicateName" type="text" @input="handleInputChange" class="select-event-box"/>
-            <br><br>
-            <label class="subtitle">Predicate Logic: </label>
-            <select v-model="customPredicateLogic" @input="handleInputChange" class="select-box">
-              <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{
-                  logic.label
-                }}
-              </option>
-            </select> <br><br>
-            <label class="subtitle">Measurement Source: </label>
-            <select v-model="customMeasurementSource" @input="handleInputChange" class="select-box">
-              <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{ source }}</option>
-            </select> <br><br>
-            <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison Value: </label>
-            <input v-model="customPredicateComparisonValue" type="text" @input="handleComparisonInputChange"
-                   :class="{ 'grayed-out': comparisonValueShouldGrayOut }" class="select-event-box"/> <br><br>
-            <button class="add-event-button event-button" @click="addCustomEvent">Add Custom Event</button>
-          </div>
-          <div class="expand-icon" v-show="!isCustomEventExpanded"
-               @click="isCustomEventExpanded = !isCustomEventExpanded">
-            <img src="public/expand-icon.png" alt="Expand Icon" style="width: 3vh; height: 3vh;" class="expand-icon"/>
-          </div>
-          <div class="expand-icon" v-show="isCustomEventExpanded"
-               @click="isCustomEventExpanded = !isCustomEventExpanded">
-            <img src="public/reverse-expand-icon.png" alt="Expand Icon" style="width: 3vh; height: 3vh;"
-                 class="expand-icon"/>
-          </div>
-        </div>
-
-        <div class="grouping-container">
-          <div class="selection-group">
-            <label class="title">Edit an Event:</label> <br><br>
-            <label class="subtitle">Choose Event: </label>
-            <select v-model="this.eventToChange" @input="eventToChangeSelected">
-              <option v-for="event of state.events" :key="event.event_name" :value="event">{{
-                  event.predicate_name
-                }}
-              </option>
-            </select> <br><br>
-            <div v-if="this.eventToChange !== ''">
-              <label class="subtitle">Predicate Name: </label>
-              <input v-model="changedPredicateName" type="text" @input="handleInputChange" class="select-event-box"/>
-              <br><br>
-              <label class="subtitle">Predicate Logic: </label>
-              <select v-model="changedPredicateLogic" @input="handleInputChange" class="select-box">
-                <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{
-                    logic.label
-                  }}
-                </option>
-              </select> <br><br>
-              <label class="subtitle">Measurement Source: </label>
-              <select v-model="changedMeasurementSource" @input="handleInputChange" class="select-box">
-                <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{ source }}</option>
-              </select> <br><br>
-              <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }">Comparison
-                Value: </label>
-              <input v-model="changedPredicateComparisonValue" type="text" @input="handleComparisonInputChange"
-                     :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }" class="select-event-box"/> <br><br>
-              <button class="add-event-button event-button" @click="changeEvent">Save Changes</button>
-              <button class="delete-event-button event-button" @click="deleteEvent">Delete this event</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="grouping-container">
-          <br><label class="title">Manage Measurement Sources:</label> <br><br>
-          <input v-model="newMeasurementSource" type="text" class="select-event-box"/>
-          <button class="add-event-button event-button" @click="addCustomMeasurementSource">Add</button>
-          <br>
-          <select v-model="deleteMarkedMeasurementSource" class="select-box">
-            <option v-for="option in measurementSourceOptions">{{
-                option
-              }}
-            </option>
-          </select>
-          <button class="delete-event-button event-button" @click="deleteMeasurementSource">Delete</button>
-        </div>
-
-      </div>
-
-
-      <div v-if="this.type === 'stimulus'">
-
-        <div class="grouping-container">
-          <br><label class="title">Add Custom Command:</label> <br><br>
-          <label class="subtitle">Command Name: </label>
-          <input v-model="customCommandName" type="text" @input="handleInputChange" class="select-event-box"/>
-          <br><br>
-          <label class="subtitle">Command Content: </label>
-          <input v-model="customCommandContent" type="text" @input="handleInputChange" class="select-event-box"/>
-          <br>
-          <button class="add-event-button event-button" @click="addCustomCommand">Add</button>
-        </div>
-
-        <div class="grouping-container">
-          <br><label class="title">Add Custom Listener:</label> <br><br>
-          <label class="subtitle">Listener Name: </label>
-          <input v-model="customListenerName" type="text" @input="handleInputChange" class="select-event-box"/>
-          <br><br>
-          <label class="subtitle">Listener Content: </label>
-          <input v-model="customListenerContent" type="text" @input="handleInputChange" class="select-event-box"/>
-          <br>
-          <button class="add-event-button event-button" @click="addCustomListener">Add</button>
-        </div>
-
-        <div class="grouping-container">
-          <div class="selection-group">
-            <label class="title">Edit Command:</label> <br><br>
-            <label class="subtitle">Choose Command: </label>
-            <select v-model="this.commandToChange" @input="commandToChangeSelected">
-              <option v-for="command of state.commands" :key="command.command_name" :value="command">{{
-                  command.command_name
-                }}
-              </option>
-            </select> <br><br>
-            <div v-if="this.commandToChange !== ''">
-              <label class="subtitle">Command Name: </label>
-              <input v-model="changedCommandName" type="text" @input="handleInputChange" class="select-event-box"/>
-              <br><br>
-              <label class="subtitle">Command Content: </label>
-              <input v-model="changedCommandContent" type="text" @input="handleInputChange" class="select-event-box"/>
-              <br>
-              <button class="add-event-button event-button" @click="changeCommand">Save</button>
-              <button class="delete-event-button event-button" @click="deleteCommand">Delete</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="grouping-container">
-          <div class="selection-group">
-            <label class="title">Edit Listener:</label> <br><br>
-            <label class="subtitle">Choose Listener: </label>
-            <select v-model="this.listenerToChange" @input="listenerToChangeSelected">
-              <option v-for="listener of state.listeners" :key="listener.event_name" :value="listener">{{
-                  listener.listener_name
-                }}
-              </option>
-            </select> <br><br>
-            <div v-if="this.listenerToChange !== ''">
-              <label class="subtitle">Listener Name: </label>
-              <input v-model="changedListenerName" type="text" @input="handleInputChange" class="select-event-box"/>
-              <br><br>
-              <label class="subtitle">Listener Content: </label>
-              <input v-model="changedListenerContent" type="text" @input="handleInputChange" class="select-event-box"/>
-              <br>
-              <button class="add-event-button event-button" @click="changeListener">Save</button>
-              <button class="delete-event-button event-button" @click="deleteListener">Delete</button>
-            </div>
-          </div>
-        </div>
-
       </div>
 
     </div>
+  </div>
+  <div class="page-container">
     <div class="selection-container">
       <div class="message-container">
-        <p>Preview:</p>
+        <p>Build Specification:</p>
         <div v-if="this.pspSpecification.selectedScope === 'Globally'">
           Globally
         </div>
@@ -2555,35 +2650,45 @@ resetAllFields() {
       </div>
 
       <div class="selection-group">
-        <label class="title">Target Logic:</label><br>
-        <select v-model="this.pspSpecification.selectedTargetLogic" @input="handleInputChange">
-          <option v-for="targetLogic in targetLogicOptions" :key="targetLogic">{{ targetLogic }}</option>
-        </select>
+
       </div>
 
       <div class="message-container">
-        <p>Specification in Target Logic:</p>
+        <p>Preview:</p>
+        <div v-if="this.pspSpecification.mapping">
+          Target Logic:
+          <select v-model="this.pspSpecification.selectedTargetLogic" @input="handleInputChange">
+            <option v-for="targetLogic in targetLogicOptions" :key="targetLogic">{{ targetLogic }}</option>
+          </select>
+        </div>
+        <br/>
         <div>
           <pre v-if="this.pspSpecification.mapping" style="white-space: normal;">{{
               this.pspSpecification.mapping
             }}</pre>
-          <button @click="copyToClipboard" v-if="this.pspSpecification.mapping" class="copy-button">Copy to Clipboard
-          </button>
         </div>
-        <div class="copy-feedback" v-if="showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
+        <br/>
+        <span>
+          <UButton @click="copyToClipboard" v-if="this.pspSpecification.mapping" class="copy-button">Copy to Clipboard
+          </UButton>
+        </span>
+        <div class="copy-feedback" v-if="this.showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
       </div>
-
-      <!--
-      <div>
-        <button @click="confirm" v-if="this.pspSpecification.mapping" class="commit-button">Confirm</button>
-      </div>
-      -->
-
-      <div :class="{ 'grayed-out': !this.pspSpecification.mapping }">
-        <button @click="confirm" class="commit-button">Confirm</button>
-      </div>
-      <br>
     </div>
+  </div>
+  <div class="page-container">
+    <div class="selection-container">
+      <UButton @click="cancel" color="red" size="xl"
+               class="cancel-button">Cancel
+      </UButton>
+      <span :class="{ 'grayed-out': !this.pspSpecification.mapping }">
+          <UButton @click="confirm" size="xl"
+                   class="commit-button { 'grayed-out': !this.pspSpecification.mapping }">Confirm</UButton>
+        </span>
+    </div>
+  </div>
+  <div class="selection-container">
+    Scenario ID: {{ this.simID }}
   </div>
 </template>
 
@@ -2591,7 +2696,7 @@ resetAllFields() {
 
 .page-container {
   display: flex;
-  margin: 2vw;
+  margin: 0.5vw;
 }
 
 .selection-container {
@@ -2613,12 +2718,9 @@ resetAllFields() {
 }
 
 .grouping-container {
-  border: 1px solid #ddd;
-  border-radius: 1vw;
   padding-top: 0.5vw;
   padding-bottom: 1.5vw;
   margin: 1vw;
-  overflow-y: auto;
 }
 
 .select-box {
@@ -2626,6 +2728,7 @@ resetAllFields() {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  background-color: white;
 }
 
 .select-pattern-box {
@@ -2660,7 +2763,7 @@ resetAllFields() {
   position: relative;
   display: flex;
   align-items: center;
-  margin: 2vh;
+  margin: auto;
 }
 
 .file-upload {
@@ -2734,7 +2837,7 @@ resetAllFields() {
   border-radius: 1vw;
   padding-top: 0.5vw;
   padding-bottom: 1.5vw;
-  margin: 2vw;
+  margin: auto;
   min-height: 6vw;
   max-height: 40vh;
   overflow-y: auto;
@@ -2826,18 +2929,8 @@ resetAllFields() {
   background-color: rgba(130, 46, 46, 0.83);
 }
 
-.commit-button {
-  background-color: #4CAF50;
-  border: none;
-  color: white;
-  padding: 0.7vw 1.4vw;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 0.9vw;
-  margin-top: 0.6vw;
-  cursor: pointer;
-  border-radius: 4px;
+.cancel-button, .commit-button {
+  margin-left: 0.6vw;
 }
 
 .commit-button:hover {
@@ -2852,7 +2945,6 @@ resetAllFields() {
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 0.5vw;
   margin-top: 0.6vw;
   cursor: pointer;
   border-radius: 4px;

@@ -2,6 +2,7 @@ import {MeasurementPoint} from "~/models/measurement-point";
 import {Predicate} from "~/models/predicate";
 import {ResponseSpecification} from "~/models/response-specification";
 import fs from "fs";
+import {pushSearchResult} from "~/server/utils/pushSearchResult";
 
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
@@ -48,6 +49,8 @@ export default defineEventHandler(async (event) => {
             const fileResponseVerificationResults = await Promise.all(filePromises);
             allVerificationResults.push(fileResponseVerificationResults)
         }
+
+        await pushSearchResult(simulationID, fileNames, allVerificationResults)
     }
     return {
         files: fileNames,

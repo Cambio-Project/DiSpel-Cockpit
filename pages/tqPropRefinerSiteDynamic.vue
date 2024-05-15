@@ -38,7 +38,7 @@ const src = computed(() => "http://"+config.public.tqPropRefinerDomain+":"+confi
   </div>
   <br>
 
-  <NuxtLink to="/scenariosSite">
+  <NuxtLink :to="'/scenarioDetails/?simID=' + route.query.sim_id">
     <UButton>Back to Scenarios</UButton>
   </NuxtLink>
 </template>

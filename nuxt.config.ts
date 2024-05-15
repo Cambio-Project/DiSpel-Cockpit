@@ -19,7 +19,8 @@ export default defineNuxtConfig({
     devtools: {enabled: true},
     modules: [
         'nuxt-mongoose',
-        '@nuxt/ui'
+        '@nuxt/ui',
+        'nuxt-icon'
     ],
     mongoose: {
         uri: process.env.MONGODB_URI,

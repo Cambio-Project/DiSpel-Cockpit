@@ -67,7 +67,7 @@ export default {
       if (typeof body.Scenario.environment.monitoringData !== "undefined") {
         this.environmentMonitoringData = body.Scenario.environment.monitoringData
       }
-      if (typeof body.Scenario.searchWindowSize !== "undefined"){
+      if (typeof body.Scenario.searchWindowSize !== "undefined") {
         this.searchWindowSize = body.Scenario.searchWindowSize
       }
       if (typeof body.Scenario.responses !== "undefined") {
@@ -121,7 +121,6 @@ export default {
     // add scenario with metadata and stimuli and responses
     async complete() {
       this.$router.push('/scenariosSite');
-
     },
     //Changes all target logics to the same one
     changeAllTargets() {
@@ -368,7 +367,7 @@ export default {
     description(newDescription) {
       this.addValue("description", newDescription)
     },
-    searchWindowSize(newSearchWindowSize){
+    searchWindowSize(newSearchWindowSize) {
       this.addValue("searchWindowSize", newSearchWindowSize)
     }
   },
@@ -397,18 +396,18 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
     <h3 class="center">
 
-      <div class="file-upload-label">
-        <label for="fileInput" class="custom-file-upload">Import Scenario</label>
-        <input class="bg-gray-500" id="fileInput" type="file" ref="fileInput" @change="handleFileChange"
-               style="display: none;">
-      </div>
-
       <input v-model="name" type="text" placeholder="Enter scenario name"
              class="small-text-field p-1 border-2 rounded-xl"/>
       Category:
       <select v-model="category" class="select-box">
         <option v-for="category in categories" :key="category">{{ category }}</option>
       </select>
+
+      <div class="file-upload-label" style="margin-left: 0.6vw;">
+        <label for="fileInput" class="custom-file-upload">Import Scenario</label>
+        <input class="bg-gray-500" id="fileInput" type="file" ref="fileInput" @change="handleFileChange"
+               style="display: none;">
+      </div>
     </h3>
 
     <textarea v-model="description" type="text" placeholder="Enter description"
@@ -416,7 +415,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
     <div>
       {{ "Transform all Target Logics to " }}
-      <select class="select-box" @change="changeAllTargets" v-model="target">
+      <select class="select-box fw" @change="changeAllTargets" v-model="target">
         <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
           {{ targetLogic }}
         </option>
@@ -469,6 +468,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
       <p>Environment:</p>
 
+      <UDivider></UDivider>
       <p>Architecture:</p>
       <input class="custom-file-input" id="fileInput" type="file"
              ref="fileInputEnvironmentArchitecture" @change="uploadArchitecture('environment.architecture')">
@@ -481,6 +481,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
         </li>
       </ul>
 
+      <UDivider></UDivider>
       <p>Experiment:</p>
       <input class="custom-file-input" id="fileInput" type="file"
              ref="fileInputEnvironmentExperiment" @change="uploadExperiment('environment.experiment')">
@@ -493,6 +494,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
         </li>
       </ul>
 
+      <UDivider></UDivider>
       <p>Load:</p>
       <input class="custom-file-input" id="fileInput" type="file"
              ref="fileInputEnvironmentLoad" @change="uploadLoad('environment.load')" multiple="multiple">
@@ -505,7 +507,8 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
         </li>
       </ul>
 
-      <p>Monitoring Data:</p>
+      <UDivider></UDivider>
+      <p>Load:</p>
       <input class="custom-file-input" id="fileInput" type="file"
              ref="fileInputEnvironmentMonitoringData" @change="uploadMonitoringData('environment.monitoringData')">
 
@@ -517,8 +520,10 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
         </li>
       </ul>
 
+      <UDivider></UDivider>
+      <p>Search Window Size:</p>
       <textarea v-model="searchWindowSize" type="text" placeholder="Enter Search Window Size"
-                class="larger-text-field p-1 border-2 rounded-xl"/>
+                class="p-1 border-2 rounded-xl"/>
 
     </div>
 
@@ -717,7 +722,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 }
 
 .larger-text-field {
-  width: 195vh;
+  width: 90%;
   height: 10vh;
   resize: vertical;
   font-size: large;
@@ -772,6 +777,14 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
   font-size: .9rem;
   border: none;
   margin-right: 10px;
+}
+
+.select-box {
+  width: 15vw;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
 }
 
 </style>
