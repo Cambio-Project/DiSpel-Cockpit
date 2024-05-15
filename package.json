@@ -12,6 +12,7 @@
   "devDependencies": {
     "@nuxt/ui": "^2.16.0",
     "nuxt": "^3.11.1",
+    "nuxt-icon": "^0.6.10",
     "nuxt-mongoose": "^1.0.5",
     "vue": "^3.4.14",
     "vue-router": "^4.2.5"
