@@ -4,7 +4,7 @@ name: "dashboard-project"
 
 services:
   dashboard:
-    image: ghcr.io/cambio-project/dashboard-vue-23:1.0.4
+    image: ghcr.io/cambio-project/dashboard-vue-23:1.1.0
     container_name: dashboard
     ports:
       - 8080:3000
