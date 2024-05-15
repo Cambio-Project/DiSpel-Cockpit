@@ -25,6 +25,9 @@ export default {
 
       this.$router.push('/scenarioEditorSite/?simID=' + body.simulationID);
     },
+    async detailScenario(simID) {
+      this.$router.push('/scenarioDetails/?simID=' + simID);
+    },
     async printResults() {
       console.log(this.results)
     },
@@ -547,6 +550,8 @@ export default {
                 <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
                 <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
                 <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON
+                </button>
+                <button class="edit-button" @click="detailScenario(scenario.simulationID)">Details
                 </button>
               </div>
 
