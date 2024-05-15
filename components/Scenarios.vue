@@ -7,6 +7,19 @@ export default {
   scenariosNew: [],
   data() {
     return {
+      scenarioContents: [{
+        key: 'description',
+        label: 'Description'
+      }, {
+        key: 'stimulus',
+        label: 'Stimulus'
+      }, {
+        key: 'response',
+        label: 'Response'
+      }, {
+        key: 'environment',
+        label: 'Environment'
+      }],
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
       results: null,
@@ -189,7 +202,7 @@ export default {
       }
       return successes[responseIndex] + " / " + totals
     },
-    getSearchVerificationResultsPerScenario(scenario, responseIndex) {
+    getSearchVerificationResultsPerScenario(scenario) {
       const defaultResult = "0 / 0"
       const result = this.findResults(scenario.simulationID)
       if (result === undefined) {
@@ -202,7 +215,7 @@ export default {
       }
       return successes + " / " + totals
     },
-    getSimulationVerificationResultsPerScenario(scenario, responseIndex) {
+    getSimulationVerificationResultsPerScenario(scenario) {
       const defaultResult = "0 / 0"
       const result = this.findResults(scenario.simulationID)
       if (result === undefined) {
@@ -295,11 +308,6 @@ export default {
 
     console.log(this.scenarios)
   },
-  // async mounted() {
-  //   const res = await fetch("/api/allScenarios")
-  //   this.scenariosNew = await res.json();
-  //   console.log(this.scenariosNew)
-  // },
 };
 </script>
 
@@ -313,77 +321,118 @@ export default {
   <div>
     <!--Tools-->
     <div>
-
-      <div class="mb-4">
-        <UButton class="mr-4" @click="openEditor">New Scenario</UButton>
-        <UButton @click="downloadZip(index)" class="downloadScenarios">Download all Scenarios</UButton>
-      </div>
-
-      <div>
-        {{ "Transform all Target Logics to " }}
-        <select class="select-box" @change="changeAllTargets" v-model="target">
-          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
-            {{ targetLogic }}
-          </option>
-        </select>
-      </div>
-
+      <UContainer class="mb-4 container-row">
+        <div class="float-left container-row-element">
+          <UButton class="float-left mr-4" size="lg" @click="openEditor">New Scenario</UButton>
+          <UButton class="float-left downloadScenarios" size="lg" @click="downloadZip(index)">Download all Scenarios
+          </UButton>
+        </div>
+        <div class="float-right container-row-element">
+          <div class="float-right">
+            {{ "Transform all Target Logics to " }}
+            <select class="select-box" @change="changeAllTargets" v-model="target">
+              <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
+                {{ targetLogic }}
+              </option>
+            </select></div>
+        </div>
+      </UContainer>
     </div>
 
-    <!--Scenario List-->
+    <UContainer>
+      <div>
+        <template v-for="scenario in scenarios">
+          <div class="scenario-box mt-4 mb-4">
+            <!-- Scenario Header -->
+            <div class="container-row mt-1 mb-1">
+              <!-- Category -->
+              <div class="container-row-element-xs">
+                <UBadge :ui="{ rounded: 'rounded-full' }" v-if="scenario.category === 'None' " color="gray"
+                        class="customCategory">{{ 'None' }}
+                </UBadge>
 
-    <div class="list-container">
-      <div class="list-content">
-        <div v-if="scenarios">
-          <ul>
+                <UBadge v-if="scenario.category === 'Exploratory' " color="purple" class="customCategory">
+                  {{ 'Exploratory' }}
+                </UBadge>
 
-            <li v-for="scenario in scenarios" class="list-item">
+                <UBadge v-if="scenario.category === 'Growth' " color="blue" class="customCategory">
+                  {{ 'Growth' }}
+                </UBadge>
 
-              <h3 class="text-2xl">Name: {{ scenario.name }} </h3>
-
-              <UBadge v-if="scenario.category === 'None' " color="gray" class="customCategory">
-                {{ 'None category defined' }}
-              </UBadge>
-
-              <UBadge v-if="scenario.category === 'Exploratory' " color="purple" class="customCategory">
-                {{ 'Exploratory' }}
-              </UBadge>
-
-              <UBadge v-if="scenario.category === 'Growth' " color="blue" class="customCategory">
-                {{ 'Growth' }}
-              </UBadge>
-
-              <UBadge v-if="scenario.category === 'UseCase' " color="yellow" class="customCategory">
-                {{ 'Use Case' }}
-              </UBadge>
-
-
-              <div class="left mb-8">
-                <h4 class="text-mb font-bold mb-1">
-                  Resilience Score:
-                </h4>
-                <span :style="{ 'background-color': getResilienceScoreColor(scenario)}">
-                  {{ getResilienceScore(scenario) }}
-                </span>
+                <UBadge v-if="scenario.category === 'UseCase' " color="yellow" class="customCategory">
+                  {{ 'Use Case' }}
+                </UBadge>
               </div>
 
-              <div class="left mb-8">
-                <h4 class="text-mb font-bold mb-1">
-                  Description:
-                </h4>
-                {{ scenario.description }}
+              <!-- Stimuli Counter -->
+              <div class="container-row-element-xs">
+                <Icon name="icon-park-solid:lightning" color="red"/>
+                {{ scenario.stimuli.length }}
               </div>
 
-              <div class="left mb-8">
-                <h4 class="text-mb font-bold mb-1">
-                  Stimuli:
-                </h4>
-                <span>
+              <!-- Response Counter -->
+              <div class="container-row-element-xs">
+                <Icon name="material-symbols:ecg-heart" color="purple"/>
+                {{ scenario.responses.length }}
+              </div>
+
+              <!-- ID -->
+              <div class=" container-row-element text-gray-300">
+                {{ "ID: " + scenario.simulationID }}
+              </div>
+
+              <!-- Buttons -->
+              <div class="container-row-element-s">
+                <div class="float-right">
+                  <UButton class="mr-1" icon="i-heroicons-pencil-square-16-solid" square size="xs" color="blue"
+                           @click="editScenario(scenario.simulationID);"></UButton>
+                  <UButton class="mr-1" icon="i-heroicons-document-magnifying-glass-16-solid" square size="xs"
+                           color="blue"
+                           @click="detailScenario(scenario.simulationID)"></UButton>
+                  <UButton class="mr-1" icon="i-heroicons-cloud-arrow-down-16-solid" square size="xs" color="blue"
+                           @click="downloadJSON(scenario.simulationID);"></UButton>
+                  <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                           @click="removeScenario(scenario._id);"></UButton>
+                </div>
+              </div>
+            </div>
+
+
+            <UDivider></UDivider>
+
+            <!-- Scenario Title -->
+            <div class="container-row mt-1 mb-1">
+              <div class="container-row-element ml-2 mr-2">
+                <div class="scenario-title font-bold">
+                  {{ scenario.name }}
+                </div>
+              </div>
+            </div>
+
+            <UDivider></UDivider>
+
+            <!-- Scenario Contents -->
+            <UTabs :items="scenarioContents" class="w-full">
+              <template #item="{ item }">
+                <UContainer class="mt-4 mb-4" style="min-height: 5em;">
+
+                  <!-- Description Tab -->
+                  <div v-if="item.key === 'description'" class="left">
+                    {{ scenario.description }}
+                  </div>
+
+                  <!-- Stimulus Tab -->
+                  <div v-if="item.key === 'stimulus'">
+                    <span>
                 <!--{{scenario.responses[0]}}-->
-                <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus"
-                    :style="{ color: getVerificationTextColor(scenario, index)}" class="left">
+                <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus" class="left">
                 {{ index + 1 }}.
-                <select v-model="stimulus.target_logic" class="select-box">
+                <span>
+                <i class="sel-line"> <strong>SEL: </strong> {{ stimulus.SEL }} </i>
+                </span>
+
+                  <div>
+                <select v-model="stimulus.target_logic" class="select-box mr-2">
                   <option v-for="targetLogic in targetLogics" :key="targetLogic"
                           :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                 </select>
@@ -408,64 +457,41 @@ export default {
                 <span v-if="stimulus.target_logic===6">
                   {{ stimulus.TBV_timed }}
                 </span>
-
-                <div>
-                <i class="sel-line"> <strong>SEL:</strong> {{ stimulus.SEL }} </i>
-                <br> <br>
                 </div>
               </li>
               </span>
+                  </div>
 
-              </div>
-
-              <div class="left mb-8">
-                <h4 class="text-mb font-bold mb-1">
-                  Environment:
-                </h4>
-
-                <ul>
-                  <li v-for="architecture in scenario.environment.architecture">
-                    - Architecture: <i>{{ Object.keys(architecture)[0] }}</i>
-                  </li>
-                </ul>
-                <ul>
-                  <li v-for="experiment in scenario.environment.experiment">
-                    - Experiment: <i>{{ Object.keys(experiment)[0] }}</i>
-                  </li>
-                </ul>
-                <ul>
-                  <li v-for="load in scenario.environment.load">
-                    - Load Profile: <i>{{ Object.keys(load)[0] }}</i>
-                  </li>
-                </ul>
-                <ul>
-                  <li v-for="monitoringData in scenario.environment.monitoringData">
-                    - Monitoring Data: <i>{{ Object.keys(monitoringData)[0] }}</i>
-                  </li>
-                </ul>
-                <div class="left mb-8">
-                  - Search Window Size: {{ scenario.searchWindowSize }}
-                </div>
-
-              </div>
-
-              <h4 class="left text-mb font-bold mb-1">
-                Responses:
-              </h4>
-              <span class="left">Monitoring: {{
-                  getSearchVerificationResultsPerScenario(scenario, index)
-                }} </span>
-              <span class="left">Simulation: {{
-                  getSimulationVerificationResultsPerScenario(scenario, index)
-                }} </span>
-              <br>
-
+                  <!-- Response Tab -->
+                  <div v-if="item.key === 'response'">
               <span>
-                <!--{{scenario.responses[0]}}-->
-                <li v-for="(response, index) in scenario.responses" :key="response"
-                    :style="{ color: getVerificationTextColor(scenario, index)}" class="left">
-                {{ index + 1 }}.
-                <select v-model="response.target_logic" class="select-box">
+                <li v-for="(response, index) in scenario.responses" :key="response" class="left">
+                <div class="container-row">
+                  <div class="container-row-element-xs">
+                    <!-- Response Statistics -->
+                  <div class="container-row">
+                  <div class="container-row-element-s">
+                    <span>{{ index + 1 }}.</span>
+                  </div>
+                   <div class="container-row-element">
+                    <span> <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
+                        getSimulationVerificationResultsPerResponse(scenario, index)
+                      }}</span>
+                  </div>
+                  <div class="container-row-element">
+                    <span> <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
+                        getSearchVerificationResultsPerResponse(scenario, index)
+                      }}</span>
+                  </div>
+
+                  </div>
+                  </div>
+
+                  <div class="container-row-element">
+                <span>
+                <i> <strong>SEL:</strong> {{ response.SEL }} </i>
+                <br>
+                  <select v-model="response.target_logic" class="select-box mr-2">
                   <option v-for="targetLogic in targetLogics" :key="targetLogic"
                           :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
                 </select>
@@ -490,76 +516,108 @@ export default {
                 <span v-if="response.target_logic===6">
                   {{ response.TBV_timed }}
                 </span>
-
-                <div>
-                <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i>
-                <br>
-                  <span class="sel-line">Monitoring: {{
-                      getSearchVerificationResultsPerResponse(scenario, index)
-                    }} </span>
-                  <br>
-                  <span class="sel-line">Simulation: {{
-                      getSimulationVerificationResultsPerResponse(scenario, index)
-                    }} </span>
-                  <br>
-
-                  <UTooltip text="Please verify before Refinement!">
-                      <button @click="openRefinement(scenario.simulationID, index)" class="verify-button"
-                              :style="{ 'background-color': getVerificationTextColor(scenario, index) }">Refine Response</button>
-                  </UTooltip>
-                <br><br>
+              </span>
+              </div>
               </div>
 
               </li>
               </span>
+                  </div>
 
-              <div>
-                <UButton @click="printResults();">
-                  Print
-                </UButton>
-                <UButton v-if="scenario.simState === 'none'" @click="startSimulation(scenario.simulationID, scenario);">
-                  Start Simulation
-                </UButton>
+                  <!-- Environment Tab -->
+                  <div v-if="item.key === 'environment'" class="left">
+                    <ul>
+                      <li v-for="architecture in scenario.environment.architecture">
+                        - Architecture: <i>{{ Object.keys(architecture)[0] }}</i>
+                      </li>
+                    </ul>
+                    <ul>
+                      <li v-for="experiment in scenario.environment.experiment">
+                        - Experiment: <i>{{ Object.keys(experiment)[0] }}</i>
+                      </li>
+                    </ul>
+                    <ul>
+                      <li v-for="load in scenario.environment.load">
+                        - Load Profile: <i>{{ Object.keys(load)[0] }}</i>
+                      </li>
+                    </ul>
+                    <ul>
+                      <li v-for="monitoringData in scenario.environment.monitoringData">
+                        - Monitoring Data: <i>{{ Object.keys(monitoringData)[0] }}</i>
+                      </li>
+                    </ul>
+                    <div>
+                      - Search Window Size: {{ scenario.searchWindowSize }}
+                    </div>
+                  </div>
+                </UContainer>
+              </template>
+            </UTabs>
+
+            <UDivider></UDivider>
+
+            <!-- Footer -->
+            <div class="container-row ">
+              <div class="container-row-element-s pt-2 pb-1"
+                   :style="{ 'background-color': getResilienceScoreColor(scenario)}">
+                    <span>
+                  {{ getResilienceScore(scenario) }}
+                    </span>
+              </div>
+
+              <div class="container-row-element-s pt-2 pb-1">
+                    <span> <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
+                        getSimulationVerificationResultsPerScenario(scenario)
+                      }}</span>
+              </div>
+
+              <div class="container-row-element-s pt-2 pb-1">
+                    <span> <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
+                        getSearchVerificationResultsPerScenario(scenario)
+                      }}</span>
+              </div>
+
+              <div class="container-row-element pt-1 pb-1">
                 <div v-if="scenario.simState === 'running'">
                   <UProgress animation="carousel"></UProgress>
                   <p>Simulation is running</p>
                 </div>
+                <!--
                 <div v-if="scenario.simState === 'done'">
                   <p>Simulation is Done, you can now start the verify process</p>
                 </div>
-
-                <UButton v-if="scenario.mosimState === 'none'" @click="startSearch(scenario.simulationID, scenario);">
-                  Start Search
-                </UButton>
+                -->
                 <div v-if="scenario.mosimState === 'running'">
                   <UProgress animation="carousel"></UProgress>
                   <p>Search is running</p>
                 </div>
+                <!--
                 <div v-if="scenario.mosimState === 'done'">
-                  <p>Search is Done, you can now start the verify process</p>
-                </div>
+                <p>Search is Done, you can now start the verify process</p>
+                 </div>                -->
+
               </div>
 
-              <div class="text-gray-300">
-                {{ "SimulationID: " + scenario.simulationID }}
+              <div class="container-row-element-s pt-1 pb-1">
+<span class="float-right">
+  <UButton class="mr-1" icon="i-heroicons-globe-alt-20-solid" square size="xs" color="blue"
+           @click="startSimulation(scenario.simulationID, scenario);"></UButton>
+  <UButton :disabled="scenario.simState !== 'done'" class="mr-1" icon="i-heroicons-check-16-solid" square size="xs"
+           color="blue"
+           @click="verifyScenario(scenario)"></UButton>
+  <UButton class="mr-1" icon="i-heroicons-chart-bar-16-solid" square size="xs" color="blue"
+           @click="startSearch(scenario.simulationID, scenario);"></UButton>
+  <UButton :disabled="scenario.mosimState !== 'done'" class="mr-1" icon="i-heroicons-check-16-solid" square size="xs"
+           color="blue"
+           @click="verifySearch(scenario)"></UButton>
+</span>
               </div>
+            </div>
 
-              <div>
-                <button class="verify-button" @click="verifyScenario(scenario)">Verify Scenario</button>
-                <button class="verify-button" @click="verifySearch(scenario)">Verify Search</button>
-                <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
-                <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
-                <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON
-                </button>
-                <button class="edit-button" @click="detailScenario(scenario.simulationID)">Details
-                </button>
-              </div>
-
-            </li>
-          </ul>
-        </div>
+          </div>
+        </template>
       </div>
-    </div>
+    </UContainer>
   </div>
 </template>
 
@@ -818,8 +876,44 @@ body {
 }
 
 .select-box {
+  width: 15vw;
   padding: 8px;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 4px;
+  background-color: white;
 }
+
+.scenario-box {
+  border-radius: 0;
+  padding: 0;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  transition: background-color 0.3s;
+}
+
+.scenario-box:hover {
+  background-color: #f0f0f0;
+}
+
+.scenario-title {
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.container-row {
+  display: flex;
+}
+
+.container-row-element {
+  width: 100%;
+}
+
+.container-row-element-s {
+  width: 50%;
+}
+
+.container-row-element-xs {
+  width: 25%;
+}
+
 </style>
