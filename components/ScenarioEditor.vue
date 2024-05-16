@@ -508,7 +508,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
       </ul>
 
       <UDivider></UDivider>
-      <p>Load:</p>
+      <p>Monitoring Data:</p>
       <input class="custom-file-input" id="fileInput" type="file"
              ref="fileInputEnvironmentMonitoringData" @change="uploadMonitoringData('environment.monitoringData')">
 
