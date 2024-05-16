@@ -185,7 +185,7 @@ export default {
     },
     getResilienceScoreColor(scenario) {
       //value from 0 to 1
-      const value = this.getResilienceScore(scenario)
+      const value = 0.1 * this.getResilienceScore(scenario)
       const hue = ((value) * 12).toString(10);
       return ["hsl(", hue, ",100%,50%)"].join("");
     },
