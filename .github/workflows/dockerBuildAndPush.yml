@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - pipeline-optimization
   release:
     types: [published] # will use tag name regardless of naming
 
