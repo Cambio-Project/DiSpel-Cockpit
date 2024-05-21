@@ -48,3 +48,5 @@ jobs:
           build-args: |
             EXECUTION_ENV=ci
             GITHUB_PACKAGE_READ_TOKEN=${{ secrets.PUBLISH_PACKAGES }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
