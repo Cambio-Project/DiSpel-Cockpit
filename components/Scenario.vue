@@ -86,11 +86,11 @@ export default {
       this.$router.push('/scenariosSite');
     },
     // Remove one scenario
-    async removeScenario(ID) {
+    async removeScenario(simulationID) {
       const res = await fetch("/api/deleteScenario", {
         method: "POST",
         body: JSON.stringify({
-          ID: ID
+          simulationID: simulationID
         })
       })
       const body = await res.json();
@@ -300,7 +300,7 @@ export default {
     <UContainer class="mb-2">
       <div>
         <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
-        <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
+        <button class="remove-button" @click="removeScenario(scenario.simulationID)">Remove Scenario</button>
         <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON
         </button>
       </div>

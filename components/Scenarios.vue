@@ -106,11 +106,11 @@ export default {
       }
     },
     // Remove one scenario
-    async removeScenario(ID) {
+    async removeScenario(simulationID) {
       const res = await fetch("/api/deleteScenario", {
         method: "POST",
         body: JSON.stringify({
-          ID: ID
+          simulationID: simulationID
         })
       })
       const body = await res.json();
@@ -392,7 +392,7 @@ export default {
                   <UButton class="mr-1" icon="i-heroicons-cloud-arrow-down-16-solid" square size="xs" color="blue"
                            @click="downloadJSON(scenario.simulationID);"></UButton>
                   <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                           @click="removeScenario(scenario._id);"></UButton>
+                           @click="removeScenario(scenario.simulationID);"></UButton>
                 </div>
               </div>
             </div>
