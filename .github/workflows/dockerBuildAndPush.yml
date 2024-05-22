@@ -1,10 +1,10 @@
 name: Docker build and publish to GHCR
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-      - pipeline-optimization
   release:
     types: [published] # will use tag name regardless of naming
 
