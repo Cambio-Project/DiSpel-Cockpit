@@ -127,6 +127,9 @@ export default {
       this.responses.forEach(response => {
         response.target_logic = this.target;
       })
+      this.stimuli.forEach(stimulus => {
+        stimulus.target_logic = this.target;
+      })
     },
     uploadStimuli(type) {
       const fileInput = this.$refs.fileInputStimulus;
