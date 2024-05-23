@@ -84,6 +84,7 @@ export default {
        } **/],
       simID: this.$route.query.simID,
       type: this.$route.query.type,
+      popUp: null,
       customCommandName: "",
       customCommandContent: "",
       customListenerName: "",
@@ -528,8 +529,13 @@ export default {
       }
     },
     async addCustomEvent() {
+      let trimmedName = this.customPredicateName.trim()
       // Add the custom event to the list if it is not empty
-      if (this.customPredicateName.trim() !== "") {
+      if (trimmedName !== "") {
+        if (this.eventNameExists(trimmedName)) {
+          await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+          return
+        }
         /**
          this.events.push({
          eventName: this.customPredicateName + "(" + this.customMeasurementSource + ")",
@@ -564,11 +570,18 @@ export default {
         this.customPredicateLogic = "";
         this.customPredicateComparisonValue = "";
         this.customMeasurementSource = "";
+
+        await this.successMessage("Added Event", "The event " + body.customPredicateName + " has been added successfully")
       }
     },
     async addCustomCommand() {
+      let trimmedName = this.customCommandName.trim()
       // Add the custom command to the list if it is not empty
-      if (this.customCommandName.trim() !== "") {
+      if (trimmedName !== "") {
+        if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
+          await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+          return
+        }
 
         // write the event to the mongodb database
         const body = {
@@ -587,11 +600,43 @@ export default {
         // clear the input fields after adding the custom event
         this.customCommandName = "";
         this.customCommandContent = "";
+
+        await this.successMessage("Added Command", "The command " + body.command_name + " has been added successfully")
       }
+    },
+    listenerNameExists(name) {
+      for (let listener of this.state.listeners) {
+        if (listener.listener_name.trim() === name) {
+          return true
+        }
+      }
+      return false
+    },
+    commandNameExists(name) {
+      for (let command of this.state.commands) {
+        if (command.command_name.trim() === name) {
+          return true
+        }
+      }
+      return false
+    },
+    eventNameExists(name) {
+      for (let event of this.state.events) {
+        if (event.predicate_name.trim() === name) {
+          return true
+        }
+      }
+      return false
     },
     async addCustomListener() {
       // Add the custom event to the list if it is not empty
-      if (this.customListenerName.trim() !== "") {
+      let trimmedName = this.customListenerName.trim()
+      if (trimmedName !== "") {
+        if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
+          await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+          return
+        }
+
         // write the event to the mongodb database
         const body = {
           listener_name: this.customListenerName,
@@ -609,7 +654,25 @@ export default {
         // clear the input fields after adding the custom event
         this.customListenerName = "";
         this.customListenerContent = "";
+
+        await this.successMessage("Added Listener", "The listener " + body.listener_name + " has been added successfully")
       }
+    },
+    async successMessage(title, description) {
+      this.popUp.add({
+        icon: "i-heroicons-check-badge",
+        title: title,
+        color: "green",
+        description: description
+      })
+    },
+    async failureMessage(title, description) {
+      this.popUp.add({
+        icon: "i-heroicons-no-symbol",
+        title: title,
+        color: "red",
+        description: description
+      })
     },
     handleComparisonInputChange() {
       // remove non-numeric characters from the input
@@ -1272,6 +1335,7 @@ export default {
   },
   beforeMount() {
     this.initFields()
+    this.popUp = useToast()
   },
 };
 </script>
@@ -1280,7 +1344,6 @@ export default {
   <div class="mb-4 mt-2">
     <h1 class="text-3xl"> PSPWizard </h1>
   </div>
-
 
   <div class="page-container">
     <div class="file-upload-container">
