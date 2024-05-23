@@ -1,5 +1,6 @@
 <script>
 import JSZip from 'jszip';
+import {detailScenario} from "~/components/composables/api.js";
 
 export default {
   name: "ScenarioList",
@@ -28,6 +29,7 @@ export default {
     };
   },
   methods: {
+    detailScenario,
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
       const res = await fetch("/api/initScenario", {
@@ -37,9 +39,6 @@ export default {
       console.log(body)
 
       this.$router.push('/scenarioEditorSite/?simID=' + body.simulationID);
-    },
-    async detailScenario(simID) {
-      this.$router.push('/scenarioDetails/?simID=' + simID);
     },
     async printResults() {
       console.log(this.results)
