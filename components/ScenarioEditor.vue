@@ -104,6 +104,7 @@ export default {
     // remove response
     removeResponse(index) {
       this.deleteField("responses", index)
+      this.deleteResultField(index)
     },
     async deleteField(fieldName, index) {
       const res = await fetch("/api/deleteScenarioField", {
@@ -117,6 +118,15 @@ export default {
       const body = await res.json()
       console.log(body)
       await this.initFields()
+    },
+    async deleteResultField(index) {
+      const res = await fetch("/api/deleteResultEntry", {
+        method: "POST",
+        body: JSON.stringify({
+          simulationID: this.simID,
+          index: index
+        })
+      })
     },
     // add scenario with metadata and stimuli and responses
     async complete() {

@@ -1,6 +1,7 @@
 import {MeasurementPoint} from "~/models/measurement-point";
 import {Predicate} from "~/models/predicate";
 import {ResponseSpecification} from "~/models/response-specification";
+import {pushSimulationResult} from "~/server/utils/pushSimulationResult";
 
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
 
     const simulationNames: string[] = [simulationID]
     const resultArray: boolean[][] = [responseVerificationResults]
-    pushSimulationResult(simulationID, simulationNames, resultArray)
+    await pushSimulationResult(simulationID, simulationNames, resultArray)
 
     return {
         result: responseVerificationResults,
