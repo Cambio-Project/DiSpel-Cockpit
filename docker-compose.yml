@@ -1,4 +1,4 @@
-version: "1"
+  version: "1"
 
 name: "dashboard-project"
 
@@ -50,7 +50,7 @@ services:
       - ./data/search_results:/app/search_results
 
   misim:
-    image: ghcr.io/cambio-project/misim:v4.1.0
+    image: ghcr.io/cambio-project/misim:v4.1.1
     container_name: misim
     ports:
       - 8084:8080
