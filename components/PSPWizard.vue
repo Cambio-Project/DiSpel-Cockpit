@@ -740,6 +740,12 @@ export default {
       this.handleInputChange()
     },
     async changeEvent() {
+      let trimmedName = this.changedPredicateName.trim()
+      if (this.eventNameExists(trimmedName)) {
+        await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        return
+      }
+
       // write the event to the mongodb database
       const body = {
         _id: this.eventToChange._id,
@@ -763,8 +769,15 @@ export default {
       this.changedPredicateLogic = "";
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
+      await this.successMessage("Changed Event", "The event " + body.customPredicateName + " has been changed successfully")
     },
     async changeCommand() {
+      let trimmedName = this.changedCommandName.trim()
+      if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
+        await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        return
+      }
+
       // write the command to the mongodb database
       const body = {
         _id: this.commandToChange._id,
@@ -783,8 +796,16 @@ export default {
       // clear the input fields after adding the custom command
       this.changedCommandName = "";
       this.changedCommandContent = "";
+
+      await this.successMessage("Changed Command", "The command " + body.command_name + " has been changed successfully")
     },
     async changeListener() {
+      let trimmedName = this.changedListenerName.trim()
+      if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
+        await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        return
+      }
+
       // write the listener to the mongodb database
       const body = {
         _id: this.listenerToChange._id,
@@ -800,9 +821,11 @@ export default {
       const response = await fetch("/api/allListeners");
       this.state.listeners = await response.json();
 
-      // clear the input fields after adding the custom listtener
+      // clear the input fields after adding the custom listener
       this.changedListenerName = "";
       this.changedListenerContent = "";
+
+      await this.successMessage("Changed Listener", "The listener " + body.listener_name + " has been changed successfully")
     },
     async deleteEvent() {
       // delete the event from the mongodb database
