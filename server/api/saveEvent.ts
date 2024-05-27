@@ -2,8 +2,7 @@ import {Event} from "~/server/models/event.model";
 import * as crypto from "crypto";
 
 export default defineEventHandler(async (event) => {
-
-    var body = await readBody(event)
+    let body = await readBody(event);
     body = JSON.parse(body)
 
     body["_id"] = crypto.randomUUID()

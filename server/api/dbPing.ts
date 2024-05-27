@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
         }
         try {
             // @ts-ignore
-            const response = await fetch(endpointStatus[endpoint].domain, { method: 'POST' });
+            await fetch(endpointStatus[endpoint].domain, { method: 'POST' });
             // @ts-ignore
             endpointStatus[endpoint].status = "green"
         } catch (error) {}

@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
         return 'OK'
     }
 
-    var body = await readBody(event)
+    const body = await readBody(event);
 
     const simId = body.sim_id;
     const responseIndex = body.response_index

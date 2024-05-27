@@ -2,8 +2,7 @@ import {Scenario} from "~/server/models/scenario.model";
 import * as crypto from "crypto";
 
 export default defineEventHandler(async (event) => {
-
-    var body = await readBody(event)
+    let body = await readBody(event);
     body = JSON.parse(body)
     body["simulationID"] = crypto.randomUUID()
 

@@ -2,7 +2,7 @@ import {Scenario} from "~/server/models/scenario.model";
 
 export default defineEventHandler(async (event) => {
     // Read the request body
-    var body = await readBody(event)
+    let body = await readBody(event);
     body = JSON.parse(body)
 
     if (typeof body.simulationID === "undefined") {
