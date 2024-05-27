@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
         delete requestBody._id;
 
         // update the event
-        const updatedCommand = await Command.updateOne({_id: commandId}, requestBody);
+        await Command.updateOne({_id: commandId}, requestBody);
 
     } catch (e) {
         console.log("Error updating command:", e);

@@ -114,11 +114,6 @@ export default {
         stimulus.target_logic = this.target;
       })
     },
-    uploadStimuli(type) {
-      const fileInput = this.$refs.fileInputStimulus;
-      this.stimuli = []
-      this.upload(type, fileInput)
-    },
     uploadArchitecture(type) {
       const fileInput = this.$refs.fileInputEnvironmentArchitecture;
       this.environmentArchitecture = []
@@ -275,7 +270,7 @@ export default {
           //setTimeout(this.forceRerender,1000)
           //TODO reloading the page works, but isn't pretty
           setTimeout(() => {
-            location.reload();
+           location.reload();
           }, 500);
 
         } catch (error) {
@@ -337,7 +332,6 @@ export default {
 <script setup>
 
 const config = useRuntimeConfig()
-const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSimPort + "/simulate/upload"
 
 </script>
 
@@ -349,10 +343,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
   <!--Main Frame-->
   <div>
-    <!--       <div v-if="this.importErrorMessage">-->
-    <!--          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>-->
-    <!--        </div>-->
-
     <h3 class="center">
 
       <input v-model="name" type="text" placeholder="Enter scenario name"
@@ -549,30 +539,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
 <style scoped>
 
-.headline-frame {
-  background-color: #eaf6ff;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-top: -25px;
-}
-
-.headline {
-  color: #333;
-}
-
-.box-frame {
-  background-color: #d3d3d3;
-  justify-content: center;
-  align-items: center;
-  display: block;
-  height: 87vh;
-  width: 100%;
-  margin-top: -22px;
-}
-
 .center {
   align-items: center;
   justify-content: center;
@@ -594,58 +560,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
 .file-upload-label:hover {
   background-color: #9bb8d3;
-}
-
-.new-button {
-  background-color: rgb(114, 214, 101);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 4px;
-  margin-top: -1vh;
-}
-
-.new-button:hover {
-  background-color: rgb(73, 167, 61);
-}
-
-.not-ready-button {
-  background-color: rgb(114, 214, 101);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin-top: -1vh;
-  border-radius: 4px;
-  opacity: 70%
-}
-
-.not-ready-button:hover .info-text {
-  display: block;
-}
-
-.info {
-  transform: translateX(0vh);
-  color: #999;
-}
-
-.info-text {
-  position: absolute;
-  top: 20%;
-  right: 20%;
-  padding: 8px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  z-index: 1;
 }
 
 .remove-button {
@@ -708,12 +622,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
 .sel-line {
   margin: 0.8vw;
-}
-
-.import-error-text {
-  font-size: 1.5vh;
-  color: red;
-  max-height: 0.5vh;
 }
 
 .custom-file-upload {

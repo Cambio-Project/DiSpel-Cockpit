@@ -10,10 +10,10 @@ export default defineEventHandler(async (event) => {
         const listenerId = requestBody._id;
 
         // find and delete the event by its ID
-        const deletedListener = await Listener.deleteOne({ _id: listenerId });
+        await Listener.deleteOne({_id: listenerId});
 
     } catch (e) {
         console.log("Error deleting event:", e);
-        return { "done": false };
+        return {"done": false};
     }
 });

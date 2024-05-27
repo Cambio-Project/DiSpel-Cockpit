@@ -234,7 +234,7 @@ export default {
       <UContainer class="mb-4 container-row">
         <div class="float-left container-row-element">
           <UButton class="float-left mr-4" size="lg" @click="openEditor">New Scenario</UButton>
-          <UButton class="float-left downloadScenarios" size="lg" @click="downloadZip(index)">Download all Scenarios
+          <UButton class="float-left downloadScenarios" size="lg" @click="downloadZip()">Download all Scenarios
           </UButton>
         </div>
         <div class="float-right container-row-element">
@@ -492,19 +492,10 @@ export default {
                   <UProgress animation="carousel"></UProgress>
                   <p>Simulation is running</p>
                 </div>
-                <!--
-                <div v-if="scenario.simState === 'done'">
-                  <p>Simulation is Done, you can now start the verify process</p>
-                </div>
-                -->
                 <div v-if="scenario.mosimState === 'running'">
                   <UProgress animation="carousel"></UProgress>
                   <p>Search is running</p>
                 </div>
-                <!--
-                <div v-if="scenario.mosimState === 'done'">
-                <p>Search is Done, you can now start the verify process</p>
-                 </div>                -->
 
               </div>
 
@@ -534,53 +525,6 @@ export default {
 
 <style scoped>
 
-.headline-frame {
-  background-color: #eaf6ff;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-top: -25px;
-}
-
-.headline {
-  color: #333;
-}
-
-.main-frame {
-  background-color: #d3d3d3;
-  justify-content: center;
-  align-items: center;
-  display: block;
-  height: 90vh;
-  width: 100%;
-  margin-top: -22px;
-}
-
-.tool-frame {
-  height: 15%;
-  width: 100%;
-}
-
-.file-download-button {
-  background-color: #aacbe9;
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin: 20px 5px 5px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.file-download-button:hover {
-  background-color: #9bb8d3;
-}
-
 .downloadScenarios:hover {
   background-color: #9bb8d3;
 }
@@ -589,194 +533,17 @@ export default {
   background-color: #aacbe9;
 }
 
-.all-file-download-button {
-  background-color: #aacbe9;
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 20px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.all-file-download-button:hover {
-  background-color: #9bb8d3;
-}
-
-.category-frame-0 {
-  background-color: #cfcfcf;
-  display: inline-block;
-  border: 2px solid #888888;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
-.category-frame-1 {
-  background-color: #9a8fff;
-  display: inline-block;
-  border: 2px solid #6c5cff;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
-.category-frame-2 {
-  background-color: #98df9e;
-  display: inline-block;
-  border: 2px solid #1caf28;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
-
 .customCategory {
   border-radius: 40px !important;
-}
-
-.category-frame-3 {
-  background-color: #f0d98f;
-  display: inline-block;
-  border: 2px solid #ac9a61;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
 }
 
 .sel-line {
   margin: 0.8vw;
 }
 
-.new-button {
-  background-color: rgb(114, 214, 101);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 20px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.new-button:hover {
-  background-color: rgb(73, 167, 61);
-}
-
 body {
   font-family: 'Arial', sans-serif;
   background-color: #f4f4f4;
-}
-
-.list-container {
-  width: 95%;
-  background-color: #fff;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  height: 80%;
-  margin-left: 2.5vw
-}
-
-.list-item {
-  transition: background-color 0.3s;
-  border-bottom: 2px solid #ccc;
-  padding: 32px;
-  display: block;
-}
-
-.list-item:hover {
-  background-color: #f0f0f0;
-}
-
-.list-content {
-  max-height: 100%;
-  overflow-y: scroll;
-}
-
-.remove-button {
-  background-color: rgb(219, 65, 65);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin-top: 20px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.remove-button:hover {
-  background-color: rgb(160, 40, 40);
-}
-
-.remove-button-2 {
-  background-color: rgb(219, 65, 65);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin-top: -10px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.remove-button-2:hover {
-  background-color: rgb(160, 40, 40);
-}
-
-.verify-button {
-  background-color: rgb(65, 219, 65);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin-top: 20px;
-  margin-right: 5px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.verify-button:hover {
-  background-color: rgb(40, 160, 40);
-}
-
-.edit-button {
-  background-color: rgb(240, 173, 28);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin-top: 20px;
-  margin-right: 5px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.edit-button:hover {
-  background-color: rgb(196, 142, 25);
 }
 
 .left {

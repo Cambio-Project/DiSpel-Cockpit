@@ -1,7 +1,5 @@
 <script setup lang="ts">
 //TODO Add DB Ping
-const dbMissing = true
-
 
 //Setup (Check Connection)
 const serviceStatus = {
@@ -62,8 +60,5 @@ await updateServiceState()
 </template>
 
 <style>
-.dbMissingWarning{
-  background-color: red;
-  color: white;
-}
+
 </style>

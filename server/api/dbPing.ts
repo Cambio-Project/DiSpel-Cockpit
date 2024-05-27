@@ -1,4 +1,3 @@
-import { User } from "~/server/models/user.model";
 import mongoose from "mongoose";
 
 export default defineEventHandler(async (event) => {

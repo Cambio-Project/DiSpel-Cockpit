@@ -1,6 +1,5 @@
 import {Event} from "~/server/models/event.model";
 import * as crypto from "crypto";
-import {User} from "~/server/models/user.model";
 
 export default defineEventHandler(async (event) => {
 

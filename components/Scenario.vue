@@ -264,15 +264,8 @@ export default {
             Stimuli:
           </h4>
           <span>
-                <!--{{scenario.responses[0]}}-->
                 <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus" class="left">
                 {{ index + 1 }}.
-                  <!--
-<select v-model="stimulus.target_logic" class="select-box">
-  <option v-for="targetLogic in targetLogics" :key="targetLogic"
-          :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-</select>
--->
                 <span v-if="stimulus.target_logic===0">
                   {{ stimulus.SEL }}
                 </span>
@@ -339,13 +332,8 @@ export default {
         </h4>
 
         <span>
-                <!--{{scenario.responses[0]}}-->
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left">
                 {{ index + 1 }}.
-                  <!--<select v-model="response.target_logic" class="select-box">
-                    <option v-for="targetLogic in targetLogics" :key="targetLogic"
-                            :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-                  </select>-->
                   <span v-if="response.target_logic===0">
                     {{ response.SEL }}
                   </span>
@@ -524,16 +512,6 @@ export default {
 
     </UContainer>
 
-    <!--Mainframe-->
-    <div>
-      <!--Tools-->
-      <div>
-
-      </div>
-
-      <!--Scenario List-->
-
-    </div>
   </div>
 
   <div class="mt-2">
@@ -544,35 +522,6 @@ export default {
 
 <style scoped>
 
-.headline-frame {
-  background-color: #eaf6ff;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-top: -25px;
-}
-
-.headline {
-  color: #333;
-}
-
-.main-frame {
-  background-color: #d3d3d3;
-  justify-content: center;
-  align-items: center;
-  display: block;
-  height: 90vh;
-  width: 100%;
-  margin-top: -22px;
-}
-
-.tool-frame {
-  height: 15%;
-  width: 100%;
-}
-
 .file-download-button {
   background-color: #aacbe9;
   border: none;
@@ -582,7 +531,7 @@ export default {
   text-decoration: none;
   display: inline-block;
   font-size: 10px;
-  margin: 0px 5px 5px;
+  margin: 0 5px 5px;
   cursor: pointer;
   border-radius: 4px;
 }
@@ -591,110 +540,17 @@ export default {
   background-color: #9bb8d3;
 }
 
-.downloadScenarios:hover {
-  background-color: #9bb8d3;
-}
-
-.downloadScenarios {
-  background-color: #aacbe9;
-}
-
-.all-file-download-button {
-  background-color: #aacbe9;
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 20px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.all-file-download-button:hover {
-  background-color: #9bb8d3;
-}
-
-.category-frame-0 {
-  background-color: #cfcfcf;
-  display: inline-block;
-  border: 2px solid #888888;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
-.category-frame-1 {
-  background-color: #9a8fff;
-  display: inline-block;
-  border: 2px solid #6c5cff;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
-.category-frame-2 {
-  background-color: #98df9e;
-  display: inline-block;
-  border: 2px solid #1caf28;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
 .customCategory {
   border-radius: 40px !important;
-}
-
-.category-frame-3 {
-  background-color: #f0d98f;
-  display: inline-block;
-  border: 2px solid #ac9a61;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
 }
 
 .sel-line {
   margin: 0.8vw;
 }
 
-.new-button {
-  background-color: rgb(114, 214, 101);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 20px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.new-button:hover {
-  background-color: rgb(73, 167, 61);
-}
-
 body {
   font-family: 'Arial', sans-serif;
   background-color: #f4f4f4;
-}
-
-.list-container {
-  width: 95%;
-  background-color: #fff;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  height: 80%;
-  margin-left: 2.5vw
 }
 
 .list-item {
@@ -706,11 +562,6 @@ body {
 
 .list-item:hover {
   background-color: #f0f0f0;
-}
-
-.list-content {
-  max-height: 100%;
-  overflow-y: scroll;
 }
 
 .remove-button {
@@ -727,25 +578,6 @@ body {
 }
 
 .remove-button:hover {
-  background-color: rgb(160, 40, 40);
-}
-
-.remove-button-2 {
-  background-color: rgb(219, 65, 65);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin-top: -10px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.remove-button-2:hover {
   background-color: rgb(160, 40, 40);
 }
 

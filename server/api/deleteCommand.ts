@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
         const commandId = requestBody._id;
 
         // find and delete the event by its ID
-        const deletedCommand = await Command.deleteOne({ _id: commandId });
+        await Command.deleteOne({ _id: commandId });
 
     } catch (e) {
         console.log("Error deleting command:", e);

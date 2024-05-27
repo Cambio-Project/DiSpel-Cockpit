@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
         delete requestBody._id;
 
         // update the event
-        const updatedListener = await Listener.updateOne({_id: listenerId}, requestBody);
+        await Listener.updateOne({_id: listenerId}, requestBody);
 
     } catch (e) {
         console.log("Error updating listener:", e);

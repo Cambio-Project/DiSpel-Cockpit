@@ -1,6 +1,5 @@
 import {Scenario} from "~/server/models/scenario.model";
 import * as crypto from "crypto";
-import {User} from "~/server/models/user.model";
 
 export default defineEventHandler(async (event) => {
 

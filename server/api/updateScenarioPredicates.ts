@@ -1,59 +1,49 @@
-import crypto from "crypto";
-import { Event } from "~/server/models/event.model";
-
 export default defineEventHandler(async (event) => {
-	setResponseHeaders(event, {
-		"Access-Control-Allow-Methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-		"Access-Control-Allow-Origin": "*",
-		'Access-Control-Allow-Credentials': 'true',
-		"Access-Control-Allow-Headers": '*',
-		"Access-Control-Expose-Headers": '*'
-	});
-	if (event.method === 'OPTIONS') {
-		event.node.res.statusCode = 204
-		event.node.res.statusMessage = "No Content."
-		return 'OK'
-	}
+    setResponseHeaders(event, {
+        "Access-Control-Allow-Methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+        "Access-Control-Allow-Origin": "*",
+        'Access-Control-Allow-Credentials': 'true',
+        "Access-Control-Allow-Headers": '*',
+        "Access-Control-Expose-Headers": '*'
+    });
+    if (event.method === 'OPTIONS') {
+        event.node.res.statusCode = 204
+        event.node.res.statusMessage = "No Content."
+        return 'OK'
+    }
 
-	var body = await readBody(event)
-	//body = JSON.parse(body)
+    var body = await readBody(event)
 
-	/* if (typeof body.simulationID === "undefined" || body.fieldName === "undefined" || body.fieldValue === "undefined") {
-		return {
-			"success": false,
-		}
-	} */
+    const simId = body.sim_id;
+    const responseIndex = body.response_index
+    const predicates = body.predicates
 
-	const simId = body.sim_id;
-	const responseIndex = body.response_index
-	const predicates = body.predicates
+    try {
+        const scenario = await Scenario.findOne({simulationID: simId});
 
-	try {
-		const scenario = await Scenario.findOne({ simulationID: simId });
+        if (!scenario) {
+            return {
+                success: false,
+                message: "Scenario not found",
+            };
+        }
 
-		if (!scenario) {
-			return {
-				success: false,
-				message: "Scenario not found",
-			};
-		}
+        const responses = scenario.responses;
+        responses[responseIndex].predicates_info = predicates;
 
-		const responses = scenario.responses;
-		responses[responseIndex].predicates_info = predicates;
+        await Scenario.updateOne({simulationID: simId}, {
+            responses: responses,
+        });
 
-		const updatedScenario = await Scenario.updateOne({ simulationID: simId }, {
-			responses: responses,
-		});
+    } catch (e) {
+        console.log(e)
+        return {
+            "success": false,
+            "message": "Error updating the entry"
+        };
+    }
 
-	} catch (e) {
-		console.log(e)
-		return {
-			"success": false,
-			"message": "Error updating the entry"
-		};
-	}
-
-	return {
-		"success": true,
-	};
+    return {
+        "success": true,
+    };
 })
