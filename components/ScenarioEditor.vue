@@ -32,7 +32,7 @@ export default {
       environmentMonitoringData: null,
       responses: null,
       searchWindowSize: null,
-
+      scenario: null,
       importErrorMessage: null,
       componentKey: 0,
     }
@@ -40,7 +40,8 @@ export default {
   methods: {
     // get fields from DB object with simulationID
     async initFields() {
-      const scenario = await getScenario(this.simID);
+      this.scenario = await getScenario(this.simID);
+      const scenario = this.scenario
 
       if (typeof scenario.name !== "undefined") {
         this.name = scenario.name
@@ -104,15 +105,6 @@ export default {
     },
     async deleteResultField(index) {
       await deleteResultEntry(this.simID, index);
-    },
-    //Changes all target logics to the same one
-    changeAllTargets() {
-      this.responses.forEach(response => {
-        response.target_logic = this.target;
-      })
-      this.stimuli.forEach(stimulus => {
-        stimulus.target_logic = this.target;
-      })
     },
     uploadArchitecture(type) {
       const fileInput = this.$refs.fileInputEnvironmentArchitecture;
@@ -270,7 +262,7 @@ export default {
           //setTimeout(this.forceRerender,1000)
           //TODO reloading the page works, but isn't pretty
           setTimeout(() => {
-           location.reload();
+            location.reload();
           }, 500);
 
         } catch (error) {
@@ -331,6 +323,8 @@ export default {
 
 <script setup>
 
+import {changeAllTargets} from "~/components/composables/scenarioActions.js";
+
 const config = useRuntimeConfig()
 
 </script>
@@ -364,7 +358,7 @@ const config = useRuntimeConfig()
 
     <div>
       {{ "Transform all Target Logics to " }}
-      <select class="select-box fw" @change="changeAllTargets" v-model="target">
+      <select class="select-box fw" @change="changeAllTargets([this.scenario], this.target)" v-model="target">
         <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
           {{ targetLogic }}
         </option>

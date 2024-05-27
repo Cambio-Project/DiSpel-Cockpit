@@ -1,15 +1,25 @@
 <script>
-import JSZip from 'jszip';
 import {
   deleteScenario,
-  getResult, getScenario,
+  getResult,
+  getScenario,
   initScenario,
-  startSearch,
-  startSimulation, verifySearch,
+  verifySearch,
   verifySimulation
 } from "~/components/composables/api.js";
 import {toRefinement, toScenarioEditor, toScenariosOverview} from "~/components/composables/navigation.js";
-import {successMessage} from "~/components/composables/popup.js";
+import {
+  changeAllTargets,
+  downloadJSON,
+  startScenarioSearch,
+  startScenarioSimulation
+} from "~/components/composables/scenarioActions.js";
+import {
+  getResilienceScore,
+  getResilienceScoreColor, getSearchVerificationResultsPerScenario,
+  getSimulationVerificationResultsPerScenario,
+  mapResultToColor
+} from "~/components/composables/resultActions.js";
 
 export default {
   name: "ScenarioList",
@@ -25,6 +35,15 @@ export default {
     };
   },
   methods: {
+    changeAllTargets,
+    getSearchVerificationResultsPerScenario,
+    getSimulationVerificationResultsPerScenario,
+    getResilienceScore,
+    getResilienceScoreColor,
+    mapResultToColor,
+    downloadJSON,
+    startScenarioSimulation,
+    startScenarioSearch,
     toScenariosOverview,
     toScenarioEditor,
     toRefinement,
@@ -32,22 +51,6 @@ export default {
     async openEditor() {
       const simulationID = await initScenario();
       toScenarioEditor(simulationID, this.$router);
-    },
-    async startSimulation(scenario) {
-      await successMessage("Simulation started", 'SimID: ' + scenario.simulationID)
-      scenario.simState = 'running';
-      await startSimulation(scenario.simulationID);
-      await successMessage("Simulation finished", 'SimID: ' + scenario.simulationID)
-      scenario.simState = 'done';
-      return 'done'
-    },
-    async startSearch(scenario) {
-      await successMessage("Search started", 'SimID: ' + scenario.simulationID)
-      scenario.mosimState = 'running';
-      await startSearch(scenario.simulationID);
-      await successMessage("Search finished", 'SimID: ' + scenario.simulationID)
-      scenario.mosimState = 'done';
-      return 'done'
     },
     async updateResults() {
       this.result = await getResult(this.simID);
@@ -64,129 +67,6 @@ export default {
     async verifySearch(scenario) {
       await verifySearch(scenario);
       await this.updateResults()
-    },
-    mapResultToColor(result) {
-      if (result === undefined) {
-        return 'gray'
-      }
-      if (result) {
-        return 'green'
-      } else {
-        return 'red'
-      }
-    },
-    getSimulationVerificationResultsPerResponse(scenario, responseIndex) {
-      const defaultResult = "0 / 0"
-      if (this.result === undefined || this.result === null) {
-        return defaultResult;
-      }
-      const totals = this.result.simulationResultsTotal;
-      const successes = this.result.simulationResultsResponseSuccesses;
-      if (totals === undefined || successes === undefined) {
-        return defaultResult
-      }
-      return successes[responseIndex] + " / " + totals
-    },
-    getResilienceScore() {
-      let resilienceScore = 0;
-      if (this.result !== undefined && this.result !== null && this.result.resilienceScore !== undefined) {
-        resilienceScore = this.result.resilienceScore
-      }
-      return resilienceScore
-    },
-    getResilienceScoreColor() {
-      //value from 0 to 1
-      const value = 0.1 * this.getResilienceScore()
-      const hue = ((value) * 12).toString(10);
-      return ["hsl(", hue, ",100%,50%)"].join("");
-    },
-    getSearchVerificationResultsPerResponse(scenario, responseIndex) {
-      const defaultResult = "0 / 0"
-      if (this.result === undefined || this.result === null) {
-        return defaultResult;
-      }
-      const totals = this.result.searchResultsTotal;
-      const successes = this.result.searchResultsResponseSuccesses;
-      if (totals === undefined || successes === undefined) {
-        return defaultResult
-      }
-      return successes[responseIndex] + " / " + totals
-    },
-    getSearchVerificationResultsPerScenario() {
-      const defaultResult = "0 / 0"
-      if (this.result === undefined || this.result === null) {
-        return defaultResult;
-      }
-      const totals = this.result.searchResultsTotal;
-      const successes = this.result.searchResultsScenarioSuccessesTotal;
-      if (totals === undefined || successes === undefined) {
-        return defaultResult
-      }
-      return successes + " / " + totals
-    },
-    getSimulationVerificationResultsPerScenario() {
-      const defaultResult = "0 / 0"
-      if (this.result === undefined || this.result === null) {
-        return defaultResult;
-      }
-      const totals = this.result.simulationResultsTotal;
-      const successes = this.result.simulationResultsScenarioSuccessesTotal;
-      if (totals === undefined || successes === undefined) {
-        return defaultResult
-      }
-      return successes + " / " + totals
-    },
-    //Changes all target logics to the same one
-    changeAllTargets() {
-      this.scenario.responses.forEach(response => {
-        response.target_logic = this.target;
-      });
-      this.scenario.stimuli.forEach(stimulus => {
-        stimulus.target_logic = this.target;
-      });
-    },
-    //Download a single scenario as json
-    async downloadJSON(simID) {
-      const scenario = await getScenario(simID);
-
-      const jsonStr = JSON.stringify(scenario, null, 2);
-      const blob = new Blob([jsonStr], {type: 'application/json'})
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      const fileName = 'Scenario_' + scenario.name + '.json';
-      a.style.display = 'none';
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    },
-    //Download all scenarios as zip file
-    async downloadZip() {
-      const zip = new JSZip();
-      let c = 1
-      this.scenarios.forEach((scenario, index) => {
-        const name = c + " - " + scenario.name;
-        const jsonData = this.scenarios[index];
-        zip.file('Scenario_' + name + '.json', JSON.stringify(jsonData, null, 2));
-        c++;
-      });
-
-      const content = await zip.generateAsync({type: 'blob'});
-      const url = window.URL.createObjectURL(content);
-
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = 'Scenarios.zip';
-      document.body.appendChild(a);
-      a.click();
-
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
     },
   },
   async beforeMount() {
@@ -243,7 +123,7 @@ export default {
 
         <div class="mb-2">
           {{ "Transform all Target Logics to " }}
-          <select class="select-box" @change="changeAllTargets" v-model="target">
+          <select class="select-box" @change="changeAllTargets([this.scenario],this.target)" v-model="target">
             <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
               {{ targetLogic }}
             </option>
@@ -380,10 +260,10 @@ export default {
             <h4 class="text-mb font-bold mb-1 text-center">
               Resilience Score:
             </h4>
-            <UCard :style="{ 'background-color': getResilienceScoreColor(scenario)}"
+            <UCard :style="{ 'background-color': getResilienceScoreColor(this.result)}"
                    class='text-center text-2xl font-bold'>
               <span>
-                    {{ getResilienceScore() }}
+                    {{ getResilienceScore(this.result) }}
               </span>
             </UCard>
           </UContainer>
@@ -394,7 +274,7 @@ export default {
             </h4>
             <UCard class='text-center text-2xl font-bold'>
               <span>
-                    {{ getSimulationVerificationResultsPerScenario() }}
+                    {{ getSimulationVerificationResultsPerScenario(this.result) }}
               </span>
             </UCard>
           </UContainer>
@@ -405,7 +285,7 @@ export default {
             </h4>
             <UCard class='text-center text-2xl font-bold'>
               <span>
-                    {{ getSearchVerificationResultsPerScenario() }}
+                    {{ getSearchVerificationResultsPerScenario(this.result) }}
               </span>
             </UCard>
           </UContainer>
@@ -413,12 +293,12 @@ export default {
 
         <UContainer class="mb-4">
           <UButton class="ml-2" v-if="scenario.simState === 'none'"
-                   @click="startSimulation(scenario);">
+                   @click="startScenarioSimulation(scenario);">
             Start Simulation
           </UButton>
 
           <UButton class="ml-2" v-if="scenario.mosimState === 'none'"
-                   @click="startSearch(scenario);">
+                   @click="startScenarioSearch(scenario);">
             Start Search
           </UButton>
           <UButton class="verify-button ml-2" @click="verifyScenario(scenario);">Verify Simulation</UButton>
