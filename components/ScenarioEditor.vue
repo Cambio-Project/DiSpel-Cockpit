@@ -146,7 +146,6 @@ export default {
         this.loadedFiles.push(filename)
       }
       await this.initFields()
-      location.reload();
     },
     //imports a scenario
     async handleFileChange() {
@@ -255,14 +254,6 @@ export default {
           this.initFields()
 
           this.importErrorMessage = null
-
-          //TODO rerendering doesn't help
-          //setTimeout(this.forceRerender,1000)
-          //TODO reloading the page works, but isn't pretty
-          setTimeout(() => {
-            location.reload();
-          }, 500);
-
         } catch (error) {
           // mapping not valid
           this.importErrorMessage = "The imported scenario is not valid! Technical error message: \n " + error
