@@ -1,6 +1,13 @@
 <script>
 import JSZip from 'jszip';
-import {detailScenario} from "~/components/composables/api.js";
+import {
+  allResults, allScenarios,
+  deleteScenario,
+  detailScenario, getScenario,
+  initScenario,
+  startSearch,
+  startSimulation, verifySearch, verifySimulation
+} from "~/components/composables/api.js";
 
 export default {
   name: "ScenarioList",
@@ -32,57 +39,27 @@ export default {
     detailScenario,
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
-      const res = await fetch("/api/initScenario", {
-        method: "POST"
-      })
-      const body = await res.json()
-      console.log(body)
-
-      this.$router.push('/scenarioEditorSite/?simID=' + body.simulationID);
+      let simulationID = await initScenario()
+      this.$router.push('/scenarioEditorSite/?simID=' + simulationID);
     },
-    async printResults() {
-      console.log(this.results)
-    },
-    async startSimulation(simulationID, scenario) {
-
+    async startSimulation(scenario) {
       this.popUp.add({
         title: 'Simulation Started',
         description: 'SimID: ' + scenario.simulationID
       });
       scenario.simState = 'running';
-
-      const res = await fetch("/api/startSimulation", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simulationID
-        })
-      })
-      const body = await res.json();
+      await startSimulation(scenario.simulationID)
       scenario.simState = 'done';
-
-      console.log("MiSim Response for simulationID: " + simulationID + ": ", body)
-
       return 'done'
     },
-    async startSearch(simulationID, scenario) {
-
+    async startSearch(scenario) {
       this.popUp.add({
         title: 'Search Started',
         description: 'SimID: ' + scenario.simulationID
       });
       scenario.mosimState = 'running';
-
-      const res = await fetch("/api/startSearch", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simulationID
-        })
-      })
-      const body = await res.json();
+      await startSearch(scenario.simulationID)
       scenario.mosimState = 'done';
-
-      console.log("MoSim Response for simulationID: " + simulationID + ": ", body)
-
       return 'done'
     },
     // Open the ScenarioEditor to edit a scenario
@@ -90,7 +67,7 @@ export default {
       this.$router.push('/scenarioEditorSite/?simID=' + simID);
     },
     async updateResults() {
-      const response = await fetch("/api/allResults");
+      const response = await allResults()
       const bodyResults = await response.json();
       this.results = bodyResults.results
     },
@@ -106,60 +83,16 @@ export default {
     },
     // Remove one scenario
     async removeScenario(simulationID) {
-      const res = await fetch("/api/deleteScenario", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simulationID
-        })
-      })
-      const body = await res.json();
-      console.log(body);
-
-      const response = await fetch("/api/allScenarios");
-      const bodyScenarios = await response.json();
-      this.scenarios = bodyScenarios.scenarios
+      await deleteScenario(simulationID)
+      this.scenarios = await allScenarios();
     },
     async verifyScenario(scenario) {
-      const response = await useFetch("/api/verifySimulation", {
-        method: "POST",
-        body: JSON.stringify({
-          scenario,
-        })
-      });
+      await verifySimulation(scenario)
       await this.updateResults()
     },
     async verifySearch(scenario) {
-      const response = await useFetch("/api/verifySearch", {
-        method: "POST",
-        body: JSON.stringify({
-          scenario,
-        })
-      });
+      await verifySearch(scenario)
       await this.updateResults()
-    },
-    getVerificationTextColor(scenario, responseIndex) {
-      const defaultColor = 'gray';
-      if (scenario === undefined) {
-        return defaultColor;
-      }
-      const result = this.findResults(scenario.simulationID)
-      if (result === undefined) {
-        return defaultColor;
-      }
-      const verificationResult = result.simulationResults;
-      if (verificationResult === undefined) {
-        return defaultColor;
-      }
-      if (verificationResult && verificationResult[0]) {
-        if (verificationResult[0][responseIndex]) {
-          return 'green';
-        } else {
-          return 'red';
-        }
-      } else {
-        return defaultColor;
-      }
-      //return verificationResult ? verificationResult[responseIndex] : null;
     },
     getSimulationVerificationResultsPerResponse(scenario, responseIndex) {
       const defaultResult = "0 / 0"
@@ -243,14 +176,7 @@ export default {
     },
     //Download a single scenario as json
     async downloadJSON(simID) {
-      const res = await fetch("/api/getScenario", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simID
-        })
-      })
-      const body = await res.json()
-      const scenario = body.Scenario
+      const scenario = getScenario(simID)
 
       const jsonStr = JSON.stringify(scenario, null, 2);
       const blob = new Blob([jsonStr], {type: 'application/json'})
@@ -294,9 +220,7 @@ export default {
   },
   async beforeMount() {
     await this.updateResults()
-    const response = await fetch("/api/allScenarios");
-    const body = await response.json();
-    this.scenarios = body.scenarios
+    this.scenarios = await allScenarios()
 
     for (let i = 0; i < this.scenarios.length; i++) {
       this.scenarios[i].simState = "none"
@@ -600,12 +524,12 @@ export default {
               <div class="container-row-element-s pt-1 pb-1">
 <span class="float-right">
   <UButton class="mr-1" icon="i-heroicons-globe-alt-20-solid" square size="xs" color="blue"
-           @click="startSimulation(scenario.simulationID, scenario);"></UButton>
+           @click="startSimulation(scenario);"></UButton>
   <UButton :disabled="scenario.simState !== 'done'" class="mr-1" icon="i-heroicons-check-16-solid" square size="xs"
            color="blue"
            @click="verifyScenario(scenario)"></UButton>
   <UButton class="mr-1" icon="i-heroicons-chart-bar-16-solid" square size="xs" color="blue"
-           @click="startSearch(scenario.simulationID, scenario);"></UButton>
+           @click="startSearch(scenario);"></UButton>
   <UButton :disabled="scenario.mosimState !== 'done'" class="mr-1" icon="i-heroicons-check-16-solid" square size="xs"
            color="blue"
            @click="verifySearch(scenario)"></UButton>

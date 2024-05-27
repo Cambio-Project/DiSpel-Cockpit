@@ -1,6 +1,12 @@
 <script>
 
 import * as domain from "domain";
+import {
+  deleteResultEntry,
+  deleteScenarioField,
+  getScenario, pushScenarioField, setScenarioField,
+  uploadAdditionalEnvironmentFile
+} from "~/components/composables/api.js";
 
 export default {
   computed: {
@@ -33,45 +39,37 @@ export default {
   methods: {
     // get fields from DB object with simulationID
     async initFields() {
-      const res = await fetch("/api/getScenarios", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID
-        })
-      })
-      const body = await res.json()
-      console.log(this.simID)
-      console.log(body.Scenario)
+      const scenario = await getScenario(this.simID);
 
-      if (typeof body.Scenario.name !== "undefined") {
-        this.name = body.Scenario.name
+      if (typeof scenario.name !== "undefined") {
+        this.name = scenario.name
       }
-      if (typeof body.Scenario.category !== "undefined") {
-        this.category = body.Scenario.category
+      if (typeof scenario.category !== "undefined") {
+        this.category = scenario.category
       }
-      if (typeof body.Scenario.description !== "undefined") {
-        this.description = body.Scenario.description
+      if (typeof scenario.description !== "undefined") {
+        this.description = scenario.description
       }
-      if (typeof body.Scenario.stimuli !== "undefined") {
-        this.stimuli = body.Scenario.stimuli
+      if (typeof scenario.stimuli !== "undefined") {
+        this.stimuli = scenario.stimuli
       }
-      if (typeof body.Scenario.environment.architecture !== "undefined") {
-        this.environmentArchitecture = body.Scenario.environment.architecture
+      if (typeof scenario.environment.architecture !== "undefined") {
+        this.environmentArchitecture = scenario.environment.architecture
       }
-      if (typeof body.Scenario.environment.experiment !== "undefined") {
-        this.environmentExperiment = body.Scenario.environment.experiment
+      if (typeof scenario.environment.experiment !== "undefined") {
+        this.environmentExperiment = scenario.environment.experiment
       }
-      if (typeof body.Scenario.environment.load !== "undefined") {
-        this.environmentLoad = body.Scenario.environment.load
+      if (typeof scenario.environment.load !== "undefined") {
+        this.environmentLoad = scenario.environment.load
       }
-      if (typeof body.Scenario.environment.monitoringData !== "undefined") {
-        this.environmentMonitoringData = body.Scenario.environment.monitoringData
+      if (typeof scenario.environment.monitoringData !== "undefined") {
+        this.environmentMonitoringData = scenario.environment.monitoringData
       }
-      if (typeof body.Scenario.searchWindowSize !== "undefined") {
-        this.searchWindowSize = body.Scenario.searchWindowSize
+      if (typeof scenario.searchWindowSize !== "undefined") {
+        this.searchWindowSize = scenario.searchWindowSize
       }
-      if (typeof body.Scenario.responses !== "undefined") {
-        this.responses = body.Scenario.responses
+      if (typeof scenario.responses !== "undefined") {
+        this.responses = scenario.responses
       }
     },
     // create response with pspwizard
@@ -107,26 +105,11 @@ export default {
       this.deleteResultField(index)
     },
     async deleteField(fieldName, index) {
-      const res = await fetch("/api/deleteScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: fieldName,
-          fieldIndex: index
-        })
-      })
-      const body = await res.json()
-      console.log(body)
-      await this.initFields()
+      await deleteScenarioField(this.simID, fieldName, index);
+      await this.initFields();
     },
     async deleteResultField(index) {
-      const res = await fetch("/api/deleteResultEntry", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          index: index
-        })
-      })
+      await deleteResultEntry(this.simID, index);
     },
     // add scenario with metadata and stimuli and responses
     async complete() {
@@ -181,12 +164,7 @@ export default {
           await this.addValue(type, tmp)
 
         } else {
-          const formdata = new FormData()
-          formdata.append(filename, file)
-          await fetch("/api/uploadAdditionalEnvironmentFile", {
-            method: "POST",
-            body: formdata
-          })
+          await uploadAdditionalEnvironmentFile(filename, file);
           const tmp = {
             [filename]: "external"
           }
@@ -339,28 +317,10 @@ export default {
       this.showTooltip = false
     },
     async addValue(field, newValue) {
-      const res = await fetch("/api/pushScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: field,
-          fieldValue: newValue
-        })
-      })
-      const body = await res.json()
-      console.log(body)
+      await pushScenarioField(this.simID, field, newValue)
     },
     async setValue(field, newValue) {
-      const res = await fetch("/api/setScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: field,
-          fieldValue: newValue
-        })
-      })
-      const body = await res.json()
-      console.log(body)
+      await setScenarioField(this.simID, field, newValue);
     },
     forceRerender() {
       this.componentKey += 1;

@@ -1,5 +1,13 @@
 <script>
 import JSZip from 'jszip';
+import {
+  deleteScenario,
+  getResult, getScenario,
+  initScenario,
+  startSearch,
+  startSimulation, verifySearch,
+  verifySimulation
+} from "~/components/composables/api.js";
 
 export default {
   name: "ScenarioList",
@@ -18,13 +26,8 @@ export default {
   methods: {
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
-      const res = await fetch("/api/initScenario", {
-        method: "POST"
-      })
-      const body = await res.json()
-      console.log(body)
-
-      this.$router.push('/scenarioEditorSite/?simID=' + body.simulationID);
+      const simulationID = await initScenario();
+      this.$router.push('/scenarioEditorSite/?simID=' + simulationID);
     },
     async startSimulation(simulationID, scenario) {
 
@@ -34,16 +37,8 @@ export default {
       });
       scenario.simState = 'running';
 
-      const res = await fetch("/api/startSimulation", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simulationID
-        })
-      })
-      const body = await res.json();
+      await startSimulation(simulationID);
       scenario.simState = 'done';
-
-      console.log("MiSim Response for simulationID: " + simulationID + ": ", body)
 
       return 'done'
     },
@@ -55,16 +50,8 @@ export default {
       });
       scenario.mosimState = 'running';
 
-      const res = await fetch("/api/startSearch", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simulationID
-        })
-      })
-      const body = await res.json();
+      await startSearch(simulationID);
       scenario.mosimState = 'done';
-
-      console.log("MoSim Response for simulationID: " + simulationID + ": ", body)
 
       return 'done'
     },
@@ -73,45 +60,22 @@ export default {
       this.$router.push('/scenarioEditorSite/?simID=' + simID);
     },
     async updateResults() {
-      const response = await fetch("/api/getResult", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID
-        })
-      });
-      const bodyResult = await response.json();
-      this.result = bodyResult.result
+      this.result = await getResult(this.simID);
     },
     async complete() {
       this.$router.push('/scenariosSite');
     },
     // Remove one scenario
     async removeScenario(simulationID) {
-      const res = await fetch("/api/deleteScenario", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simulationID
-        })
-      })
-      const body = await res.json();
+      await deleteScenario(simulationID)
       this.$router.push('/scenariosSite');
     },
     async verifyScenario(scenario) {
-      const response = await useFetch("/api/verifySimulation", {
-        method: "POST",
-        body: JSON.stringify({
-          scenario,
-        })
-      });
+      await verifySimulation(scenario);
       await this.updateResults()
     },
     async verifySearch(scenario) {
-      const response = await useFetch("/api/verifySearch", {
-        method: "POST",
-        body: JSON.stringify({
-          scenario,
-        })
-      });
+      await verifySearch(scenario);
       await this.updateResults()
     },
     mapResultToColor(result) {
@@ -199,14 +163,7 @@ export default {
     },
     //Download a single scenario as json
     async downloadJSON(simID) {
-      const res = await fetch("/api/getScenario", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simID
-        })
-      })
-      const body = await res.json()
-      const scenario = body.Scenario
+      const scenario = await getScenario(simID);
 
       const jsonStr = JSON.stringify(scenario, null, 2);
       const blob = new Blob([jsonStr], {type: 'application/json'})
@@ -250,15 +207,7 @@ export default {
   },
   async beforeMount() {
     await this.updateResults()
-
-    const response = await fetch("/api/getScenario", {
-      method: "POST",
-      body: JSON.stringify({
-        simulationID: this.$route.query.simID
-      })
-    })
-    const body = await response.json();
-    this.scenario = body.Scenario
+    this.scenario = await getScenario(this.$route.query.simID);
 
     this.scenario.simState = "none"
     this.scenario.mosimState = "none"

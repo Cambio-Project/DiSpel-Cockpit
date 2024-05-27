@@ -1,4 +1,22 @@
 <script>
+import {
+  allCommands,
+  allEvents,
+  allListeners,
+  changeCommand,
+  changeEvent,
+  changeListener,
+  deleteCommand,
+  deleteEvent,
+  deleteListener,
+  deleteScenarioField, getPSPMapping,
+  getScenario,
+  pushScenarioField,
+  saveCommand,
+  saveEvent,
+  saveListener
+} from "~/components/composables/api.js";
+
 export default {
   data() {
     return {
@@ -214,16 +232,13 @@ export default {
     });
 
     onMounted(async () => {
-      const response = await fetch("/api/allEvents");
-      state.events = await response.json();
+      state.events = await allEvents();
     });
     onMounted(async () => {
-      const response = await fetch("/api/allCommands");
-      state.commands = await response.json();
+      state.commands = await allCommands();
     });
     onMounted(async () => {
-      const response = await fetch("/api/allListeners");
-      state.listeners = await response.json();
+      state.listeners = await allListeners()
     });
 
     return {
@@ -232,15 +247,9 @@ export default {
   },
   methods: {
     async initFields() {
-      const res = await fetch("/api/getScenarios", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID
-        })
-      })
-      const body = await res.json()
-      if (typeof body.Scenario.specification.measurementSources !== "undefined") {
-        this.measurementSourceOptions = body.Scenario.specification.measurementSources
+      const scenario = await getScenario(this.simID)
+      if (typeof scenario.specification.measurementSources !== "undefined") {
+        this.measurementSourceOptions = scenario.specification.measurementSources
       }
     },
     /**
@@ -498,16 +507,7 @@ export default {
       this.checkedTime = false
     },
     async addValue(field, newValue) {
-      const res = await fetch("/api/pushScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: field,
-          fieldValue: newValue
-        })
-      })
-      const body = await res.json()
-      console.log(body)
+      await pushScenarioField(this.simID, field, newValue)
     },
     handleOccurrenceChange() {
       // Reset selected event when occurrence changes
@@ -556,14 +556,10 @@ export default {
               predicate_comparison_value: this.customPredicateComparisonValue,
               measurement_source: this.customMeasurementSource,
             }
-        const res = await fetch("/api/saveEvent", {
-          method: "POST",
-          body: JSON.stringify(body)
-        })
+        await saveEvent(body)
 
         // also add this event to the local event array
-        const response = await fetch("/api/allEvents");
-        this.state.events = await response.json();
+        this.state.events = await allEvents();
 
         // clear the input fields after adding the custom event
         this.customPredicateName = "";
@@ -588,14 +584,10 @@ export default {
           command_name: this.customCommandName,
           command_content: this.customCommandContent,
         }
-        const res = await fetch("/api/saveCommand", {
-          method: "POST",
-          body: JSON.stringify(body)
-        })
+        await saveCommand(body);
 
         // also add this event to the local event array
-        const response = await fetch("/api/allCommands");
-        this.state.commands = await response.json();
+        this.state.commands = await allCommands();
 
         // clear the input fields after adding the custom event
         this.customCommandName = "";
@@ -642,14 +634,10 @@ export default {
           listener_name: this.customListenerName,
           listener_content: this.customListenerContent,
         }
-        const res = await fetch("/api/saveListener", {
-          method: "POST",
-          body: JSON.stringify(body)
-        })
+        await saveListener(body)
 
         // also add this event to the local event array
-        const response = await fetch("/api/allListeners");
-        this.state.listeners = await response.json();
+        this.state.listeners = await allListeners();
 
         // clear the input fields after adding the custom event
         this.customListenerName = "";
@@ -755,14 +743,10 @@ export default {
         predicate_comparison_value: this.changedPredicateComparisonValue,
         measurement_source: this.changedMeasurementSource,
       }
-      const res = await fetch("/api/changeEvent", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await changeEvent(body);
 
       // also add this event to the local event array
-      const response = await fetch("/api/allEvents");
-      this.state.events = await response.json();
+      this.state.events = await allEvents();
 
       // clear the input fields after adding the custom event
       this.changedPredicateName = "";
@@ -784,14 +768,10 @@ export default {
         command_name: this.changedCommandName,
         command_content: this.changedCommandContent,
       }
-      const res = await fetch("/api/changeCommand", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await changeCommand(body)
 
       // also add this command to the local command array
-      const response = await fetch("/api/allCommands");
-      this.state.commands = await response.json();
+      this.state.commands = await allCommands();
 
       // clear the input fields after adding the custom command
       this.changedCommandName = "";
@@ -812,14 +792,10 @@ export default {
         listener_name: this.changedListenerName,
         listener_content: this.changedListenerContent,
       }
-      const res = await fetch("/api/changeListener", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await changeListener(body);
 
       // also add this listener to the local listener array
-      const response = await fetch("/api/allListeners");
-      this.state.listeners = await response.json();
+      this.state.listeners = await allListeners()
 
       // clear the input fields after adding the custom listener
       this.changedListenerName = "";
@@ -829,19 +805,10 @@ export default {
     },
     async deleteEvent() {
       // delete the event from the mongodb database
-      const body = {
-        _id: this.eventToChange._id
-      }
-
-      // send a POST request to delete the event
-      const deleteResponse = await fetch("/api/deleteEvent", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await deleteEvent(this.eventToChange._id)
 
       // also add this event to the local event array
-      const response = await fetch("/api/allEvents");
-      this.state.events = await response.json();
+      this.state.events = await allEvents()
 
       // clear the input fields after adding the custom event
       this.changedPredicateName = "";
@@ -851,19 +818,10 @@ export default {
     },
     async deleteCommand() {
       // delete the command from the mongodb database
-      const body = {
-        _id: this.commandToChange._id
-      }
-
-      // send a POST request to delete the command
-      const deleteResponse = await fetch("/api/deleteCommand", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await deleteCommand(this.commandToChange._id)
 
       // also add this event to the local command array
-      const response = await fetch("/api/allCommands");
-      this.state.commands = await response.json();
+      this.state.commands = await allCommands();
 
       // clear the input fields after adding the custom command
       this.changedCommandName = "";
@@ -871,19 +829,10 @@ export default {
     },
     async deleteListener() {
       // delete the listener from the mongodb database
-      const body = {
-        _id: this.listenerToChange._id
-      }
-
-      // send a POST request to delete the event
-      const deleteResponse = await fetch("/api/deleteListener", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await deleteListener(this.listenerToChange._id)
 
       // also add this listener to the local listener array
-      const response = await fetch("/api/allListeners");
-      this.state.listeners = await response.json();
+      this.state.listeners = await allListeners();
 
       // clear the input fields after adding the custom event
       this.changedListenerName = "";
@@ -892,17 +841,7 @@ export default {
     async deleteMeasurementSource() {
       const deleteIndex = this.measurementSourceOptions.indexOf(this.deleteMarkedMeasurementSource)
       // delete mongodb database
-      const body = {
-        simulationID: this.simID,
-        fieldName: "specification.measurementSources",
-        fieldIndex: deleteIndex
-      }
-
-      // send a POST request to delete the event
-      const deleteResponse = await fetch("/api/deleteScenarioField", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await deleteScenarioField(this.simID, "specification.measurementSources", deleteIndex);
 
       // also delete from the local array
       this.measurementSourceOptions.splice(deleteIndex, 1)
@@ -943,12 +882,7 @@ export default {
     },
     async sendTransformRequest(payload) {
       try {
-        // Perform the HTTP request with the input data
-        const response = await useFetch("/api/getPSPMapping", {
-          method: "POST",
-          body: payload
-        })
-
+        const response = await getPSPMapping(payload);
         const responsePayload = await response.data.value.result
 
         // if mapping is returned, display it, else display the error message
@@ -1057,10 +991,7 @@ export default {
               predicate_comparison_value: jsonData.scope.q_event.specification.predicateComparisonValue,
               measurement_source: jsonData.scope.q_event.specification.measurementSource,
             }
-            const res = await fetch("/api/saveEvent", {
-              method: "POST",
-              body: JSON.stringify(body)
-            })
+            await saveEvent(body);
             this.pspSpecification.selectedScopeEventQ = jsonData.scope.q_event.name
           }
           if (jsonData.scope.r_event && jsonData.scope.r_event.name) {
@@ -1072,10 +1003,7 @@ export default {
               predicate_comparison_value: jsonData.scope.r_event.specification.predicateComparisonValue,
               measurement_source: jsonData.scope.r_event.specification.measurementSource
             }
-            const res = await fetch("/api/saveEvent", {
-              method: "POST",
-              body: JSON.stringify(body)
-            })
+            await saveEvent(body);
             this.pspSpecification.selectedScopeEventR = jsonData.scope.r_event.name
           }
           // pattern type
@@ -1096,10 +1024,7 @@ export default {
               predicate_comparison_value: jsonData.pattern.p_event.specification.predicateComparisonValue,
               measurement_source: jsonData.pattern.p_event.specification.measurementSource
             }
-            const res = await fetch("/api/saveEvent", {
-              method: "POST",
-              body: JSON.stringify(body)
-            })
+            await saveEvent(body);
             this.pspSpecification.selectedEventP = jsonData.pattern.p_event.name
           }
           if (jsonData.pattern.s_event && jsonData.pattern.s_event.name) {
@@ -1111,10 +1036,7 @@ export default {
               predicate_comparison_value: jsonData.pattern.s_event.specification.predicateComparisonValue,
               measurement_source: jsonData.pattern.s_event.specification.measurementSource
             }
-            const res = await fetch("/api/saveEvent", {
-              method: "POST",
-              body: JSON.stringify(body)
-            })
+            await saveEvent(body);
             this.pspSpecification.selectedEventS = jsonData.pattern.s_event.name
           }
           // pattern specifications
@@ -1154,10 +1076,7 @@ export default {
                 predicate_comparison_value: jsonData.pattern.pattern_constrains.constrain_event.specification.predicateComparisonValue,
                 measurement_source: jsonData.pattern.pattern_constrains.constrain_event.specification.measurementSource
               }
-              const res = await fetch("/api/saveEvent", {
-                method: "POST",
-                body: JSON.stringify(body)
-              })
+              await saveEvent(body);
               this.pspSpecification.selectedConstraintEvent = jsonData.pattern.pattern_constrains.constrain_event.name
             }
           }
@@ -1177,10 +1096,7 @@ export default {
                 predicate_comparison_value: chEventJson.event.specification.predicateComparisonValue,
                 measurement_source: chEventJson.event.specification.measurementSource
               }
-              const res = await fetch("/api/saveEvent", {
-                method: "POST",
-                body: JSON.stringify(body)
-              })
+              await saveEvent(body);
               chainedEvent.event = {
                 name: chEventJson.event && chEventJson.event.name || "",
                 specification: chEventJson.event && chEventJson.event.specification || ""
@@ -1195,10 +1111,7 @@ export default {
                   predicate_comparison_value: chEventJson.constrain_event.specification.predicateComparisonValue,
                   measurement_source: chEventJson.constrain_event.specification.measurementSource
                 }
-                const res = await fetch("/api/saveEvent", {
-                  method: "POST",
-                  body: JSON.stringify(body)
-                })
+                await saveEvent(body);
                 chainedEvent.constrain_event = {
                   name: chEventJson.constrain_event && chEventJson.constrain_event.name || "",
                   specification: chEventJson.constrain_event && chEventJson.constrain_event.specification || ""
@@ -1227,8 +1140,7 @@ export default {
           this.pspSpecification.selectedTargetLogic = jsonData.target_logic
 
           // also add these events to the local event array
-          const response = await fetch("/api/allEvents");
-          this.state.events = await response.json();
+          this.state.events = await allEvents();
 
           await this.transformToTemporalLogic()
 
@@ -1265,11 +1177,7 @@ export default {
         var payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
 
         // Perform the HTTP request with the input data
-        const response = await useFetch("/api/getPSPMapping", {
-          method: "POST",
-          body: payload
-        })
-
+        const response = await getPSPMapping(payload);
         const responsePayload = await response.data.value.result
 
         // if mapping is returned, display it, else display the error message
@@ -1303,11 +1211,8 @@ export default {
       }
 
       // add predicates to commit
-      var pl = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
-      const response = await useFetch("/api/getPSPMapping", {
-        method: "POST",
-        body: pl
-      })
+      const pl = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
+      const response = await getPSPMapping(pl)
       const responsePayload = await response.data.value.result
       let eventArray = [];
       this.state.events.forEach(event => {
@@ -1333,24 +1238,16 @@ export default {
         default:
           console.log("Unknown type: " + this.type)
       }
-
-      const res = await fetch("/api/pushScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: type,
-          fieldValue: responseObject
-        })
-      })
+      await pushScenarioField(this.simID, type, responseObject)
 
       const body = await res.json()
       console.log("Success: " + body.success);
       console.log("Message: " + body.message);
 
-      this.$router.push('/scenarioeditorSite?simID=' + this.simID);
+      this.$router.push('/scenarioEditorSite?simID=' + this.simID);
     },
     async cancel() {
-      this.$router.push('/scenarioeditorSite?simID=' + this.simID);
+      this.$router.push('/scenarioEditorSite?simID=' + this.simID);
     },
     forceRerender() {
       this.componentKey += 1;
