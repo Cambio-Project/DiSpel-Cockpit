@@ -141,8 +141,6 @@ export default {
     },
     async upload(type, fileInput) {
       this.loadedFiles = []
-      console.log("HERE")
-      console.log(fileInput)
       for (const file of fileInput.files) {
         const filename = file.name
         if (filename.split(".").pop() === "json") {
@@ -181,8 +179,6 @@ export default {
         try {
           const jsonData = JSON.parse(fileReader.result);
           this.jsonData = JSON.stringify(jsonData, null, 2);
-
-          console.log(jsonData);
 
           // check if at least one field for a scenario is available
           if (jsonData.name == null && jsonData.category == null && jsonData.description == null && jsonData.stimuli == null && jsonData.environment.architecture == null && jsonData.environment.experiment == null && jsonData.environment.load == null && jsonData.responses == null) {
@@ -314,7 +310,6 @@ export default {
     },
     forceRerender() {
       this.componentKey += 1;
-      console.log("Rerendering!")
     },
   },
   beforeMount() {

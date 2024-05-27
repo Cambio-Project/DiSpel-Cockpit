@@ -217,8 +217,6 @@ export default {
       this.scenarios[i].simState = "none"
       this.scenarios[i].mosimState = "none"
     }
-
-    console.log(this.scenarios)
   },
 };
 </script>

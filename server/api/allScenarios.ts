@@ -11,8 +11,6 @@ export default defineEventHandler(async (event) => {
         console.log("Error finding scenarios")
     }
 
-    console.log(scenarios)
-
     return {
         scenarios: scenarios
     };

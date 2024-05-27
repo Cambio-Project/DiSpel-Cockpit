@@ -880,25 +880,14 @@ export default {
 
         this.forceRerender()
 
-        // Debug
-        console.log(responsePayload)
-        console.log(this.pspSpecification.mapping);
-        console.log('Transformation successful!');
-
       } catch (error) {
         // Handle any errors that occur during the HTTP request
         console.error('Error transforming to temporal logic:', error);
       }
     },
     async transformToTemporalLogic() {
-
       const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
-
-      console.log(payload)
-      console.log(this.pspSpecification.selectedChainedEvents)
-
       await this.sendTransformRequest(JSON.stringify(payload))
-
       this.forceRerender()
     },
     handleInputChange() {
@@ -960,8 +949,6 @@ export default {
         try {
           const jsonData = JSON.parse(fileReader.result);
           this.jsonData = JSON.stringify(jsonData, null, 2);
-
-          console.log(jsonData);
 
           // reset all fields
           this.resetAllFields()

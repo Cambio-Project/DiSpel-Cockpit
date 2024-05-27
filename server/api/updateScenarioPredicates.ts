@@ -16,7 +16,6 @@ export default defineEventHandler(async (event) => {
 	}
 
 	var body = await readBody(event)
-	console.log(body)
 	//body = JSON.parse(body)
 
 	/* if (typeof body.simulationID === "undefined" || body.fieldName === "undefined" || body.fieldValue === "undefined") {
@@ -28,10 +27,6 @@ export default defineEventHandler(async (event) => {
 	const simId = body.sim_id;
 	const responseIndex = body.response_index
 	const predicates = body.predicates
-
-	console.log(simId);
-	console.log(responseIndex);
-	console.log(predicates);
 
 	try {
 		const scenario = await Scenario.findOne({ simulationID: simId });
@@ -49,8 +44,6 @@ export default defineEventHandler(async (event) => {
 		const updatedScenario = await Scenario.updateOne({ simulationID: simId }, {
 			responses: responses,
 		});
-
-		console.log(updatedScenario)
 
 	} catch (e) {
 		console.log(e)

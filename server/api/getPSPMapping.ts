@@ -5,8 +5,6 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
     const url = "http://"+config.public.pspDomain+":"+config.public.pspPort+"/transformPattern"
 
-    console.log(url)
-
     const response = await fetch(url, {
         method: "POST",
         headers: {

@@ -195,8 +195,6 @@ export default {
 
     this.scenario.simState = "none"
     this.scenario.mosimState = "none"
-
-    console.log(this.scenario)
   },
 };
 </script>
