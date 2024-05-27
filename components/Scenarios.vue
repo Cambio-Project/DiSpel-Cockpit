@@ -103,7 +103,7 @@ export default {
       <UContainer class="mb-4 container-row">
         <div class="float-left container-row-element">
           <UButton class="float-left mr-4" size="lg" @click="openEditor">New Scenario</UButton>
-          <UButton class="float-left downloadScenarios" size="lg" @click="downloadZip()">Download all Scenarios
+          <UButton class="float-left" color="blue" size="lg" @click="downloadZip()">Download all Scenarios
           </UButton>
         </div>
         <div class="float-right container-row-element">
@@ -394,14 +394,6 @@ export default {
 
 <style scoped>
 
-.downloadScenarios:hover {
-  background-color: #9bb8d3;
-}
-
-.downloadScenarios {
-  background-color: #aacbe9;
-}
-
 .customCategory {
   border-radius: 40px !important;
 }
@@ -415,11 +407,6 @@ body {
   background-color: #f4f4f4;
 }
 
-.left {
-  text-align: left;
-  overflow: auto;
-  display: block;
-}
 
 .select-box {
   width: 15vw;
@@ -444,22 +431,6 @@ body {
 .scenario-title {
   text-align: center;
   font-size: 1.2em;
-}
-
-.container-row {
-  display: flex;
-}
-
-.container-row-element {
-  width: 100%;
-}
-
-.container-row-element-s {
-  width: 50%;
-}
-
-.container-row-element-xs {
-  width: 25%;
 }
 
 </style>
