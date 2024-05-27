@@ -1,25 +1,4 @@
 <script>
-import {
-  deleteScenario,
-  getResult,
-  getScenario,
-  initScenario,
-  verifySearch,
-  verifySimulation
-} from "~/components/composables/api.js";
-import {toRefinement, toScenarioEditor, toScenariosOverview} from "~/components/composables/navigation.js";
-import {
-  changeAllTargets,
-  downloadJSON,
-  startScenarioSearch,
-  startScenarioSimulation
-} from "~/components/composables/scenarioActions.js";
-import {
-  getResilienceScore,
-  getResilienceScoreColor, getSearchVerificationResultsPerScenario,
-  getSimulationVerificationResultsPerScenario,
-  mapResultToColor
-} from "~/components/composables/resultActions.js";
 
 export default {
   name: "ScenarioList",

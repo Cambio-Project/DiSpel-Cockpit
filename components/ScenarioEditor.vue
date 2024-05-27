@@ -1,19 +1,17 @@
 <script>
 
 import * as domain from "domain";
-import {
-  deleteResultEntry,
-  deleteScenarioField,
-  getScenario, pushScenarioField, setScenarioField,
-  uploadAdditionalEnvironmentFile
-} from "~/components/composables/api.js";
-import {toPSPWizardResponse, toPSPWizardStimulus, toScenariosOverview} from "~/components/composables/navigation.js";
 
 export default {
   computed: {
     domain() {
       return domain
     }
+  },
+  setup() {
+    onMounted(async () => {
+      preparePopups();
+    });
   },
   data() {
     return {
@@ -323,7 +321,7 @@ export default {
 
 <script setup>
 
-import {changeAllTargets} from "~/components/composables/scenarioActions.js";
+import {changeAllTargets} from "~/composables/scenarioActions.js";
 
 const config = useRuntimeConfig()
 

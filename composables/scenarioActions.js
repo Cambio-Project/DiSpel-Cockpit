@@ -1,5 +1,5 @@
-import {successMessage} from "~/components/composables/popup.js";
-import {getScenario, startSearch, startSimulation} from "~/components/composables/api.js";
+import {successMessage} from "~/composables/popup.js";
+import {getScenario, startSearch, startSimulation} from "~/composables/api.js";
 import JSZip from "jszip";
 
 export async function startScenarioSimulation(scenario) {

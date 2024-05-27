@@ -1,31 +1,14 @@
 <script>
-import {
-  allResults,
-  allScenarios,
-  deleteScenario,
-  initScenario,
-  verifySearch,
-  verifySimulation
-} from "~/components/composables/api.js";
-import {toScenarioDetails, toScenarioEditor} from "~/components/composables/navigation.js";
-import {
-  changeAllTargets,
-  downloadJSON,
-  downloadZip,
-  startScenarioSearch,
-  startScenarioSimulation
-} from "~/components/composables/scenarioActions.js";
-import {
-  getResilienceScore,
-  getResilienceScoreColor,
-  getSearchVerificationResultsPerResponse, getSearchVerificationResultsPerScenario,
-  getSimulationVerificationResultsPerResponse, getSimulationVerificationResultsPerScenario
-} from "./composables/resultActions.js";
 
 export default {
   name: "ScenarioList",
   el: '#app',
   scenariosNew: [],
+  setup() {
+    onMounted(async () => {
+      preparePopups();
+    });
+  },
   data() {
     return {
       scenarioContents: [{

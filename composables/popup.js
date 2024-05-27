@@ -1,4 +1,8 @@
-const popUp = useToast()
+let popUp;
+
+export function preparePopups(){
+    popUp = useToast()
+}
 
 export async function successMessage(title, description) {
     popUp.add({

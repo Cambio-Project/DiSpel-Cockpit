@@ -1,23 +1,4 @@
 <script>
-import {
-  allCommands,
-  allEvents,
-  allListeners,
-  changeCommand,
-  changeEvent,
-  changeListener,
-  deleteCommand,
-  deleteEvent,
-  deleteListener,
-  deleteScenarioField, getPSPMapping,
-  getScenario,
-  pushScenarioField,
-  saveCommand,
-  saveEvent,
-  saveListener
-} from "~/components/composables/api.js";
-import {toScenarioEditor} from "~/components/composables/navigation.js";
-import {failureMessage, successMessage} from "~/components/composables/popup.js";
 
 export default {
   data() {
@@ -232,6 +213,9 @@ export default {
     });
     onMounted(async () => {
       state.listeners = await allListeners()
+    });
+    onMounted(async () => {
+      preparePopups();
     });
 
     return {
