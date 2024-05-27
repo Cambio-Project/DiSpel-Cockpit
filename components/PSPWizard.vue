@@ -17,6 +17,7 @@ import {
   saveListener
 } from "~/components/composables/api.js";
 import {toScenarioEditor} from "~/components/composables/navigation.js";
+import {failureMessage, successMessage} from "~/components/composables/popup.js";
 
 export default {
   data() {
@@ -103,7 +104,6 @@ export default {
        } **/],
       simID: this.$route.query.simID,
       type: this.$route.query.type,
-      popUp: null,
       customCommandName: "",
       customCommandContent: "",
       customListenerName: "",
@@ -535,7 +535,7 @@ export default {
       // Add the custom event to the list if it is not empty
       if (trimmedName !== "") {
         if (this.eventNameExists(trimmedName)) {
-          await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+          await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
           return
         }
         /**
@@ -569,7 +569,7 @@ export default {
         this.customPredicateComparisonValue = "";
         this.customMeasurementSource = "";
 
-        await this.successMessage("Added Event", "The event " + body.customPredicateName + " has been added successfully")
+        await successMessage("Added Event", "The event " + body.customPredicateName + " has been added successfully")
       }
     },
     async addCustomCommand() {
@@ -577,7 +577,7 @@ export default {
       // Add the custom command to the list if it is not empty
       if (trimmedName !== "") {
         if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
-          await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+          await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
           return
         }
 
@@ -595,7 +595,7 @@ export default {
         this.customCommandName = "";
         this.customCommandContent = "";
 
-        await this.successMessage("Added Command", "The command " + body.command_name + " has been added successfully")
+        await successMessage("Added Command", "The command " + body.command_name + " has been added successfully")
       }
     },
     listenerNameExists(name) {
@@ -627,7 +627,7 @@ export default {
       let trimmedName = this.customListenerName.trim()
       if (trimmedName !== "") {
         if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
-          await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+          await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
           return
         }
 
@@ -645,24 +645,8 @@ export default {
         this.customListenerName = "";
         this.customListenerContent = "";
 
-        await this.successMessage("Added Listener", "The listener " + body.listener_name + " has been added successfully")
+        await successMessage("Added Listener", "The listener " + body.listener_name + " has been added successfully")
       }
-    },
-    async successMessage(title, description) {
-      this.popUp.add({
-        icon: "i-heroicons-check-badge",
-        title: title,
-        color: "green",
-        description: description
-      })
-    },
-    async failureMessage(title, description) {
-      this.popUp.add({
-        icon: "i-heroicons-no-symbol",
-        title: title,
-        color: "red",
-        description: description
-      })
     },
     handleComparisonInputChange() {
       // remove non-numeric characters from the input
@@ -732,7 +716,7 @@ export default {
     async changeEvent() {
       let trimmedName = this.changedPredicateName.trim()
       if (this.eventNameExists(trimmedName)) {
-        await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
         return
       }
 
@@ -755,12 +739,12 @@ export default {
       this.changedPredicateLogic = "";
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
-      await this.successMessage("Changed Event", "The event " + body.customPredicateName + " has been changed successfully")
+      await successMessage("Changed Event", "The event " + body.customPredicateName + " has been changed successfully")
     },
     async changeCommand() {
       let trimmedName = this.changedCommandName.trim()
       if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
-        await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
         return
       }
 
@@ -779,12 +763,12 @@ export default {
       this.changedCommandName = "";
       this.changedCommandContent = "";
 
-      await this.successMessage("Changed Command", "The command " + body.command_name + " has been changed successfully")
+      await successMessage("Changed Command", "The command " + body.command_name + " has been changed successfully")
     },
     async changeListener() {
       let trimmedName = this.changedListenerName.trim()
       if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
-        await this.failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
         return
       }
 
@@ -803,7 +787,7 @@ export default {
       this.changedListenerName = "";
       this.changedListenerContent = "";
 
-      await this.successMessage("Changed Listener", "The listener " + body.listener_name + " has been changed successfully")
+      await successMessage("Changed Listener", "The listener " + body.listener_name + " has been changed successfully")
     },
     async deleteEvent() {
       // delete the event from the mongodb database
@@ -1250,7 +1234,6 @@ export default {
   },
   beforeMount() {
     this.initFields()
-    this.popUp = useToast()
   },
 };
 </script>

@@ -9,6 +9,7 @@ import {
   startSimulation, verifySearch, verifySimulation
 } from "~/components/composables/api.js";
 import {toScenarioDetails, toScenarioEditor} from "~/components/composables/navigation.js";
+import {successMessage} from "~/components/composables/popup.js";
 
 export default {
   name: "ScenarioList",
@@ -33,7 +34,6 @@ export default {
       target: null,
       results: null,
       scenarios: null,
-      popUp: null,
     };
   },
   methods: {
@@ -45,22 +45,18 @@ export default {
       toScenarioEditor(simulationID, this.$router)
     },
     async startSimulation(scenario) {
-      this.popUp.add({
-        title: 'Simulation Started',
-        description: 'SimID: ' + scenario.simulationID
-      });
+      await successMessage("Simulation started", 'SimID: ' + scenario.simulationID)
       scenario.simState = 'running';
       await startSimulation(scenario.simulationID)
+      await successMessage("Simulation finished", 'SimID: ' + scenario.simulationID)
       scenario.simState = 'done';
       return 'done'
     },
     async startSearch(scenario) {
-      this.popUp.add({
-        title: 'Search Started',
-        description: 'SimID: ' + scenario.simulationID
-      });
+      await successMessage("Search started", 'SimID: ' + scenario.simulationID)
       scenario.mosimState = 'running';
-      await startSearch(scenario.simulationID)
+      await startSearch(scenario.simulationID);
+      await successMessage("Search finished", 'SimID: ' + scenario.simulationID)
       scenario.mosimState = 'done';
       return 'done'
     },
@@ -221,8 +217,6 @@ export default {
       this.scenarios[i].simState = "none"
       this.scenarios[i].mosimState = "none"
     }
-
-    this.popUp = useToast()
 
     console.log(this.scenarios)
   },

@@ -9,6 +9,7 @@ import {
   verifySimulation
 } from "~/components/composables/api.js";
 import {toRefinement, toScenarioEditor} from "~/components/composables/navigation.js";
+import {successMessage} from "~/components/composables/popup.js";
 
 export default {
   name: "ScenarioList",
@@ -21,7 +22,6 @@ export default {
       target: null,
       result: null,
       scenario: null,
-      popUp: null,
     };
   },
   methods: {
@@ -31,30 +31,20 @@ export default {
       const simulationID = await initScenario();
       toScenarioEditor(simulationID, this.$router);
     },
-    async startSimulation(simulationID, scenario) {
-
-      this.popUp.add({
-        title: 'Simulation Started',
-        description: 'SimID: ' + scenario.simulationID
-      });
+    async startSimulation(scenario) {
+      await successMessage("Simulation started", 'SimID: ' + scenario.simulationID)
       scenario.simState = 'running';
-
-      await startSimulation(simulationID);
+      await startSimulation(scenario.simulationID);
+      await successMessage("Simulation finished", 'SimID: ' + scenario.simulationID)
       scenario.simState = 'done';
-
       return 'done'
     },
-    async startSearch(simulationID, scenario) {
-
-      this.popUp.add({
-        title: 'Search Started',
-        description: 'SimID: ' + scenario.simulationID
-      });
+    async startSearch(scenario) {
+      await successMessage("Search started", 'SimID: ' + scenario.simulationID)
       scenario.mosimState = 'running';
-
-      await startSearch(simulationID);
+      await startSearch(scenario.simulationID);
+      await successMessage("Search finished", 'SimID: ' + scenario.simulationID)
       scenario.mosimState = 'done';
-
       return 'done'
     },
     // Open the ScenarioEditor to edit a scenario
@@ -210,8 +200,6 @@ export default {
 
     this.scenario.simState = "none"
     this.scenario.mosimState = "none"
-
-    this.popUp = useToast()
 
     console.log(this.scenario)
   },
@@ -444,12 +432,12 @@ export default {
 
         <UContainer class="mb-4">
           <UButton class="ml-2" v-if="scenario.simState === 'none'"
-                   @click="startSimulation(scenario.simulationID, scenario);">
+                   @click="startSimulation(scenario);">
             Start Simulation
           </UButton>
 
           <UButton class="ml-2" v-if="scenario.mosimState === 'none'"
-                   @click="startSearch(scenario.simulationID, scenario);">
+                   @click="startSearch(scenario);">
             Start Search
           </UButton>
           <UButton class="verify-button ml-2" @click="verifyScenario(scenario);">Verify Simulation</UButton>
