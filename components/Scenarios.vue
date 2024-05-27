@@ -3,11 +3,12 @@ import JSZip from 'jszip';
 import {
   allResults, allScenarios,
   deleteScenario,
-  detailScenario, getScenario,
+  getScenario,
   initScenario,
   startSearch,
   startSimulation, verifySearch, verifySimulation
 } from "~/components/composables/api.js";
+import {toScenarioDetails, toScenarioEditor} from "~/components/composables/navigation.js";
 
 export default {
   name: "ScenarioList",
@@ -36,11 +37,12 @@ export default {
     };
   },
   methods: {
-    detailScenario,
+    toScenarioEditor,
+    toScenarioDetails,
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
       let simulationID = await initScenario()
-      this.$router.push('/scenarioEditorSite/?simID=' + simulationID);
+      toScenarioEditor(simulationID, this.$router)
     },
     async startSimulation(scenario) {
       this.popUp.add({
@@ -61,10 +63,6 @@ export default {
       await startSearch(scenario.simulationID)
       scenario.mosimState = 'done';
       return 'done'
-    },
-    // Open the ScenarioEditor to edit a scenario
-    async editScenario(simID) {
-      this.$router.push('/scenarioEditorSite/?simID=' + simID);
     },
     async updateResults() {
       const response = await allResults()
@@ -159,9 +157,6 @@ export default {
         return defaultResult
       }
       return successes + " / " + totals
-    },
-    openRefinement(simID, responseIndex) {
-      this.$router.push('/tqPropRefinerSiteDynamic?sim_id=' + simID + '&response_index=' + responseIndex);
     },
     //Changes all target logics to the same one
     changeAllTargets() {
@@ -308,10 +303,10 @@ export default {
               <div class="container-row-element-s">
                 <div class="float-right">
                   <UButton class="mr-1" icon="i-heroicons-pencil-square-16-solid" square size="xs" color="blue"
-                           @click="editScenario(scenario.simulationID);"></UButton>
+                           @click="toScenarioEditor(scenario.simulationID);"></UButton>
                   <UButton class="mr-1" icon="i-heroicons-document-magnifying-glass-16-solid" square size="xs"
                            color="blue"
-                           @click="detailScenario(scenario.simulationID)"></UButton>
+                           @click="toScenarioDetails(scenario.simulationID)"></UButton>
                   <UButton class="mr-1" icon="i-heroicons-cloud-arrow-down-16-solid" square size="xs" color="blue"
                            @click="downloadJSON(scenario.simulationID);"></UButton>
                   <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"

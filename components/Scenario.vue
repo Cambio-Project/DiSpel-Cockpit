@@ -8,6 +8,7 @@ import {
   startSimulation, verifySearch,
   verifySimulation
 } from "~/components/composables/api.js";
+import {toRefinement, toScenarioEditor} from "~/components/composables/navigation.js";
 
 export default {
   name: "ScenarioList",
@@ -24,10 +25,11 @@ export default {
     };
   },
   methods: {
+    toRefinement,
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
       const simulationID = await initScenario();
-      this.$router.push('/scenarioEditorSite/?simID=' + simulationID);
+      toScenarioEditor(simulationID, this.$router);
     },
     async startSimulation(simulationID, scenario) {
 
@@ -148,9 +150,6 @@ export default {
         return defaultResult
       }
       return successes + " / " + totals
-    },
-    openRefinement(simID, responseIndex) {
-      this.$router.push('/tqPropRefinerSiteDynamic?sim_id=' + simID + '&response_index=' + responseIndex);
     },
     //Changes all target logics to the same one
     changeAllTargets() {
@@ -489,7 +488,7 @@ export default {
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left container-row">
                   <div>
                     <UTooltip text="Please verify before Refinement!">
-                      <button @click="openRefinement(scenario.simulationID, index)" class="refine-button">Refine
+                      <button @click="toRefinement(scenario.simulationID, index)" class="refine-button">Refine
                         Response
                       </button>
                     </UTooltip>
@@ -521,7 +520,7 @@ export default {
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left container-row">
                   <div>
                     <UTooltip text="Please verify before Refinement!">
-                      <button @click="openRefinement(scenario.simulationID, index)" class="refine-button">Refine
+                      <button @click="toRefinement(scenario.simulationID, index)" class="refine-button">Refine
                         Response
                       </button>
                     </UTooltip>

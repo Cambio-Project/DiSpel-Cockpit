@@ -16,6 +16,7 @@ import {
   saveEvent,
   saveListener
 } from "~/components/composables/api.js";
+import {toScenarioEditor} from "~/components/composables/navigation.js";
 
 export default {
   data() {
@@ -246,6 +247,7 @@ export default {
     };
   },
   methods: {
+    toScenarioEditor,
     async initFields() {
       const scenario = await getScenario(this.simID)
       if (typeof scenario.specification.measurementSources !== "undefined") {
@@ -1240,14 +1242,7 @@ export default {
       }
       await pushScenarioField(this.simID, type, responseObject)
 
-      const body = await res.json()
-      console.log("Success: " + body.success);
-      console.log("Message: " + body.message);
-
-      this.$router.push('/scenarioEditorSite?simID=' + this.simID);
-    },
-    async cancel() {
-      this.$router.push('/scenarioEditorSite?simID=' + this.simID);
+      toScenarioEditor(this.simID, this.$router)
     },
     forceRerender() {
       this.componentKey += 1;
@@ -2661,7 +2656,7 @@ export default {
   </div>
   <div class="page-container">
     <div class="selection-container">
-      <UButton @click="cancel" color="red" size="xl"
+      <UButton @click="toScenarioEditor(this.simID)" color="red" size="xl"
                class="cancel-button">Cancel
       </UButton>
       <span :class="{ 'grayed-out': !this.pspSpecification.mapping }">

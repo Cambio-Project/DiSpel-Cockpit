@@ -1,7 +1,3 @@
-export async function detailScenario(simID) {
-    this.$router.push('/scenarioDetails/?simID=' + simID);
-}
-
 export async function initScenario() {
     const res = await fetch("/api/initScenario", {
         method: "POST"

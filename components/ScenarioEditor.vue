@@ -7,6 +7,7 @@ import {
   getScenario, pushScenarioField, setScenarioField,
   uploadAdditionalEnvironmentFile
 } from "~/components/composables/api.js";
+import {toPSPWizardResponse, toPSPWizardStimulus, toScenariosOverview} from "~/components/composables/navigation.js";
 
 export default {
   computed: {
@@ -72,13 +73,6 @@ export default {
         this.responses = scenario.responses
       }
     },
-    // create response with pspwizard
-    openPSPResponse() {
-      this.$router.push('/pspwizardSite?simID=' + this.simID + '&type=response');
-    },
-    openPSPStimulus() {
-      this.$router.push('/pspwizardSite?simID=' + this.simID + '&type=stimulus');
-    },
     // remove stimulus
     removeStimulus(index) {
       this.deleteField("stimuli", index)
@@ -110,10 +104,6 @@ export default {
     },
     async deleteResultField(index) {
       await deleteResultEntry(this.simID, index);
-    },
-    // add scenario with metadata and stimuli and responses
-    async complete() {
-      this.$router.push('/scenariosSite');
     },
     //Changes all target logics to the same one
     changeAllTargets() {
@@ -350,6 +340,7 @@ export default {
 </script>
 
 <script setup>
+
 const config = useRuntimeConfig()
 const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSimPort + "/simulate/upload"
 
@@ -434,7 +425,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
       </li>
 
-      <UButton @click="openPSPStimulus">Add Stimulus</UButton>
+      <UButton @click="toPSPWizardStimulus(this.simID, this.$router)">Add Stimulus</UButton>
     </div>
 
     <div class="message-container">
@@ -538,14 +529,14 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
       </li>
 
-      <UButton @click="openPSPResponse">Add Response</UButton>
+      <UButton @click="toPSPWizardResponse(this.simID, this.$router)">Add Response</UButton>
 
     </div>
 
     <div class="mt-2">
       <!-- TODO: add stimulus check again as soon as supported -->
       <div v-if="name !== null && responses != null">
-        <UButton @click="complete">Complete</UButton>
+        <UButton @click="toScenariosOverview(this.$router)">Complete</UButton>
       </div>
 
       <div v-else>
