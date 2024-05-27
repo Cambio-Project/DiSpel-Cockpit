@@ -8,7 +8,7 @@ import {
   startSimulation, verifySearch,
   verifySimulation
 } from "~/components/composables/api.js";
-import {toRefinement, toScenarioEditor} from "~/components/composables/navigation.js";
+import {toRefinement, toScenarioEditor, toScenariosOverview} from "~/components/composables/navigation.js";
 import {successMessage} from "~/components/composables/popup.js";
 
 export default {
@@ -25,6 +25,8 @@ export default {
     };
   },
   methods: {
+    toScenariosOverview,
+    toScenarioEditor,
     toRefinement,
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
@@ -47,20 +49,13 @@ export default {
       scenario.mosimState = 'done';
       return 'done'
     },
-    // Open the ScenarioEditor to edit a scenario
-    async editScenario(simID) {
-      this.$router.push('/scenarioEditorSite/?simID=' + simID);
-    },
     async updateResults() {
       this.result = await getResult(this.simID);
-    },
-    async complete() {
-      this.$router.push('/scenariosSite');
     },
     // Remove one scenario
     async removeScenario(simulationID) {
       await deleteScenario(simulationID)
-      this.$router.push('/scenariosSite');
+      toScenariosOverview(this.$router)
     },
     async verifyScenario(scenario) {
       await verifySimulation(scenario);
@@ -235,7 +230,7 @@ export default {
 
     <UContainer class="mb-2">
       <div>
-        <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
+        <button class="edit-button" @click="toScenarioEditor(scenario.simulationID)">Edit Scenario</button>
         <button class="remove-button" @click="removeScenario(scenario.simulationID)">Remove Scenario</button>
         <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON
         </button>
@@ -544,7 +539,7 @@ export default {
   </div>
 
   <div class="mt-2">
-    <UButton @click="complete">Complete</UButton>
+    <UButton @click="toScenariosOverview()">Complete</UButton>
   </div>
 </template>
 
