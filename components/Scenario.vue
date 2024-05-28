@@ -1,5 +1,4 @@
 <script>
-import JSZip from 'jszip';
 
 export default {
   name: "ScenarioList",
@@ -12,260 +11,49 @@ export default {
       target: null,
       result: null,
       scenario: null,
-      popUp: null,
     };
   },
   methods: {
+    changeAllTargets,
+    getSearchVerificationResultsPerScenario,
+    getSimulationVerificationResultsPerScenario,
+    getResilienceScore,
+    getResilienceScoreColor,
+    mapResultToColor,
+    downloadJSON,
+    startScenarioSimulation,
+    startScenarioSearch,
+    toScenariosOverview,
+    toScenarioEditor,
+    toRefinement,
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
-      const res = await fetch("/api/initScenario", {
-        method: "POST"
-      })
-      const body = await res.json()
-      console.log(body)
-
-      this.$router.push('/scenarioEditorSite/?simID=' + body.simulationID);
-    },
-    async startSimulation(simulationID, scenario) {
-
-      this.popUp.add({
-        title: 'Simulation Started',
-        description: 'SimID: ' + scenario.simulationID
-      });
-      scenario.simState = 'running';
-
-      const res = await fetch("/api/startSimulation", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simulationID
-        })
-      })
-      const body = await res.json();
-      scenario.simState = 'done';
-
-      console.log("MiSim Response for simulationID: " + simulationID + ": ", body)
-
-      return 'done'
-    },
-    async startSearch(simulationID, scenario) {
-
-      this.popUp.add({
-        title: 'Search Started',
-        description: 'SimID: ' + scenario.simulationID
-      });
-      scenario.mosimState = 'running';
-
-      const res = await fetch("/api/startSearch", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simulationID
-        })
-      })
-      const body = await res.json();
-      scenario.mosimState = 'done';
-
-      console.log("MoSim Response for simulationID: " + simulationID + ": ", body)
-
-      return 'done'
-    },
-    // Open the ScenarioEditor to edit a scenario
-    async editScenario(simID) {
-      this.$router.push('/scenarioEditorSite/?simID=' + simID);
+      const simulationID = await initScenario();
+      toScenarioEditor(simulationID, this.$router);
     },
     async updateResults() {
-      const response = await fetch("/api/getResult", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID
-        })
-      });
-      const bodyResult = await response.json();
-      this.result = bodyResult.result
-    },
-    async complete() {
-      this.$router.push('/scenariosSite');
+      this.result = await getResult(this.simID);
     },
     // Remove one scenario
-    async removeScenario(ID) {
-      const res = await fetch("/api/deleteScenario", {
-        method: "POST",
-        body: JSON.stringify({
-          ID: ID
-        })
-      })
-      const body = await res.json();
-      this.$router.push('/scenariosSite');
+    async removeScenario(simulationID) {
+      await deleteScenario(simulationID)
+      toScenariosOverview(this.$router)
     },
     async verifyScenario(scenario) {
-      const response = await useFetch("/api/verifySimulation", {
-        method: "POST",
-        body: JSON.stringify({
-          scenario,
-        })
-      });
+      await verifySimulation(scenario);
       await this.updateResults()
     },
     async verifySearch(scenario) {
-      const response = await useFetch("/api/verifySearch", {
-        method: "POST",
-        body: JSON.stringify({
-          scenario,
-        })
-      });
+      await verifySearch(scenario);
       await this.updateResults()
-    },
-    mapResultToColor(result) {
-      if (result === undefined) {
-        return 'gray'
-      }
-      if (result) {
-        return 'green'
-      } else {
-        return 'red'
-      }
-    },
-    getSimulationVerificationResultsPerResponse(scenario, responseIndex) {
-      const defaultResult = "0 / 0"
-      if (this.result === undefined || this.result === null) {
-        return defaultResult;
-      }
-      const totals = this.result.simulationResultsTotal;
-      const successes = this.result.simulationResultsResponseSuccesses;
-      if (totals === undefined || successes === undefined) {
-        return defaultResult
-      }
-      return successes[responseIndex] + " / " + totals
-    },
-    getResilienceScore() {
-      let resilienceScore = 0;
-      if (this.result !== undefined && this.result !== null && this.result.resilienceScore !== undefined) {
-        resilienceScore = this.result.resilienceScore
-      }
-      return resilienceScore
-    },
-    getResilienceScoreColor() {
-      //value from 0 to 1
-      const value = 0.1 * this.getResilienceScore()
-      const hue = ((value) * 12).toString(10);
-      return ["hsl(", hue, ",100%,50%)"].join("");
-    },
-    getSearchVerificationResultsPerResponse(scenario, responseIndex) {
-      const defaultResult = "0 / 0"
-      if (this.result === undefined || this.result === null) {
-        return defaultResult;
-      }
-      const totals = this.result.searchResultsTotal;
-      const successes = this.result.searchResultsResponseSuccesses;
-      if (totals === undefined || successes === undefined) {
-        return defaultResult
-      }
-      return successes[responseIndex] + " / " + totals
-    },
-    getSearchVerificationResultsPerScenario() {
-      const defaultResult = "0 / 0"
-      if (this.result === undefined || this.result === null) {
-        return defaultResult;
-      }
-      const totals = this.result.searchResultsTotal;
-      const successes = this.result.searchResultsScenarioSuccessesTotal;
-      if (totals === undefined || successes === undefined) {
-        return defaultResult
-      }
-      return successes + " / " + totals
-    },
-    getSimulationVerificationResultsPerScenario() {
-      const defaultResult = "0 / 0"
-      if (this.result === undefined || this.result === null) {
-        return defaultResult;
-      }
-      const totals = this.result.simulationResultsTotal;
-      const successes = this.result.simulationResultsScenarioSuccessesTotal;
-      if (totals === undefined || successes === undefined) {
-        return defaultResult
-      }
-      return successes + " / " + totals
-    },
-    openRefinement(simID, responseIndex) {
-      this.$router.push('/tqPropRefinerSiteDynamic?sim_id=' + simID + '&response_index=' + responseIndex);
-    },
-    //Changes all target logics to the same one
-    changeAllTargets() {
-      this.scenario.responses.forEach(response => {
-        response.target_logic = this.target;
-      });
-      this.scenario.stimuli.forEach(stimulus => {
-        stimulus.target_logic = this.target;
-      });
-    },
-    //Download a single scenario as json
-    async downloadJSON(simID) {
-      const res = await fetch("/api/getScenario", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: simID
-        })
-      })
-      const body = await res.json()
-      const scenario = body.Scenario
-
-      const jsonStr = JSON.stringify(scenario, null, 2);
-      const blob = new Blob([jsonStr], {type: 'application/json'})
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      const fileName = 'Scenario_' + scenario.name + '.json';
-      a.style.display = 'none';
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    },
-    //Download all scenarios as zip file
-    async downloadZip() {
-      const zip = new JSZip();
-      let c = 1
-      this.scenarios.forEach((scenario, index) => {
-        const name = c + " - " + scenario.name;
-        const jsonData = this.scenarios[index];
-        zip.file('Scenario_' + name + '.json', JSON.stringify(jsonData, null, 2));
-        c++;
-      });
-
-      const content = await zip.generateAsync({type: 'blob'});
-      const url = window.URL.createObjectURL(content);
-
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = 'Scenarios.zip';
-      document.body.appendChild(a);
-      a.click();
-
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
     },
   },
   async beforeMount() {
     await this.updateResults()
-
-    const response = await fetch("/api/getScenario", {
-      method: "POST",
-      body: JSON.stringify({
-        simulationID: this.$route.query.simID
-      })
-    })
-    const body = await response.json();
-    this.scenario = body.Scenario
+    this.scenario = await getScenario(this.$route.query.simID);
 
     this.scenario.simState = "none"
     this.scenario.mosimState = "none"
-
-    this.popUp = useToast()
-
-    console.log(this.scenario)
   },
 };
 </script>
@@ -299,8 +87,8 @@ export default {
 
     <UContainer class="mb-2">
       <div>
-        <button class="edit-button" @click="editScenario(scenario.simulationID)">Edit Scenario</button>
-        <button class="remove-button" @click="removeScenario(scenario._id)">Remove Scenario</button>
+        <button class="edit-button" @click="toScenarioEditor(scenario.simulationID)">Edit Scenario</button>
+        <button class="remove-button" @click="removeScenario(scenario.simulationID)">Remove Scenario</button>
         <button class="file-download-button" @click="downloadJSON(scenario.simulationID)">Download as JSON
         </button>
       </div>
@@ -314,7 +102,7 @@ export default {
 
         <div class="mb-2">
           {{ "Transform all Target Logics to " }}
-          <select class="select-box" @change="changeAllTargets" v-model="target">
+          <select class="select-box" @change="changeAllTargets([this.scenario],this.target)" v-model="target">
             <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
               {{ targetLogic }}
             </option>
@@ -335,15 +123,9 @@ export default {
             Stimuli:
           </h4>
           <span>
-                <!--{{scenario.responses[0]}}-->
+            <ul>
                 <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus" class="left">
                 {{ index + 1 }}.
-                  <!--
-<select v-model="stimulus.target_logic" class="select-box">
-  <option v-for="targetLogic in targetLogics" :key="targetLogic"
-          :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-</select>
--->
                 <span v-if="stimulus.target_logic===0">
                   {{ stimulus.SEL }}
                 </span>
@@ -370,6 +152,7 @@ export default {
                 <i class="sel-line"> <strong>SEL:</strong> {{ stimulus.SEL }} </i>
                 </div>
             </li>
+              </ul>
               </span>
         </div>
 
@@ -410,13 +193,9 @@ export default {
         </h4>
 
         <span>
-                <!--{{scenario.responses[0]}}-->
+          <ul>
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left">
                 {{ index + 1 }}.
-                  <!--<select v-model="response.target_logic" class="select-box">
-                    <option v-for="targetLogic in targetLogics" :key="targetLogic"
-                            :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-                  </select>-->
                   <span v-if="response.target_logic===0">
                     {{ response.SEL }}
                   </span>
@@ -446,6 +225,7 @@ export default {
                 </div>
 
                 </li>
+            </ul>
                 </span>
       </UCard>
     </UContainer>
@@ -463,10 +243,10 @@ export default {
             <h4 class="text-mb font-bold mb-1 text-center">
               Resilience Score:
             </h4>
-            <UCard :style="{ 'background-color': getResilienceScoreColor(scenario)}"
+            <UCard :style="{ 'background-color': getResilienceScoreColor(this.result)}"
                    class='text-center text-2xl font-bold'>
               <span>
-                    {{ getResilienceScore() }}
+                    {{ getResilienceScore(this.result) }}
               </span>
             </UCard>
           </UContainer>
@@ -477,7 +257,7 @@ export default {
             </h4>
             <UCard class='text-center text-2xl font-bold'>
               <span>
-                    {{ getSimulationVerificationResultsPerScenario() }}
+                    {{ getSimulationVerificationResultsPerScenario(this.result) }}
               </span>
             </UCard>
           </UContainer>
@@ -488,7 +268,7 @@ export default {
             </h4>
             <UCard class='text-center text-2xl font-bold'>
               <span>
-                    {{ getSearchVerificationResultsPerScenario() }}
+                    {{ getSearchVerificationResultsPerScenario(this.result) }}
               </span>
             </UCard>
           </UContainer>
@@ -496,12 +276,12 @@ export default {
 
         <UContainer class="mb-4">
           <UButton class="ml-2" v-if="scenario.simState === 'none'"
-                   @click="startSimulation(scenario.simulationID, scenario);">
+                   @click="startScenarioSimulation(scenario);">
             Start Simulation
           </UButton>
 
           <UButton class="ml-2" v-if="scenario.mosimState === 'none'"
-                   @click="startSearch(scenario.simulationID, scenario);">
+                   @click="startScenarioSearch(scenario);">
             Start Search
           </UButton>
           <UButton class="verify-button ml-2" @click="verifyScenario(scenario);">Verify Simulation</UButton>
@@ -540,7 +320,7 @@ export default {
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left container-row">
                   <div>
                     <UTooltip text="Please verify before Refinement!">
-                      <button @click="openRefinement(scenario.simulationID, index)" class="refine-button">Refine
+                      <button @click="toRefinement(scenario.simulationID, index)" class="refine-button">Refine
                         Response
                       </button>
                     </UTooltip>
@@ -572,7 +352,7 @@ export default {
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left container-row">
                   <div>
                     <UTooltip text="Please verify before Refinement!">
-                      <button @click="openRefinement(scenario.simulationID, index)" class="refine-button">Refine
+                      <button @click="toRefinement(scenario.simulationID, index)" class="refine-button">Refine
                         Response
                       </button>
                     </UTooltip>
@@ -595,54 +375,15 @@ export default {
 
     </UContainer>
 
-    <!--Mainframe-->
-    <div>
-      <!--Tools-->
-      <div>
-
-      </div>
-
-      <!--Scenario List-->
-
-    </div>
   </div>
 
   <div class="mt-2">
-    <UButton @click="complete">Complete</UButton>
+    <UButton @click="toScenariosOverview()">Complete</UButton>
   </div>
 </template>
 
 
 <style scoped>
-
-.headline-frame {
-  background-color: #eaf6ff;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-top: -25px;
-}
-
-.headline {
-  color: #333;
-}
-
-.main-frame {
-  background-color: #d3d3d3;
-  justify-content: center;
-  align-items: center;
-  display: block;
-  height: 90vh;
-  width: 100%;
-  margin-top: -22px;
-}
-
-.tool-frame {
-  height: 15%;
-  width: 100%;
-}
 
 .file-download-button {
   background-color: #aacbe9;
@@ -653,7 +394,7 @@ export default {
   text-decoration: none;
   display: inline-block;
   font-size: 10px;
-  margin: 0px 5px 5px;
+  margin: 0 5px 5px;
   cursor: pointer;
   border-radius: 4px;
 }
@@ -662,110 +403,17 @@ export default {
   background-color: #9bb8d3;
 }
 
-.downloadScenarios:hover {
-  background-color: #9bb8d3;
-}
-
-.downloadScenarios {
-  background-color: #aacbe9;
-}
-
-.all-file-download-button {
-  background-color: #aacbe9;
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 20px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.all-file-download-button:hover {
-  background-color: #9bb8d3;
-}
-
-.category-frame-0 {
-  background-color: #cfcfcf;
-  display: inline-block;
-  border: 2px solid #888888;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
-.category-frame-1 {
-  background-color: #9a8fff;
-  display: inline-block;
-  border: 2px solid #6c5cff;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
-.category-frame-2 {
-  background-color: #98df9e;
-  display: inline-block;
-  border: 2px solid #1caf28;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
-}
-
 .customCategory {
   border-radius: 40px !important;
-}
-
-.category-frame-3 {
-  background-color: #f0d98f;
-  display: inline-block;
-  border: 2px solid #ac9a61;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 32px;
 }
 
 .sel-line {
   margin: 0.8vw;
 }
 
-.new-button {
-  background-color: rgb(114, 214, 101);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 20px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.new-button:hover {
-  background-color: rgb(73, 167, 61);
-}
-
 body {
   font-family: 'Arial', sans-serif;
   background-color: #f4f4f4;
-}
-
-.list-container {
-  width: 95%;
-  background-color: #fff;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  height: 80%;
-  margin-left: 2.5vw
 }
 
 .list-item {
@@ -777,11 +425,6 @@ body {
 
 .list-item:hover {
   background-color: #f0f0f0;
-}
-
-.list-content {
-  max-height: 100%;
-  overflow-y: scroll;
 }
 
 .remove-button {
@@ -798,25 +441,6 @@ body {
 }
 
 .remove-button:hover {
-  background-color: rgb(160, 40, 40);
-}
-
-.remove-button-2 {
-  background-color: rgb(219, 65, 65);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin-top: -10px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.remove-button-2:hover {
   background-color: rgb(160, 40, 40);
 }
 

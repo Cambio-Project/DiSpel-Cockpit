@@ -1,5 +1,4 @@
 import {Scenario} from "~/server/models/scenario.model";
-import * as crypto from "crypto";
 
 export default defineEventHandler(async (event) => {
 
@@ -10,8 +9,6 @@ export default defineEventHandler(async (event) => {
     } catch (e) {
         console.log("Error finding scenarios")
     }
-
-    console.log(scenarios)
 
     return {
         scenarios: scenarios

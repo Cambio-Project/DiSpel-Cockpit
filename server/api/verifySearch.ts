@@ -1,8 +1,7 @@
-import {MeasurementPoint} from "~/models/measurement-point";
-import {Predicate} from "~/models/predicate";
 import {ResponseSpecification} from "~/models/response-specification";
 import fs from "fs";
 import {pushSearchResult} from "~/server/utils/pushSearchResult";
+import {getMeasurementPointsFromPredicates, sendVerificationRequest} from "~/server/utils/verifyUtils";
 
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
@@ -57,28 +56,3 @@ export default defineEventHandler(async (event) => {
         results: allVerificationResults,
     }
 })
-
-const getMeasurementPointsFromPredicates = (predicates: Predicate[]) => {
-    return predicates.map(predicate => {
-        const measurementPoint: MeasurementPoint = {
-            measurement_column: predicate.measurement_source,
-            measurement_name: predicate.measurement_source,
-        };
-        return measurementPoint;
-    });
-}
-
-const sendVerificationRequest = async (responseSepcification: ResponseSpecification, TBVERIFIER_URL: string) => {
-    const formdata = new FormData();
-    formdata.append("formula_json", JSON.stringify(responseSepcification));
-    const requestOptions: RequestInit = {
-        method: 'POST',
-        body: formdata,
-        redirect: 'follow',
-    };
-    const response = await fetch(TBVERIFIER_URL, requestOptions);
-
-    // Result
-    const verificationResult = await response.json();
-    return verificationResult.result === 'True';
-}

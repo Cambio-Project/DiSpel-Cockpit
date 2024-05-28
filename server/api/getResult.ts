@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
 
-    var body = await readBody(event)
+    let body = await readBody(event);
     body = JSON.parse(body)
 
     if (typeof body.simulationID === "undefined") {

@@ -1,8 +1,5 @@
-import crypto from "crypto";
-import {Event} from "~/server/models/event.model";
-
 export default defineEventHandler(async (event) => {
-    var body = await readBody(event)
+    let body = await readBody(event);
     body = JSON.parse(body)
 
     if (typeof body.simulationID === "undefined" || body.fieldName === "undefined" || body.fieldValue === "undefined") {

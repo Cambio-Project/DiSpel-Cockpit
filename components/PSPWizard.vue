@@ -1,4 +1,5 @@
 <script>
+
 export default {
   data() {
     return {
@@ -73,15 +74,7 @@ export default {
         timeUnit: "time units",
         interval: ["Interval"]
       },
-      events: [/**{
-       eventName: "Test(Test)",
-       predicate: {
-       predicate_name: "A",
-       predicate_logic: "biggerEqual",
-       predicate_comparison_value: "100",
-       measurement_source: "resp_time_high"
-       }
-       } **/],
+      events: [],
       simID: this.$route.query.simID,
       type: this.$route.query.type,
       customCommandName: "",
@@ -213,16 +206,16 @@ export default {
     });
 
     onMounted(async () => {
-      const response = await fetch("/api/allEvents");
-      state.events = await response.json();
+      state.events = await allEvents();
     });
     onMounted(async () => {
-      const response = await fetch("/api/allCommands");
-      state.commands = await response.json();
+      state.commands = await allCommands();
     });
     onMounted(async () => {
-      const response = await fetch("/api/allListeners");
-      state.listeners = await response.json();
+      state.listeners = await allListeners()
+    });
+    onMounted(async () => {
+      preparePopups();
     });
 
     return {
@@ -230,16 +223,11 @@ export default {
     };
   },
   methods: {
+    toScenarioEditor,
     async initFields() {
-      const res = await fetch("/api/getScenarios", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID
-        })
-      })
-      const body = await res.json()
-      if (typeof body.Scenario.specification.measurementSources !== "undefined") {
-        this.measurementSourceOptions = body.Scenario.specification.measurementSources
+      const scenario = await getScenario(this.simID)
+      if (typeof scenario.specification.measurementSources !== "undefined") {
+        this.measurementSourceOptions = scenario.specification.measurementSources
       }
     },
     /**
@@ -248,23 +236,22 @@ export default {
      * @param {string} selectedScope - The selected scope type.
      * @param {string} selectedScopeEventQ - The selected Q event for the scope.
      * @param {string} selectedScopeEventR - The selected R event for the scope.
-     * @param {Object[]} events - An array of available events.
      *
      * @return {Object} - The created scope object.
      */
-    createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events) {
+    createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR) {
       const scope = {
         type: selectedScope
       };
 
       // include q_event if it exists
       if (selectedScopeEventQ && selectedScopeEventQ.trim() !== "") {
-        scope.q_event = this.createEvent(selectedScopeEventQ, events);
+        scope.q_event = this.createEvent(selectedScopeEventQ);
       }
 
       // include r_event if it exists
       if (selectedScopeEventR && selectedScopeEventR.trim() !== "") {
-        scope.r_event = this.createEvent(selectedScopeEventR, events);
+        scope.r_event = this.createEvent(selectedScopeEventR);
       }
 
       return scope;
@@ -289,15 +276,15 @@ export default {
     },
 
 // creates the pattern part of the payload
-    createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
+    createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit) {
       const pattern = {
         type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
-        p_event: this.createEvent(selectedEventP, events)
+        p_event: this.createEvent(selectedEventP)
       };
 
       // include s_event if exists
       if (selectedEventS && selectedEventS.trim() !== "") {
-        pattern.s_event = this.createEvent(selectedEventS, events)
+        pattern.s_event = this.createEvent(selectedEventS)
       }
 
       // include chained_events if one exists
@@ -306,14 +293,12 @@ export default {
 
           let ch_event = {
             // event is required
-            event: this.createEvent(chainedEvent.event.name, events),
-            //constrain_event: createEvent(chainedEvent.constrain_event.name, events),
-            //time_bound: time_bound(chainedEvent)
+            event: this.createEvent(chainedEvent.event.name),
           };
 
           // constrain_event is optional
           if (chainedEvent.constrain_event && chainedEvent.constrain_event.name !== "Constraint") {
-            ch_event.constrain_event = this.createEvent(chainedEvent.constrain_event.name, events)
+            ch_event.constrain_event = this.createEvent(chainedEvent.constrain_event.name)
           }
 
           // time_bound is optional
@@ -390,7 +375,7 @@ export default {
         }
 
         if (selectedConstraintEvent && selectedConstraintEvent !== "Constraint") {
-          pattern.pattern_constrains.constrain_event = this.createEvent(selectedConstraintEvent, events)
+          pattern.pattern_constrains.constrain_event = this.createEvent(selectedConstraintEvent)
         }
       }
 
@@ -398,10 +383,10 @@ export default {
     },
 
 // creates the payload
-    createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events) {
+    createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit) {
       return {
-        scope: this.createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, events),
-        pattern: this.createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, events),
+        scope: this.createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR),
+        pattern: this.createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit),
         target_logic: selectedTargetLogic
       };
     },
@@ -410,7 +395,6 @@ export default {
      * Creates an event object with the given name from an array of events.
      *
      * @param {string} name - The name of the event to create.
-     * @param {Array} events - An array of events.
      *
      * @return {Object} - An event object with the specified name and associated specification.
      *                   The event object has the following properties:
@@ -418,7 +402,7 @@ export default {
      *                   - specification: An object containing the specifications of the event,
      *                     including the predicate name, logic, comparison value, and measurement source.
      */
-    createEvent(name, events) {
+    createEvent(name) {
       if (this.type === "response") {
         const event = this.state.events.find(event => event.event_name === name);
         return {
@@ -497,16 +481,7 @@ export default {
       this.checkedTime = false
     },
     async addValue(field, newValue) {
-      const res = await fetch("/api/pushScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: field,
-          fieldValue: newValue
-        })
-      })
-      const body = await res.json()
-      console.log(body)
+      await pushScenarioField(this.simID, field, newValue)
     },
     handleOccurrenceChange() {
       // Reset selected event when occurrence changes
@@ -528,87 +503,110 @@ export default {
       }
     },
     async addCustomEvent() {
+      let trimmedName = this.customPredicateName.trim()
       // Add the custom event to the list if it is not empty
-      if (this.customPredicateName.trim() !== "") {
-        /**
-         this.events.push({
-         eventName: this.customPredicateName + "(" + this.customMeasurementSource + ")",
-         predicate: {
-         predicate_name: this.customPredicateName,
-         predicate_logic: this.customPredicateLogic,
-         predicate_comparison_value: this.customPredicateComparisonValue,
-         measurement_source: this.customMeasurementSource
-         }
-         });
-         **/
+      if (trimmedName !== "") {
+        if (this.eventNameExists(trimmedName)) {
+          await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+          return
+        }
 
-            // write the event to the mongodb database
+        // write the event to the mongodb database
         const body = {
-              event_name: this.customPredicateName + "(" + this.customMeasurementSource + ")",
-              predicate_name: this.customPredicateName,
-              predicate_logic: this.customPredicateLogic,
-              predicate_comparison_value: this.customPredicateComparisonValue,
-              measurement_source: this.customMeasurementSource,
-            }
-        const res = await fetch("/api/saveEvent", {
-          method: "POST",
-          body: JSON.stringify(body)
-        })
+          event_name: this.customPredicateName + "(" + this.customMeasurementSource + ")",
+          predicate_name: this.customPredicateName,
+          predicate_logic: this.customPredicateLogic,
+          predicate_comparison_value: this.customPredicateComparisonValue,
+          measurement_source: this.customMeasurementSource,
+        }
+        await saveEvent(body)
 
         // also add this event to the local event array
-        const response = await fetch("/api/allEvents");
-        this.state.events = await response.json();
+        this.state.events = await allEvents();
 
         // clear the input fields after adding the custom event
         this.customPredicateName = "";
         this.customPredicateLogic = "";
         this.customPredicateComparisonValue = "";
         this.customMeasurementSource = "";
+
+        await successMessage("Added Event", "The event " + body.customPredicateName + " has been added successfully")
       }
     },
     async addCustomCommand() {
+      let trimmedName = this.customCommandName.trim()
       // Add the custom command to the list if it is not empty
-      if (this.customCommandName.trim() !== "") {
+      if (trimmedName !== "") {
+        if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
+          await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+          return
+        }
 
         // write the event to the mongodb database
         const body = {
           command_name: this.customCommandName,
           command_content: this.customCommandContent,
         }
-        const res = await fetch("/api/saveCommand", {
-          method: "POST",
-          body: JSON.stringify(body)
-        })
+        await saveCommand(body);
 
         // also add this event to the local event array
-        const response = await fetch("/api/allCommands");
-        this.state.commands = await response.json();
+        this.state.commands = await allCommands();
 
         // clear the input fields after adding the custom event
         this.customCommandName = "";
         this.customCommandContent = "";
+
+        await successMessage("Added Command", "The command " + body.command_name + " has been added successfully")
       }
+    },
+    listenerNameExists(name) {
+      for (let listener of this.state.listeners) {
+        if (listener.listener_name.trim() === name) {
+          return true
+        }
+      }
+      return false
+    },
+    commandNameExists(name) {
+      for (let command of this.state.commands) {
+        if (command.command_name.trim() === name) {
+          return true
+        }
+      }
+      return false
+    },
+    eventNameExists(name) {
+      for (let event of this.state.events) {
+        if (event.predicate_name.trim() === name) {
+          return true
+        }
+      }
+      return false
     },
     async addCustomListener() {
       // Add the custom event to the list if it is not empty
-      if (this.customListenerName.trim() !== "") {
+      let trimmedName = this.customListenerName.trim()
+      if (trimmedName !== "") {
+        if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
+          await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+          return
+        }
+
         // write the event to the mongodb database
         const body = {
           listener_name: this.customListenerName,
           listener_content: this.customListenerContent,
         }
-        const res = await fetch("/api/saveListener", {
-          method: "POST",
-          body: JSON.stringify(body)
-        })
+        await saveListener(body)
 
         // also add this event to the local event array
-        const response = await fetch("/api/allListeners");
-        this.state.listeners = await response.json();
+        this.state.listeners = await allListeners();
 
         // clear the input fields after adding the custom event
         this.customListenerName = "";
         this.customListenerContent = "";
+
+        await successMessage("Added Listener", "The listener " + body.listener_name + " has been added successfully")
       }
     },
     handleComparisonInputChange() {
@@ -622,26 +620,6 @@ export default {
       setTimeout(this.setEventChangeFields, 200)
     },
     async setEventChangeFields() {
-      /*
-      // get the event id from the mongodb database
-      const body = {
-        event_name: this.customPredicateName + "(" + this.customMeasurementSource + ")",
-        predicate_name: this.customPredicateName,
-        predicate_logic: this.customPredicateLogic,
-        predicate_comparison_value: this.customPredicateComparisonValue,
-        measurement_source: this.customMeasurementSource,
-      }
-
-      const response = await fetch("/api/getEventByProperties", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
-
-      console.log(response);
-
-      this.changedEventId = await response.json();
-       */
-
       this.changedEventId = this.eventToChange._id;
 
       this.changedPredicateName = this.eventToChange.predicate_name
@@ -677,6 +655,12 @@ export default {
       this.handleInputChange()
     },
     async changeEvent() {
+      let trimmedName = this.changedPredicateName.trim()
+      if (this.eventNameExists(trimmedName)) {
+        await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        return
+      }
+
       // write the event to the mongodb database
       const body = {
         _id: this.eventToChange._id,
@@ -686,76 +670,72 @@ export default {
         predicate_comparison_value: this.changedPredicateComparisonValue,
         measurement_source: this.changedMeasurementSource,
       }
-      const res = await fetch("/api/changeEvent", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await changeEvent(body);
 
       // also add this event to the local event array
-      const response = await fetch("/api/allEvents");
-      this.state.events = await response.json();
+      this.state.events = await allEvents();
 
       // clear the input fields after adding the custom event
       this.changedPredicateName = "";
       this.changedPredicateLogic = "";
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
+      await successMessage("Changed Event", "The event " + body.customPredicateName + " has been changed successfully")
     },
     async changeCommand() {
+      let trimmedName = this.changedCommandName.trim()
+      if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
+        await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        return
+      }
+
       // write the command to the mongodb database
       const body = {
         _id: this.commandToChange._id,
         command_name: this.changedCommandName,
         command_content: this.changedCommandContent,
       }
-      const res = await fetch("/api/changeCommand", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await changeCommand(body)
 
       // also add this command to the local command array
-      const response = await fetch("/api/allCommands");
-      this.state.commands = await response.json();
+      this.state.commands = await allCommands();
 
       // clear the input fields after adding the custom command
       this.changedCommandName = "";
       this.changedCommandContent = "";
+
+      await successMessage("Changed Command", "The command " + body.command_name + " has been changed successfully")
     },
     async changeListener() {
+      let trimmedName = this.changedListenerName.trim()
+      if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
+        await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        return
+      }
+
       // write the listener to the mongodb database
       const body = {
         _id: this.listenerToChange._id,
         listener_name: this.changedListenerName,
         listener_content: this.changedListenerContent,
       }
-      const res = await fetch("/api/changeListener", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await changeListener(body);
 
       // also add this listener to the local listener array
-      const response = await fetch("/api/allListeners");
-      this.state.listeners = await response.json();
+      this.state.listeners = await allListeners()
 
-      // clear the input fields after adding the custom listtener
+      // clear the input fields after adding the custom listener
       this.changedListenerName = "";
       this.changedListenerContent = "";
+
+      await successMessage("Changed Listener", "The listener " + body.listener_name + " has been changed successfully")
     },
     async deleteEvent() {
       // delete the event from the mongodb database
-      const body = {
-        _id: this.eventToChange._id
-      }
-
-      // send a POST request to delete the event
-      const deleteResponse = await fetch("/api/deleteEvent", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await deleteEvent(this.eventToChange._id)
 
       // also add this event to the local event array
-      const response = await fetch("/api/allEvents");
-      this.state.events = await response.json();
+      this.state.events = await allEvents()
 
       // clear the input fields after adding the custom event
       this.changedPredicateName = "";
@@ -765,19 +745,10 @@ export default {
     },
     async deleteCommand() {
       // delete the command from the mongodb database
-      const body = {
-        _id: this.commandToChange._id
-      }
-
-      // send a POST request to delete the command
-      const deleteResponse = await fetch("/api/deleteCommand", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await deleteCommand(this.commandToChange._id)
 
       // also add this event to the local command array
-      const response = await fetch("/api/allCommands");
-      this.state.commands = await response.json();
+      this.state.commands = await allCommands();
 
       // clear the input fields after adding the custom command
       this.changedCommandName = "";
@@ -785,19 +756,10 @@ export default {
     },
     async deleteListener() {
       // delete the listener from the mongodb database
-      const body = {
-        _id: this.listenerToChange._id
-      }
-
-      // send a POST request to delete the event
-      const deleteResponse = await fetch("/api/deleteListener", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await deleteListener(this.listenerToChange._id)
 
       // also add this listener to the local listener array
-      const response = await fetch("/api/allListeners");
-      this.state.listeners = await response.json();
+      this.state.listeners = await allListeners();
 
       // clear the input fields after adding the custom event
       this.changedListenerName = "";
@@ -806,24 +768,10 @@ export default {
     async deleteMeasurementSource() {
       const deleteIndex = this.measurementSourceOptions.indexOf(this.deleteMarkedMeasurementSource)
       // delete mongodb database
-      const body = {
-        simulationID: this.simID,
-        fieldName: "specification.measurementSources",
-        fieldIndex: deleteIndex
-      }
-
-      // send a POST request to delete the event
-      const deleteResponse = await fetch("/api/deleteScenarioField", {
-        method: "POST",
-        body: JSON.stringify(body)
-      })
+      await deleteScenarioField(this.simID, "specification.measurementSources", deleteIndex);
 
       // also delete from the local array
       this.measurementSourceOptions.splice(deleteIndex, 1)
-    },
-    addProbability() {
-      // Add the custom probabilitity
-      this.pspSpecification.probability.push()
     },
     handleProbabilityChange() {
       // Reset probabilityBound and probability when unchecked
@@ -857,12 +805,7 @@ export default {
     },
     async sendTransformRequest(payload) {
       try {
-        // Perform the HTTP request with the input data
-        const response = await useFetch("/api/getPSPMapping", {
-          method: "POST",
-          body: payload
-        })
-
+        const response = await getPSPMapping(payload);
         const responsePayload = await response.data.value.result
 
         // if mapping is returned, display it, else display the error message
@@ -874,25 +817,14 @@ export default {
 
         this.forceRerender()
 
-        // Debug
-        console.log(responsePayload)
-        console.log(this.pspSpecification.mapping);
-        console.log('Transformation successful!');
-
       } catch (error) {
         // Handle any errors that occur during the HTTP request
         console.error('Error transforming to temporal logic:', error);
       }
     },
     async transformToTemporalLogic() {
-
-      const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
-
-      console.log(payload)
-      console.log(this.pspSpecification.selectedChainedEvents)
-
+      const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
       await this.sendTransformRequest(JSON.stringify(payload))
-
       this.forceRerender()
     },
     handleInputChange() {
@@ -914,16 +846,11 @@ export default {
     },
     addChainedEvent() {
       this.pspSpecification.selectedChainedEvents.push({
-        event: {
-          //name: "",
-          //specification: ""
-        },
+        event: {},
         constrain_event: {
           name: "Constraint"
-          //specification: ""
         },
         time_bound: {
-          //time_unit: "",
           type: "none",
           time_unit: "time units"
         }
@@ -955,8 +882,6 @@ export default {
           const jsonData = JSON.parse(fileReader.result);
           this.jsonData = JSON.stringify(jsonData, null, 2);
 
-          console.log(jsonData);
-
           // reset all fields
           this.resetAllFields()
 
@@ -971,10 +896,7 @@ export default {
               predicate_comparison_value: jsonData.scope.q_event.specification.predicateComparisonValue,
               measurement_source: jsonData.scope.q_event.specification.measurementSource,
             }
-            const res = await fetch("/api/saveEvent", {
-              method: "POST",
-              body: JSON.stringify(body)
-            })
+            await saveEvent(body);
             this.pspSpecification.selectedScopeEventQ = jsonData.scope.q_event.name
           }
           if (jsonData.scope.r_event && jsonData.scope.r_event.name) {
@@ -986,10 +908,7 @@ export default {
               predicate_comparison_value: jsonData.scope.r_event.specification.predicateComparisonValue,
               measurement_source: jsonData.scope.r_event.specification.measurementSource
             }
-            const res = await fetch("/api/saveEvent", {
-              method: "POST",
-              body: JSON.stringify(body)
-            })
+            await saveEvent(body);
             this.pspSpecification.selectedScopeEventR = jsonData.scope.r_event.name
           }
           // pattern type
@@ -1010,10 +929,7 @@ export default {
               predicate_comparison_value: jsonData.pattern.p_event.specification.predicateComparisonValue,
               measurement_source: jsonData.pattern.p_event.specification.measurementSource
             }
-            const res = await fetch("/api/saveEvent", {
-              method: "POST",
-              body: JSON.stringify(body)
-            })
+            await saveEvent(body);
             this.pspSpecification.selectedEventP = jsonData.pattern.p_event.name
           }
           if (jsonData.pattern.s_event && jsonData.pattern.s_event.name) {
@@ -1025,10 +941,7 @@ export default {
               predicate_comparison_value: jsonData.pattern.s_event.specification.predicateComparisonValue,
               measurement_source: jsonData.pattern.s_event.specification.measurementSource
             }
-            const res = await fetch("/api/saveEvent", {
-              method: "POST",
-              body: JSON.stringify(body)
-            })
+            await saveEvent(body);
             this.pspSpecification.selectedEventS = jsonData.pattern.s_event.name
           }
           // pattern specifications
@@ -1068,10 +981,7 @@ export default {
                 predicate_comparison_value: jsonData.pattern.pattern_constrains.constrain_event.specification.predicateComparisonValue,
                 measurement_source: jsonData.pattern.pattern_constrains.constrain_event.specification.measurementSource
               }
-              const res = await fetch("/api/saveEvent", {
-                method: "POST",
-                body: JSON.stringify(body)
-              })
+              await saveEvent(body);
               this.pspSpecification.selectedConstraintEvent = jsonData.pattern.pattern_constrains.constrain_event.name
             }
           }
@@ -1091,10 +1001,7 @@ export default {
                 predicate_comparison_value: chEventJson.event.specification.predicateComparisonValue,
                 measurement_source: chEventJson.event.specification.measurementSource
               }
-              const res = await fetch("/api/saveEvent", {
-                method: "POST",
-                body: JSON.stringify(body)
-              })
+              await saveEvent(body);
               chainedEvent.event = {
                 name: chEventJson.event && chEventJson.event.name || "",
                 specification: chEventJson.event && chEventJson.event.specification || ""
@@ -1109,10 +1016,7 @@ export default {
                   predicate_comparison_value: chEventJson.constrain_event.specification.predicateComparisonValue,
                   measurement_source: chEventJson.constrain_event.specification.measurementSource
                 }
-                const res = await fetch("/api/saveEvent", {
-                  method: "POST",
-                  body: JSON.stringify(body)
-                })
+                await saveEvent(body);
                 chainedEvent.constrain_event = {
                   name: chEventJson.constrain_event && chEventJson.constrain_event.name || "",
                   specification: chEventJson.constrain_event && chEventJson.constrain_event.specification || ""
@@ -1141,8 +1045,7 @@ export default {
           this.pspSpecification.selectedTargetLogic = jsonData.target_logic
 
           // also add these events to the local event array
-          const response = await fetch("/api/allEvents");
-          this.state.events = await response.json();
+          this.state.events = await allEvents();
 
           await this.transformToTemporalLogic()
 
@@ -1176,14 +1079,10 @@ export default {
 
       // add all mappings to the commit
       for (index in this.targetLogicOptions) {
-        var payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
+        const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
 
         // Perform the HTTP request with the input data
-        const response = await useFetch("/api/getPSPMapping", {
-          method: "POST",
-          body: payload
-        })
-
+        const response = await getPSPMapping(payload);
         const responsePayload = await response.data.value.result
 
         // if mapping is returned, display it, else display the error message
@@ -1217,11 +1116,8 @@ export default {
       }
 
       // add predicates to commit
-      var pl = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.state.events);
-      const response = await useFetch("/api/getPSPMapping", {
-        method: "POST",
-        body: pl
-      })
+      const pl = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
+      const response = await getPSPMapping(pl)
       const responsePayload = await response.data.value.result
       let eventArray = [];
       this.state.events.forEach(event => {
@@ -1236,7 +1132,7 @@ export default {
       });
       responseObject.predicates_info = eventArray;
 
-      var type
+      let type;
       switch (this.type) {
         case 'response':
           type = "responses"
@@ -1247,24 +1143,9 @@ export default {
         default:
           console.log("Unknown type: " + this.type)
       }
+      await pushScenarioField(this.simID, type, responseObject)
 
-      const res = await fetch("/api/pushScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: type,
-          fieldValue: responseObject
-        })
-      })
-
-      const body = await res.json()
-      console.log("Success: " + body.success);
-      console.log("Message: " + body.message);
-
-      this.$router.push('/scenarioeditorSite?simID=' + this.simID);
-    },
-    async cancel() {
-      this.$router.push('/scenarioeditorSite?simID=' + this.simID);
+      toScenarioEditor(this.simID, this.$router)
     },
     forceRerender() {
       this.componentKey += 1;
@@ -1280,7 +1161,6 @@ export default {
   <div class="mb-4 mt-2">
     <h1 class="text-3xl"> PSPWizard </h1>
   </div>
-
 
   <div class="page-container">
     <div class="file-upload-container">
@@ -2678,7 +2558,7 @@ export default {
   </div>
   <div class="page-container">
     <div class="selection-container">
-      <UButton @click="cancel" color="red" size="xl"
+      <UButton @click="toScenarioEditor(this.simID)" color="red" size="xl"
                class="cancel-button">Cancel
       </UButton>
       <span :class="{ 'grayed-out': !this.pspSpecification.mapping }">
@@ -2845,10 +2725,6 @@ export default {
 
 .message-container p {
   font-weight: bold;
-}
-
-.expand-icon {
-  cursor: pointer;
 }
 
 .button {

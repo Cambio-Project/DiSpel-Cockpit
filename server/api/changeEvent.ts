@@ -12,10 +12,10 @@ export default defineEventHandler(async (event) => {
         delete requestBody._id;
 
         // update the event
-        const updatedEvent = await Event.updateOne({ _id: eventId }, requestBody);
+        await Event.updateOne({_id: eventId}, requestBody);
 
     } catch (e) {
         console.log("Error updating event:", e);
-        return { "done": false };
+        return {"done": false};
     }
 });

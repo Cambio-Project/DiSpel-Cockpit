@@ -1,34 +1,22 @@
 import {Scenario} from "~/server/models/scenario.model";
+
 export default defineEventHandler(async (event) => {
     // Read the request body
-    var body = await readBody(event)
+    let body = await readBody(event);
     body = JSON.parse(body)
 
-    if (typeof body.ID === "undefined") {
+    if (typeof body.simulationID === "undefined") {
         return {
             "success": false,
-             "message": "ID not defined"
-         }
-     }
+            "message": "simulationID not defined"
+        }
+    }
 
-    const ID = body.ID
+    const simulationID = body.simulationID
 
     try {
-        // const scenario = await Scenario.findOne({ _id: ID });
-
-        // if (!scenario) {
-        //     return {
-        //         success: false,
-        //         message: "Scenario not found",
-        //     };
-        // }
-
-        // delete the value from the array
-        // @ts-ignore
-        await Scenario.deleteOne({ _id: ID });
-
-        //await scenario.save();
-
+        await Scenario.deleteOne({simulationID: simulationID});
+        await Result.deleteOne({simulationID: simulationID});
     } catch (e) {
         console.log(e)
         return {

@@ -8,6 +8,11 @@ export default {
       return domain
     }
   },
+  setup() {
+    onMounted(async () => {
+      preparePopups();
+    });
+  },
   data() {
     return {
       categories: ["None", "UseCase", "Growth", "Exploratory"],
@@ -25,7 +30,7 @@ export default {
       environmentMonitoringData: null,
       responses: null,
       searchWindowSize: null,
-
+      scenario: null,
       importErrorMessage: null,
       componentKey: 0,
     }
@@ -33,53 +38,39 @@ export default {
   methods: {
     // get fields from DB object with simulationID
     async initFields() {
-      const res = await fetch("/api/getScenarios", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID
-        })
-      })
-      const body = await res.json()
-      console.log(this.simID)
-      console.log(body.Scenario)
+      this.scenario = await getScenario(this.simID);
+      const scenario = this.scenario
 
-      if (typeof body.Scenario.name !== "undefined") {
-        this.name = body.Scenario.name
+      if (typeof scenario.name !== "undefined") {
+        this.name = scenario.name
       }
-      if (typeof body.Scenario.category !== "undefined") {
-        this.category = body.Scenario.category
+      if (typeof scenario.category !== "undefined") {
+        this.category = scenario.category
       }
-      if (typeof body.Scenario.description !== "undefined") {
-        this.description = body.Scenario.description
+      if (typeof scenario.description !== "undefined") {
+        this.description = scenario.description
       }
-      if (typeof body.Scenario.stimuli !== "undefined") {
-        this.stimuli = body.Scenario.stimuli
+      if (typeof scenario.stimuli !== "undefined") {
+        this.stimuli = scenario.stimuli
       }
-      if (typeof body.Scenario.environment.architecture !== "undefined") {
-        this.environmentArchitecture = body.Scenario.environment.architecture
+      if (typeof scenario.environment.architecture !== "undefined") {
+        this.environmentArchitecture = scenario.environment.architecture
       }
-      if (typeof body.Scenario.environment.experiment !== "undefined") {
-        this.environmentExperiment = body.Scenario.environment.experiment
+      if (typeof scenario.environment.experiment !== "undefined") {
+        this.environmentExperiment = scenario.environment.experiment
       }
-      if (typeof body.Scenario.environment.load !== "undefined") {
-        this.environmentLoad = body.Scenario.environment.load
+      if (typeof scenario.environment.load !== "undefined") {
+        this.environmentLoad = scenario.environment.load
       }
-      if (typeof body.Scenario.environment.monitoringData !== "undefined") {
-        this.environmentMonitoringData = body.Scenario.environment.monitoringData
+      if (typeof scenario.environment.monitoringData !== "undefined") {
+        this.environmentMonitoringData = scenario.environment.monitoringData
       }
-      if (typeof body.Scenario.searchWindowSize !== "undefined") {
-        this.searchWindowSize = body.Scenario.searchWindowSize
+      if (typeof scenario.searchWindowSize !== "undefined") {
+        this.searchWindowSize = scenario.searchWindowSize
       }
-      if (typeof body.Scenario.responses !== "undefined") {
-        this.responses = body.Scenario.responses
+      if (typeof scenario.responses !== "undefined") {
+        this.responses = scenario.responses
       }
-    },
-    // create response with pspwizard
-    openPSPResponse() {
-      this.$router.push('/pspwizardSite?simID=' + this.simID + '&type=response');
-    },
-    openPSPStimulus() {
-      this.$router.push('/pspwizardSite?simID=' + this.simID + '&type=stimulus');
     },
     // remove stimulus
     removeStimulus(index) {
@@ -104,34 +95,14 @@ export default {
     // remove response
     removeResponse(index) {
       this.deleteField("responses", index)
+      this.deleteResultField(index)
     },
     async deleteField(fieldName, index) {
-      const res = await fetch("/api/deleteScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: fieldName,
-          fieldIndex: index
-        })
-      })
-      const body = await res.json()
-      console.log(body)
-      await this.initFields()
+      await deleteScenarioField(this.simID, fieldName, index);
+      await this.initFields();
     },
-    // add scenario with metadata and stimuli and responses
-    async complete() {
-      this.$router.push('/scenariosSite');
-    },
-    //Changes all target logics to the same one
-    changeAllTargets() {
-      this.responses.forEach(response => {
-        response.target_logic = this.target;
-      })
-    },
-    uploadStimuli(type) {
-      const fileInput = this.$refs.fileInputStimulus;
-      this.stimuli = []
-      this.upload(type, fileInput)
+    async deleteResultField(index) {
+      await deleteResultEntry(this.simID, index);
     },
     uploadArchitecture(type) {
       const fileInput = this.$refs.fileInputEnvironmentArchitecture;
@@ -155,8 +126,6 @@ export default {
     },
     async upload(type, fileInput) {
       this.loadedFiles = []
-      console.log("HERE")
-      console.log(fileInput)
       for (const file of fileInput.files) {
         const filename = file.name
         if (filename.split(".").pop() === "json") {
@@ -168,12 +137,7 @@ export default {
           await this.addValue(type, tmp)
 
         } else {
-          const formdata = new FormData()
-          formdata.append(filename, file)
-          await fetch("/api/uploadAdditionalEnvironmentFile", {
-            method: "POST",
-            body: formdata
-          })
+          await uploadAdditionalEnvironmentFile(filename, file);
           const tmp = {
             [filename]: "external"
           }
@@ -182,7 +146,6 @@ export default {
         this.loadedFiles.push(filename)
       }
       await this.initFields()
-      location.reload();
     },
     //imports a scenario
     async handleFileChange() {
@@ -200,8 +163,6 @@ export default {
         try {
           const jsonData = JSON.parse(fileReader.result);
           this.jsonData = JSON.stringify(jsonData, null, 2);
-
-          console.log(jsonData);
 
           // check if at least one field for a scenario is available
           if (jsonData.name == null && jsonData.category == null && jsonData.description == null && jsonData.stimuli == null && jsonData.environment.architecture == null && jsonData.environment.experiment == null && jsonData.environment.load == null && jsonData.responses == null) {
@@ -293,14 +254,6 @@ export default {
           this.initFields()
 
           this.importErrorMessage = null
-
-          //TODO rerendering doesn't help
-          //setTimeout(this.forceRerender,1000)
-          //TODO reloading the page works, but isn't pretty
-          setTimeout(() => {
-            location.reload();
-          }, 500);
-
         } catch (error) {
           // mapping not valid
           this.importErrorMessage = "The imported scenario is not valid! Technical error message: \n " + error
@@ -326,32 +279,13 @@ export default {
       this.showTooltip = false
     },
     async addValue(field, newValue) {
-      const res = await fetch("/api/pushScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: field,
-          fieldValue: newValue
-        })
-      })
-      const body = await res.json()
-      console.log(body)
+      await pushScenarioField(this.simID, field, newValue)
     },
     async setValue(field, newValue) {
-      const res = await fetch("/api/setScenarioField", {
-        method: "POST",
-        body: JSON.stringify({
-          simulationID: this.simID,
-          fieldName: field,
-          fieldValue: newValue
-        })
-      })
-      const body = await res.json()
-      console.log(body)
+      await setScenarioField(this.simID, field, newValue);
     },
     forceRerender() {
       this.componentKey += 1;
-      console.log("Rerendering!")
     },
   },
   beforeMount() {
@@ -377,8 +311,10 @@ export default {
 </script>
 
 <script setup>
+
+import {changeAllTargets} from "~/composables/scenarioActions.js";
+
 const config = useRuntimeConfig()
-const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSimPort + "/simulate/upload"
 
 </script>
 
@@ -390,10 +326,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
   <!--Main Frame-->
   <div>
-    <!--       <div v-if="this.importErrorMessage">-->
-    <!--          <pre class="import-error-text">{{ this.importErrorMessage }}</pre>-->
-    <!--        </div>-->
-
     <h3 class="center">
 
       <input v-model="name" type="text" placeholder="Enter scenario name"
@@ -415,7 +347,7 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
     <div>
       {{ "Transform all Target Logics to " }}
-      <select class="select-box fw" @change="changeAllTargets" v-model="target">
+      <select class="select-box fw" @change="changeAllTargets([this.scenario], this.target)" v-model="target">
         <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
           {{ targetLogic }}
         </option>
@@ -425,43 +357,45 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
     <div class="message-container">
 
       <p>Stimuli:</p>
-      <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">
-        {{ index + 1 }}.
-        <select v-model="stimulus.target_logic" class="select-box">
-          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
-            {{ targetLogic }}
-          </option>
-        </select>
+      <ul>
+        <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">
+          {{ index + 1 }}.
+          <select v-model="stimulus.target_logic" class="select-box">
+            <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
+              {{ targetLogic }}
+            </option>
+          </select>
 
-        <span v-if="stimulus.target_logic===0">
+          <span v-if="stimulus.target_logic===0">
           {{ stimulus.SEL }}
         </span>
-        <span v-if="stimulus.target_logic===1">
+          <span v-if="stimulus.target_logic===1">
           {{ stimulus.LTL }}
         </span>
-        <span v-if="stimulus.target_logic===2">
+          <span v-if="stimulus.target_logic===2">
           {{ stimulus.MTL }}
         </span>
-        <span v-if="stimulus.target_logic===3">
+          <span v-if="stimulus.target_logic===3">
           {{ stimulus.Prism }}
         </span>
-        <span v-if="stimulus.target_logic===4">
+          <span v-if="stimulus.target_logic===4">
           {{ stimulus.Quantitative_Prism }}
         </span>
-        <span v-if="stimulus.target_logic===5">
+          <span v-if="stimulus.target_logic===5">
           {{ stimulus.TBV_untimed }}
         </span>
-        <span v-if="stimulus.target_logic===6">
+          <span v-if="stimulus.target_logic===6">
           {{ stimulus.TBV_timed }}
         </span>
 
-        <button class="remove-button" @click="removeStimulus(index)">Remove</button>
-        <br>
-        <i class="sel-line"> <strong>SEL:</strong> {{ stimulus.SEL }} </i> <br> <br>
+          <button class="remove-button" @click="removeStimulus(index)">Remove</button>
+          <br>
+          <i class="sel-line"> <strong>SEL:</strong> {{ stimulus.SEL }} </i> <br> <br>
 
-      </li>
+        </li>
+      </ul>
 
-      <UButton @click="openPSPStimulus">Add Stimulus</UButton>
+      <UButton @click="toPSPWizardStimulus(this.simID, this.$router)">Add Stimulus</UButton>
     </div>
 
     <div class="message-container">
@@ -529,50 +463,51 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
     <div class="message-container">
       <p class="mb-2">Responses:</p>
-      <li v-for="(response, index) in responses" :key="response" class="left">
-        {{ index + 1 }}.
-        <select v-model="response.target_logic" class="select-box">
-          <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
-            {{ targetLogic }}
-          </option>
-        </select>
+      <ul>
+        <li v-for="(response, index) in responses" :key="response" class="left">
+          {{ index + 1 }}.
+          <select v-model="response.target_logic" class="select-box">
+            <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
+              {{ targetLogic }}
+            </option>
+          </select>
 
-        <span v-if="response.target_logic===0">
+          <span v-if="response.target_logic===0">
           {{ response.SEL }}
         </span>
-        <span v-if="response.target_logic===1">
+          <span v-if="response.target_logic===1">
           {{ response.LTL }}
         </span>
-        <span v-if="response.target_logic===2">
+          <span v-if="response.target_logic===2">
           {{ response.MTL }}
         </span>
-        <span v-if="response.target_logic===3">
+          <span v-if="response.target_logic===3">
           {{ response.Prism }}
         </span>
-        <span v-if="response.target_logic===4">
+          <span v-if="response.target_logic===4">
           {{ response.Quantitative_Prism }}
         </span>
-        <span v-if="response.target_logic===5">
+          <span v-if="response.target_logic===5">
           {{ response.TBV_untimed }}
         </span>
-        <span v-if="response.target_logic===6">
+          <span v-if="response.target_logic===6">
           {{ response.TBV_timed }}
         </span>
 
-        <button class="remove-button" @click="removeResponse(index)">Remove</button>
-        <br>
-        <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i> <br> <br>
+          <button class="remove-button" @click="removeResponse(index)">Remove</button>
+          <br>
+          <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i> <br> <br>
 
-      </li>
-
-      <UButton @click="openPSPResponse">Add Response</UButton>
+        </li>
+      </ul>
+      <UButton @click="toPSPWizardResponse(this.simID, this.$router)">Add Response</UButton>
 
     </div>
 
     <div class="mt-2">
       <!-- TODO: add stimulus check again as soon as supported -->
       <div v-if="name !== null && responses != null">
-        <UButton @click="complete">Complete</UButton>
+        <UButton @click="toScenariosOverview(this.$router)">Complete</UButton>
       </div>
 
       <div v-else>
@@ -589,30 +524,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
 
 <style scoped>
-
-.headline-frame {
-  background-color: #eaf6ff;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-top: -25px;
-}
-
-.headline {
-  color: #333;
-}
-
-.box-frame {
-  background-color: #d3d3d3;
-  justify-content: center;
-  align-items: center;
-  display: block;
-  height: 87vh;
-  width: 100%;
-  margin-top: -22px;
-}
 
 .center {
   align-items: center;
@@ -635,58 +546,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
 .file-upload-label:hover {
   background-color: #9bb8d3;
-}
-
-.new-button {
-  background-color: rgb(114, 214, 101);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 4px;
-  margin-top: -1vh;
-}
-
-.new-button:hover {
-  background-color: rgb(73, 167, 61);
-}
-
-.not-ready-button {
-  background-color: rgb(114, 214, 101);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin-top: -1vh;
-  border-radius: 4px;
-  opacity: 70%
-}
-
-.not-ready-button:hover .info-text {
-  display: block;
-}
-
-.info {
-  transform: translateX(0vh);
-  color: #999;
-}
-
-.info-text {
-  position: absolute;
-  top: 20%;
-  right: 20%;
-  padding: 8px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  z-index: 1;
 }
 
 .remove-button {
@@ -749,12 +608,6 @@ const domain = "http://" + config.public.miSimDomain + ":" + config.public.miSim
 
 .sel-line {
   margin: 0.8vw;
-}
-
-.import-error-text {
-  font-size: 1.5vh;
-  color: red;
-  max-height: 0.5vh;
 }
 
 .custom-file-upload {
