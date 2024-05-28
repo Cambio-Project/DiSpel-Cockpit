@@ -58,7 +58,3 @@ await updateServiceState()
   </UContainer>
 
 </template>
-
-<style>
-
-</style>
