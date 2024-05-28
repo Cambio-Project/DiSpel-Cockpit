@@ -123,6 +123,7 @@ export default {
             Stimuli:
           </h4>
           <span>
+            <ul>
                 <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus" class="left">
                 {{ index + 1 }}.
                 <span v-if="stimulus.target_logic===0">
@@ -151,6 +152,7 @@ export default {
                 <i class="sel-line"> <strong>SEL:</strong> {{ stimulus.SEL }} </i>
                 </div>
             </li>
+              </ul>
               </span>
         </div>
 
@@ -191,6 +193,7 @@ export default {
         </h4>
 
         <span>
+          <ul>
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left">
                 {{ index + 1 }}.
                   <span v-if="response.target_logic===0">
@@ -222,6 +225,7 @@ export default {
                 </div>
 
                 </li>
+            </ul>
                 </span>
       </UCard>
     </UContainer>

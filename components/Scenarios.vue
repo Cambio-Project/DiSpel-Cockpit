@@ -204,6 +204,7 @@ export default {
                   <div v-if="item.key === 'stimulus'">
                     <span>
                 <!--{{scenario.responses[0]}}-->
+                <ul>
                 <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus" class="left">
                 {{ index + 1 }}.
                 <span>
@@ -238,12 +239,14 @@ export default {
                 </span>
                 </div>
               </li>
+              </ul>
               </span>
                   </div>
 
                   <!-- Response Tab -->
                   <div v-if="item.key === 'response'">
               <span>
+                <ul>
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left">
                 <div class="container-row">
                   <div class="container-row-element-xs">
@@ -300,6 +303,7 @@ export default {
               </div>
 
               </li>
+              </ul>
               </span>
                   </div>
 
