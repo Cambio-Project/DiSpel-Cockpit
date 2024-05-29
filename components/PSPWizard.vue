@@ -405,6 +405,9 @@ export default {
     createEvent(name) {
       if (this.type === "response") {
         const event = this.state.events.find(event => event.event_name === name);
+        if(event === undefined){
+          return
+        }
         return {
           name: name,
           specification: {
