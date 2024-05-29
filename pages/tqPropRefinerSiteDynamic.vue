@@ -1,15 +1,27 @@
 <script setup lang="ts">
 
+const simulationDirectoryName = "simulations_results"
+const searchDirectoryName = "search_results"
+
 const config = useRuntimeConfig()
 const route = useRoute();
 
 const simId = route.query.sim_id;
+const isSimulation = route.query.isSimulation;
+const file = route.query.file;
+
+let srcDirectory: string
+if (isSimulation === "true") {
+  srcDirectory = simulationDirectoryName
+} else {
+  srcDirectory = searchDirectoryName
+}
 
 const res = await fetch("/api/getScenario", {
-	method: "POST",
-	body: JSON.stringify({
-		simulationID: simId
-	})
+  method: "POST",
+  body: JSON.stringify({
+    simulationID: simId
+  })
 })
 const body = await res.json()
 const scenario = body.Scenario;
@@ -21,13 +33,13 @@ const sel = response.SEL;
 const tbvTimed = response.TBV_timed;
 const predicates = JSON.stringify(response.predicates_info);
 
-const src = computed(() => "http://"+config.public.tqPropRefinerDomain+":"+config.public.tqPropRefinerPort+"/requirement-refinement/dynamic?file-address=assets/simulations_results&sim_id="+simId+"&response_index="+responseIndex+"&sel="+sel+"&tbv_timed="+tbvTimed+"&predicates="+predicates)
+const src = computed(() => "http://" + config.public.tqPropRefinerDomain + ":" + config.public.tqPropRefinerPort + "/requirement-refinement/dynamic?file-address=assets/" + srcDirectory + "/" + simId + "&file=" + file + "&sim_id=" + simId + "&response_index=" + responseIndex + "&sel=" + sel + "&tbv_timed=" + tbvTimed + "&predicates=" + predicates)
 
 </script>
 
 <template>
 
-	<!-- TODO add button style -->
+  <!-- TODO add button style -->
   <h1 class="text-3xl">Refinement</h1>
   <br>
 
@@ -44,7 +56,7 @@ const src = computed(() => "http://"+config.public.tqPropRefinerDomain+":"+confi
 </template>
 
 <style scoped>
-.mainFrame{
+.mainFrame {
   width: 80%;
   height: 80vh;
   border: #3f51b5 3px solid;
