@@ -419,6 +419,9 @@ export default {
         const command = this.state.commands.find(command => command.command_name === name);
         if (command === undefined) {
           const listener = this.state.listeners.find(listener => listener.listener_name === name);
+          if (listener === undefined) {
+            return
+          }
           // send mock specification as it is not used anyway
           return {
             name: listener.listener_content,
@@ -804,6 +807,9 @@ export default {
       }
     },
     async sendTransformRequest(payload) {
+      if(payload.scope === undefined){
+        return
+      }
       try {
         const response = await getPSPMapping(payload);
         const responsePayload = await response.data.value.result
