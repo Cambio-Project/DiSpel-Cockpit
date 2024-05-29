@@ -320,7 +320,8 @@ export default {
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left container-row">
                   <div>
                     <UTooltip text="Please verify before Refinement!">
-                      <button @click="toRefinement(scenario.simulationID, index)" class="refine-button">Refine
+                      <button @click="toRefinement(scenario.simulationID, index, '_combined.csv', true)"
+                              class="refine-button">Refine
                         Response
                       </button>
                     </UTooltip>
@@ -352,7 +353,8 @@ export default {
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left container-row">
                   <div>
                     <UTooltip text="Please verify before Refinement!">
-                      <button @click="toRefinement(scenario.simulationID, index)" class="refine-button">Refine
+                      <button @click="toRefinement(scenario.simulationID, index, resultName, false)"
+                              class="refine-button">Refine
                         Response
                       </button>
                     </UTooltip>
