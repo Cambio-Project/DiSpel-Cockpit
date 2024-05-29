@@ -1266,7 +1266,6 @@ export default {
                        @change="handleProbabilityChange"
                        @input="handleInputChange">
                 <label class="title">Probability Bound</label>
-              </div>
 
               <div class="selection-group">
                 <div v-show="this.checkedProbability">
@@ -1278,6 +1277,8 @@ export default {
                          placeholder="Enter Probability" @change="checkProbability" @input="handleInputChange">
                 </div>
               </div>
+              </div>
+
               <div v-if="item.key === 'time-bound'" class="selection-group">
                 <div class="selection-group" :class="{ 'grayed-out': timeboundShouldGrayOut }">
                   <input type="checkbox" id="checkboxTime" v-model="this.checkedTime" @change="handleTimeChange"
