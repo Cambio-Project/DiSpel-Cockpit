@@ -807,9 +807,11 @@ export default {
       }
     },
     async sendTransformRequest(payload) {
-      if(payload.scope === undefined){
+      console.log(payload)
+      if(payload.scope.type === null || payload.pattern.type === null || payload.pattern.p_event === undefined){
         return
       }
+      payload = JSON.stringify(payload)
       try {
         const response = await getPSPMapping(payload);
         const responsePayload = await response.data.value.result
@@ -830,7 +832,7 @@ export default {
     },
     async transformToTemporalLogic() {
       const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
-      await this.sendTransformRequest(JSON.stringify(payload))
+      await this.sendTransformRequest(payload)
       this.forceRerender()
     },
     handleInputChange() {
