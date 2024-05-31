@@ -1,6 +1,7 @@
 import {ResponseSpecification} from "~/models/response-specification";
 import {pushSimulationResult} from "~/server/utils/pushSimulationResult";
 import {getMeasurementPointsFromPredicates, sendVerificationRequest} from "~/server/utils/verifyUtils";
+import fs from "fs";
 
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
@@ -10,33 +11,46 @@ export default defineEventHandler(async (event) => {
     const simulationID = scenario.simulationID;
     const responses = scenario.responses;
 
-    const responseVerificationResultPromises = responses.map((response: any) => {
-        const specification = response.TBV_timed;
-        const predicates = response.predicates_info;
+    const testFolder = 'data/simulations_results/' + simulationID;
+    const fileNames: string[] = []
+    const allVerificationResults = []
+    if (fs.existsSync(testFolder)) {
+        const fileNames = fs.readdirSync(testFolder);
+        const allResponseVerificationResultPromises = []
 
-        const responseSpecification: ResponseSpecification = {
-            behavior_description: 'Description',
-            specification,
-            specification_type: 'tbv',
-            predicates_info: predicates,
-            measurement_source: "misim",
-            "remote-misim-address": "/app/simulations_results/" + simulationID,
-            measurement_points: getMeasurementPointsFromPredicates(predicates),
-            options: {
-                create_plots: false,
-                store_combined_misim_results: true,
-            }
+        for (let fileName of fileNames) {
+            const fileResponseVerificationResultPromises = responses.map((response: any) => {
+                const specification = response.TBV_timed;
+                const predicates = response.predicates_info;
+
+                const responseSpecification: ResponseSpecification = {
+                    behavior_description: 'Description',
+                    specification,
+                    specification_type: 'tbv',
+                    predicates_info: predicates,
+                    measurement_source: "misim",
+                    "remote-misim-address": "/app/simulations_results/" + simulationID + "/" + fileName,
+                    measurement_points: getMeasurementPointsFromPredicates(predicates),
+                    options: {
+                        create_plots: false,
+                        store_combined_misim_results: true,
+                    }
+                }
+                return sendVerificationRequest(responseSpecification, TBVERIFIER_URL);
+            })
+            allResponseVerificationResultPromises.push(fileResponseVerificationResultPromises)
+
         }
-        return sendVerificationRequest(responseSpecification, TBVERIFIER_URL);
-    })
 
-    const responseVerificationResults = await Promise.all(responseVerificationResultPromises);
-
-    const simulationNames: string[] = [simulationID]
-    const resultArray: boolean[][] = [responseVerificationResults]
-    await pushSimulationResult(simulationID, simulationNames, resultArray)
+        for (let filePromises of allResponseVerificationResultPromises) {
+            const fileResponseVerificationResults = await Promise.all(filePromises);
+            allVerificationResults.push(fileResponseVerificationResults)
+        }
+        await pushSimulationResult(simulationID, fileNames, allVerificationResults)
+    }
 
     return {
-        result: responseVerificationResults,
+        files: fileNames,
+        results: allVerificationResults
     }
 })
