@@ -11,10 +11,13 @@ const isSimulation = route.query.isSimulation;
 const file = route.query.file;
 
 let srcDirectory: string
+let fileName: string
 if (isSimulation === "true") {
-  srcDirectory = simulationDirectoryName
+  srcDirectory = simulationDirectoryName + "/" + simId + "/" + file
+  fileName = "_combined.csv"
 } else {
-  srcDirectory = searchDirectoryName
+  srcDirectory = searchDirectoryName + "/" + simId
+  fileName = file!.toString()
 }
 
 const res = await fetch("/api/getScenario", {
@@ -33,7 +36,7 @@ const sel = response.SEL;
 const tbvTimed = response.TBV_timed;
 const predicates = JSON.stringify(response.predicates_info);
 
-const src = computed(() => "http://" + config.public.tqPropRefinerDomain + ":" + config.public.tqPropRefinerPort + "/requirement-refinement/dynamic?file-address=assets/" + srcDirectory + "/" + simId + "&file=" + file + "&sim_id=" + simId + "&response_index=" + responseIndex + "&sel=" + sel + "&tbv_timed=" + tbvTimed + "&predicates=" + predicates)
+const src = computed(() => "http://" + config.public.tqPropRefinerDomain + ":" + config.public.tqPropRefinerPort + "/requirement-refinement/dynamic?file-address=assets/" + srcDirectory + "&file=" + fileName + "&sim_id=" + simId + "&response_index=" + responseIndex + "&sel=" + sel + "&tbv_timed=" + tbvTimed + "&predicates=" + predicates)
 
 </script>
 
