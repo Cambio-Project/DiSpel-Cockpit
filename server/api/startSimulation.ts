@@ -2,12 +2,25 @@ import {exportStimuli} from "~/server/utils/exportStimuli";
 import {appendExistingFile} from "~/server/utils/appendExistingFile";
 import {exportJsonAsFile} from "~/server/utils/appendJsonAsFile";
 
-export default defineEventHandler(async (event) => {
+async function findAndUpdateExecutionId(scenario: any) {
+    let executionId: number
+    if (scenario.executionID === undefined) {
+        executionId = 0
+        scenario.executionID = 0
+    } else {
+        executionId = +scenario.executionID
+        scenario.executionID = (executionId + 1).toString()
+    }
+    await scenario.save()
+    return executionId
+}
 
+export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const simulationID = JSON.parse(body).simulationID
 
     const scenario = await Scenario.findOne({simulationID: simulationID})
+    const executionId = await findAndUpdateExecutionId(scenario)
 
     const architectureArray = scenario!.environment!.architecture;
     const experimentArray = scenario!.environment!.experiment;
@@ -35,6 +48,7 @@ export default defineEventHandler(async (event) => {
     }
 
     formData.append("simulation_id", simulationID)
+    formData.append("execution_id", executionId.toString())
 
     const config = useRuntimeConfig(event)
     const miSimResponse = await fetch("http://" + config.public.miSimDomain + ":" + config.public.miSimPort + "/simulate/upload", {

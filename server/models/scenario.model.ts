@@ -2,6 +2,7 @@ import {Schema, model} from "mongoose";
 
 const ScenarioSchema = new Schema({
     simulationID: String,
+    executionID: String,
     name: String,
     category: String,
     description: String,
