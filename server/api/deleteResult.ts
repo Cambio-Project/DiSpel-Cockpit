@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
         }
         const resultPath = directoryPath + "/" + executionID
         fs.rmSync(resultPath, {recursive: true, force: true});
-        result!.save()
+        await result!.save()
         // Delete whole directory if no results are left
         if (resultCount === 0) {
             fs.rmSync(directoryPath, {recursive: true, force: true});
@@ -37,4 +37,5 @@ export default defineEventHandler(async (event) => {
         console.log("Error deleting result: ", e);
         return {"done": false};
     }
+    return {"done": true};
 });

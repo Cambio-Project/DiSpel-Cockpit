@@ -53,7 +53,11 @@ export default {
       await verifySearch(scenario);
       await this.updateResults()
     },
-  },
+    async deleteResultAndUpdate(type, simulationID, executionID, executionIndex) {
+      await deleteResult(type, simulationID, executionID, executionIndex);
+      await this.updateResults();
+    }
+    },
   async beforeMount() {
     await this.updateResults()
     this.scenario = await getScenario(this.$route.query.simID);
@@ -321,7 +325,7 @@ export default {
                 <template #header class="font-bold">
                   {{ resultName }}
                   <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                           @click="deleteResult('simulation', scenario.simulationID, resultName, resultIndex);this.updateResults();"></UButton>
+                           @click="deleteResultAndUpdate('simulation', scenario.simulationID, resultName, resultIndex);updateResults();"></UButton>
                 </template>
 
 
@@ -356,7 +360,7 @@ export default {
                 <template #header class="font-bold">
                   {{ resultName }}
                   <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                           @click="deleteResult('search', scenario.simulationID, resultName, resultIndex);this.updateResults();"></UButton>
+                           @click="deleteResultAndUpdate('search', scenario.simulationID, resultName, resultIndex);"></UButton>
                 </template>
 
 
