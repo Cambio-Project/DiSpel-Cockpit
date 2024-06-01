@@ -12,10 +12,10 @@ export default defineEventHandler(async (event) => {
     const responses = scenario.responses;
 
     const testFolder = 'data/simulations_results/' + simulationID;
-    const fileNames: string[] = []
+    let fileNames: string[] = []
     const allVerificationResults = []
     if (fs.existsSync(testFolder)) {
-        const fileNames = fs.readdirSync(testFolder);
+        fileNames = fs.readdirSync(testFolder);
         const allResponseVerificationResultPromises = []
 
         for (let fileName of fileNames) {
@@ -46,9 +46,8 @@ export default defineEventHandler(async (event) => {
             const fileResponseVerificationResults = await Promise.all(filePromises);
             allVerificationResults.push(fileResponseVerificationResults)
         }
-        await pushSimulationResult(simulationID, fileNames, allVerificationResults)
     }
-
+    await pushSimulationResult(simulationID, fileNames, allVerificationResults)
     return {
         files: fileNames,
         results: allVerificationResults
