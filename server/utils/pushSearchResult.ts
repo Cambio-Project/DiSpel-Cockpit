@@ -60,8 +60,8 @@ export async function pushSearchResult(simulationID: string, searchNames: string
         const result = await getOrCreateResults(simulationID)
         setSearchResults(result, searchNames, searchResults)
         computeSearchMetrics(result)
+        result.searchUpdateRequired = false
         await result.save();
-
     } catch (e) {
         console.log(e)
         return {
@@ -79,6 +79,7 @@ export async function pushSearchNames(simulationID: string, searchNames: string[
     try {
         const result = await getOrCreateResults(simulationID)
         result.searchNames = searchNames
+        result.searchUpdateRequired = true
         await result.save();
 
     } catch (e) {
@@ -94,4 +95,16 @@ export async function pushSearchNames(simulationID: string, searchNames: string[
     };
 }
 
-
+export async function setSearchUpdateRequired(simulationID: string) {
+    try {
+        const result = await getOrCreateResults(simulationID)
+        result.searchUpdateRequired = true
+        await result.save();
+    } catch (e) {
+        console.log(e)
+        return {
+            "success": false,
+            "message": "Error setting search update required flag"
+        };
+    }
+}

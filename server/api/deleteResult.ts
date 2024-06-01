@@ -17,10 +17,12 @@ export default defineEventHandler(async (event) => {
         if (type === "simulation") {
             directoryPath = "data/simulations_results/" + simulationID
             result!.simulationNames.splice(executionIndex, 1);
+            result!.simulationUpdateRequired = true
             resultCount = result!.simulationNames.length;
         } else if (type === "search") {
             directoryPath = "data/search_results/" + simulationID
             result!.searchNames.splice(executionIndex, 1);
+            result!.searchUpdateRequired = true
             resultCount = result!.searchNames.length;
         } else {
             console.error("Invalid result type: " + type)

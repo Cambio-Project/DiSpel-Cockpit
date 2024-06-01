@@ -64,6 +64,24 @@ export default {
         }
       }
     },
+    isSimulationVerificationRequired(simID) {
+      const result = this.findResults(simID)
+      let updateRequired = false
+      if (result !== undefined) {
+        console.log("Update required")
+        updateRequired = result.simulationUpdateRequired
+      }
+      return updateRequired
+    },
+    isSearchVerificationRequired(simID) {
+      const result = this.findResults(simID)
+      let updateRequired = false
+      if (result !== undefined) {
+        console.log("Update required")
+        updateRequired = result.searchUpdateRequired
+      }
+      return updateRequired
+    },
     // Remove one scenario
     async removeScenario(simulationID) {
       await deleteScenario(simulationID)
@@ -77,6 +95,14 @@ export default {
       await verifySearch(scenario)
       await this.updateResults()
     },
+    async initiateSimulation(scenario) {
+      await startScenarioSimulation(scenario);
+      await this.updateResults();
+    },
+    async initiateSearch(scenario) {
+      await startScenarioSearch(scenario);
+      await this.updateResults();
+    }
   },
   async beforeMount() {
     await this.updateResults()
@@ -375,13 +401,17 @@ export default {
               <div class="container-row-element-s pt-1 pb-1">
 <span class="float-right">
   <UButton class="mr-1" icon="i-heroicons-globe-alt-20-solid" square size="xs" color="blue"
-           @click="startScenarioSimulation(scenario);"></UButton>
-  <UButton :disabled="scenario.simState !== 'done'" class="mr-1" icon="i-heroicons-check-16-solid" square size="xs"
+           @click="initiateSimulation(scenario)"></UButton>
+  <UButton class="mr-1" icon="i-heroicons-check-16-solid"
+           :class="{ 'blue-glowing-button' : isSimulationVerificationRequired(scenario.simulationID)}" square
+           size="xs"
            color="blue"
            @click="verifyScenario(scenario)"></UButton>
   <UButton class="mr-1" icon="i-heroicons-chart-bar-16-solid" square size="xs" color="blue"
-           @click="startScenarioSearch(scenario);"></UButton>
-  <UButton :disabled="scenario.mosimState !== 'done'" class="mr-1" icon="i-heroicons-check-16-solid" square size="xs"
+           @click="initiateSearch(scenario)"></UButton>
+  <UButton class="mr-1" icon="i-heroicons-check-16-solid"
+           :class="{ 'blue-glowing-button' : isSearchVerificationRequired(scenario.simulationID)}" square
+           size="xs"
            color="blue"
            @click="verifySearch(scenario)"></UButton>
 </span>
