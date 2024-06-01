@@ -75,4 +75,23 @@ export async function pushSearchResult(simulationID: string, searchNames: string
     };
 }
 
+export async function pushSearchNames(simulationID: string, searchNames: string[]) {
+    try {
+        const result = await getOrCreateResults(simulationID)
+        result.searchNames = searchNames
+        await result.save();
+
+    } catch (e) {
+        console.log(e)
+        return {
+            "success": false,
+            "message": "Error updating the entry"
+        };
+    }
+
+    return {
+        "success": true,
+    };
+}
+
 

@@ -72,3 +72,21 @@ export async function pushSimulationResult(simulationID: string, simulationNames
     };
 }
 
+export async function pushSimulationNames(simulationID: string, simulationNames: string[]) {
+    try {
+        const result = await getOrCreateResults(simulationID)
+        result.simulationNames = simulationNames
+        await result.save();
+    } catch (e) {
+        console.log(e)
+        return {
+            "success": false,
+            "message": "Error updating the entry"
+        };
+    }
+
+    return {
+        "success": true,
+    };
+}
+

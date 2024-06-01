@@ -1,6 +1,8 @@
 import {exportStimuli} from "~/server/utils/exportStimuli";
 import {appendExistingFile} from "~/server/utils/appendExistingFile";
 import {exportJsonAsFile} from "~/server/utils/appendJsonAsFile";
+import fs from "fs";
+import {pushSimulationNames} from "~/server/utils/pushSimulationResult";
 
 async function findAndUpdateExecutionId(scenario: any) {
     let executionId: number
@@ -55,6 +57,13 @@ export default defineEventHandler(async (event) => {
         method: "POST",
         body: formData
     });
+
+    // Update result names
+    const searchResultFolder = 'data/simulations_results/' + simulationID;
+    if (fs.existsSync(searchResultFolder)) {
+        const fileNames = fs.readdirSync(searchResultFolder);
+        await pushSimulationNames(simulationID, fileNames)
+    }
 
     const resText = await miSimResponse.text()
     return {
