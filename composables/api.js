@@ -231,3 +231,14 @@ export async function uploadAdditionalEnvironmentFile(filename, file) {
     })
 }
 
+export async function deleteResult(type, simulationID, executionID, executionIndex) {
+    await fetch("/api/deleteResult", {
+        method: "POST",
+        body: JSON.stringify({
+            type: type,
+            simulationID: simulationID,
+            executionID: executionID,
+            executionIndex: executionIndex
+        })
+    });
+}

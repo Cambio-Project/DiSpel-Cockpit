@@ -4,6 +4,11 @@ export default {
   name: "ScenarioList",
   el: '#app',
   scenariosNew: [],
+  setup() {
+    onMounted(async () => {
+      preparePopups();
+    });
+  },
   data() {
     return {
       simID: this.$route.query.simID,
@@ -14,6 +19,7 @@ export default {
     };
   },
   methods: {
+    deleteResult,
     changeAllTargets,
     getSearchVerificationResultsPerScenario,
     getSimulationVerificationResultsPerScenario,
@@ -314,13 +320,15 @@ export default {
               <UCard>
                 <template #header class="font-bold">
                   {{ resultName }}
+                  <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                           @click="deleteResult('simulation', scenario.simulationID, resultName, resultIndex);this.updateResults();"></UButton>
                 </template>
 
 
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left container-row">
                   <div>
                     <UTooltip text="Please verify before Refinement!">
-                      <button @click="toRefinement(scenario.simulationID, index, '_combined.csv', true)"
+                      <button @click="toRefinement(scenario.simulationID, index, resultName, true)"
                               class="refine-button">Refine
                         Response
                       </button>
@@ -347,6 +355,8 @@ export default {
               <UCard>
                 <template #header class="font-bold">
                   {{ resultName }}
+                  <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                           @click="deleteResult('search', scenario.simulationID, resultName, resultIndex);this.updateResults();"></UButton>
                 </template>
 
 
