@@ -68,7 +68,6 @@ export default {
       const result = this.findResults(simID)
       let updateRequired = false
       if (result !== undefined) {
-        console.log("Update required")
         updateRequired = result.simulationUpdateRequired
       }
       return updateRequired
@@ -77,7 +76,6 @@ export default {
       const result = this.findResults(simID)
       let updateRequired = false
       if (result !== undefined) {
-        console.log("Update required")
         updateRequired = result.searchUpdateRequired
       }
       return updateRequired
