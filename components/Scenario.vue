@@ -14,6 +14,7 @@ export default {
     };
   },
   methods: {
+    deleteResult,
     changeAllTargets,
     getSearchVerificationResultsPerScenario,
     getSimulationVerificationResultsPerScenario,
@@ -314,6 +315,8 @@ export default {
               <UCard>
                 <template #header class="font-bold">
                   {{ resultName }}
+                  <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                           @click="deleteResult('simulation', scenario.simulationID, resultName, resultIndex);this.updateResults();"></UButton>
                 </template>
 
 
@@ -347,6 +350,8 @@ export default {
               <UCard>
                 <template #header class="font-bold">
                   {{ resultName }}
+                  <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                           @click="deleteResult('search', scenario.simulationID, resultName, resultIndex);this.updateResults();"></UButton>
                 </template>
 
 
