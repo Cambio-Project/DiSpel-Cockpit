@@ -4,6 +4,11 @@ export default {
   name: "ScenarioList",
   el: '#app',
   scenariosNew: [],
+  setup() {
+    onMounted(async () => {
+      preparePopups();
+    });
+  },
   data() {
     return {
       simID: this.$route.query.simID,
