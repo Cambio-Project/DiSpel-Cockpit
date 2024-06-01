@@ -12,19 +12,27 @@ export default defineEventHandler(async (event) => {
         const executionIndex = requestBody.executionIndex;
 
         const result = await Result.findOne({simulationID: simulationID})
-        let resultPath;
+        let directoryPath;
+        let resultCount;
         if (type === "simulation") {
-            resultPath = "data/simulations_results/" + simulationID + "/" + executionID
+            directoryPath = "data/simulations_results/" + simulationID
             result!.simulationNames.splice(executionIndex, 1);
+            resultCount = result!.simulationNames.length;
         } else if (type === "search") {
-            resultPath = "data/search_results/" + simulationID + "/" + executionID
+            directoryPath = "data/search_results/" + simulationID
             result!.searchNames.splice(executionIndex, 1);
+            resultCount = result!.searchNames.length;
         } else {
             console.error("Invalid result type: " + type)
             return {"done": false};
         }
+        const resultPath = directoryPath + "/" + executionID
         fs.rmSync(resultPath, {recursive: true, force: true});
         result!.save()
+        // Delete whole directory if no results are left
+        if (resultCount === 0) {
+            fs.rmSync(directoryPath, {recursive: true, force: true});
+        }
     } catch (e) {
         console.log("Error deleting result: ", e);
         return {"done": false};
