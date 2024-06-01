@@ -8,7 +8,7 @@ export function getSimulationVerificationResultsPerResponse(result, responseInde
     if (totals === undefined || successes === undefined) {
         return defaultResult
     }
-    return successes[responseIndex] + " / " + totals
+    return successes[responseIndex] + " / " + totals  + computePercentageString(totals, successes)
 }
 
 export function getResilienceScore(result) {
@@ -36,7 +36,7 @@ export function getSearchVerificationResultsPerResponse(result, responseIndex) {
     if (totals === undefined || successes === undefined) {
         return defaultResult
     }
-    return successes[responseIndex] + " / " + totals
+    return successes[responseIndex] + " / " + totals + computePercentageString(totals, successes)
 }
 
 export function getSearchVerificationResultsPerScenario(result) {
@@ -49,7 +49,7 @@ export function getSearchVerificationResultsPerScenario(result) {
     if (totals === undefined || successes === undefined) {
         return defaultResult
     }
-    return successes + " / " + totals
+    return successes + " / " + totals + computePercentageString(totals, successes)
 }
 
 export function getSimulationVerificationResultsPerScenario(result) {
@@ -62,7 +62,16 @@ export function getSimulationVerificationResultsPerScenario(result) {
     if (totals === undefined || successes === undefined) {
         return defaultResult
     }
-    return successes + " / " + totals
+    return successes + " / " + totals + computePercentageString(totals, successes)
+}
+
+function computePercentageString(top, bottom){
+    if(bottom === 0){
+        return ""
+    }else{
+        const value = Math.round(100 * (top / bottom))
+        return " (" + value + "%)"
+    }
 }
 
 export function mapResultToColor(resultValue) {
