@@ -57,6 +57,21 @@ export default {
       await deleteResult(type, simulationID, executionID, executionIndex);
       await this.updateResults();
     },
+    async deleteAllSimulationResultAndUpdate(simulationID) {
+      if (this.result === undefined || this.result.simulationNames === undefined) {
+        return
+      }
+      for (const executionID of this.result.simulationNames) {
+        await deleteResult("simulation", simulationID, executionID, 0);
+      }
+      await this.updateResults();
+    },
+    async deleteAllSearchResultAndUpdate(simulationID) {
+      for (const executionID of this.result.searchNames) {
+        await deleteResult("search", simulationID, executionID, 0);
+      }
+      await this.updateResults();
+    },
     findSearchResults(result, resultIndex, responseIndex) {
       if (result.searchResults !== undefined && result.searchResults[resultIndex] !== undefined && result.searchResults[resultIndex][responseIndex] !== undefined) {
         return result.searchResults[resultIndex][responseIndex]
@@ -333,13 +348,15 @@ export default {
 
         <div v-if="result !== null">
           <UDivider label="Simulation"></UDivider>
+          <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                   @click="deleteAllSimulationResultAndUpdate(scenario.simulationID);"></UButton>
           <ul>
             <li v-for="(resultName,resultIndex) in result.simulationNames" class="list-item">
               <UCard>
                 <template #header class="font-bold">
                   {{ resultName }}
                   <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                           @click="deleteResultAndUpdate('simulation', scenario.simulationID, resultName, resultIndex);updateResults();"></UButton>
+                           @click="deleteResultAndUpdate('simulation', scenario.simulationID, resultName, resultIndex);"></UButton>
                 </template>
 
 
@@ -368,6 +385,8 @@ export default {
           </ul>
 
           <UDivider label="Monitoring"></UDivider>
+          <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                   @click="deleteAllSearchResultAndUpdate(scenario.simulationID);"></UButton>
           <ul>
             <li v-for="(resultName,resultIndex) in result.searchNames" class="list-item">
               <UCard>
