@@ -56,8 +56,22 @@ export default {
     async deleteResultAndUpdate(type, simulationID, executionID, executionIndex) {
       await deleteResult(type, simulationID, executionID, executionIndex);
       await this.updateResults();
-    }
     },
+    findSearchResults(result, resultIndex, responseIndex) {
+      if (result.searchResults !== undefined && result.searchResults[resultIndex] !== undefined && result.searchResults[resultIndex][responseIndex] !== undefined) {
+        return result.searchResults[resultIndex][responseIndex]
+      } else {
+        return undefined
+      }
+    },
+    findSimulationResults(result, resultIndex, responseIndex) {
+      if (result.simulationResults !== undefined && result.simulationResults[resultIndex] !== undefined && result.simulationResults[resultIndex][responseIndex] !== undefined) {
+        return result.simulationResults[resultIndex][responseIndex]
+      } else {
+        return undefined
+      }
+    },
+  },
   async beforeMount() {
     await this.updateResults()
     this.scenario = await getScenario(this.$route.query.simID);
@@ -342,7 +356,7 @@ export default {
                   <div>
                     {{ index + 1 }}.
                     <i class="sel-line"
-                       :style="{'color': mapResultToColor(result.simulationResults[resultIndex][index])}">
+                       :style="{'color': mapResultToColor(findSimulationResults(result,resultIndex,index))}">
                       <strong>SEL:</strong> {{ response.SEL }} </i>
                     <br>
                   </div>
@@ -376,7 +390,8 @@ export default {
                   </div>
                   <div>
                     {{ index + 1 }}.
-                    <i class="sel-line" :style="{'color': mapResultToColor(result.searchResults[resultIndex][index])}">
+                    <i class="sel-line"
+                       :style="{'color': mapResultToColor(findSearchResults(result, resultIndex, index))}">
                       <strong>SEL:</strong> {{ response.SEL }} </i>
                     <br>
                   </div>
