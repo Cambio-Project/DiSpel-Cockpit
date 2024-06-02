@@ -1,4 +1,22 @@
 <script>
+// Allows sorting objects by a property
+const byProperty = function (prop, direction) {
+  return function (a, b) {
+    if (direction) {
+      if (typeof a[prop] == "number") {
+        return (a[prop] - b[prop]);
+      } else {
+        return ((a[prop] < b[prop]) ? -1 : ((a[prop] > b[prop]) ? 1 : 0));
+      }
+    } else {
+      if (typeof a[prop] == "number") {
+        return (b[prop] - a[prop]);
+      } else {
+        return ((a[prop] < b[prop]) ? 1 : ((a[prop] > b[prop]) ? -1 : 0));
+      }
+    }
+  }
+};
 
 export default {
   name: "ScenarioList",
@@ -8,6 +26,43 @@ export default {
     onMounted(async () => {
       preparePopups();
     });
+  },
+  computed: {
+    sortingDirectionIcon: function () {
+      if (this.sortDirectionDown) {
+        return "i-heroicons-chevron-double-down"
+      } else {
+        return "i-heroicons-chevron-double-up"
+      }
+    },
+    orderedScenarios: function () {
+      switch (this.sort) {
+        case "resilience":
+          return this.scenarios.sort((a, b) => {
+            const AResult = this.findResults(a.simulationID)
+            const BResult = this.findResults(b.simulationID)
+            let AResilienceScore = 0;
+            if (AResult !== undefined) {
+              AResilienceScore = AResult.resilienceScore
+            }
+            let BResilienceScore = 0;
+            if (BResult !== undefined) {
+              BResilienceScore = BResult.resilienceScore
+            }
+            if (this.sortDirectionDown) {
+              return BResilienceScore - AResilienceScore
+            } else {
+              return AResilienceScore - BResilienceScore
+            }
+          })
+        case "category":
+          return this.scenarios.sort(byProperty("category", this.sortDirectionDown))
+        case "name":
+          return this.scenarios.sort(byProperty("name", this.sortDirectionDown))
+        default:
+          return this.scenarios
+      }
+    }
   },
   data() {
     return {
@@ -24,10 +79,25 @@ export default {
         key: 'environment',
         label: 'Environment'
       }],
+      sortOptions: [{
+        key: 'none',
+        label: 'None'
+      }, {
+        key: 'resilience',
+        label: 'Resilience Score'
+      }, {
+        key: 'name',
+        label: 'Name'
+      }, {
+        key: 'category',
+        label: 'Category'
+      }],
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
       results: null,
-      scenarios: null,
+      scenarios: [],
+      sort: null,
+      sortDirectionDown: true
     };
   },
   methods: {
@@ -100,6 +170,9 @@ export default {
     async initiateSearch(scenario) {
       await startScenarioSearch(scenario);
       await this.updateResults();
+    },
+    toggleSortingDirection() {
+      this.sortDirectionDown = !this.sortDirectionDown
     }
   },
   async beforeMount() {
@@ -141,10 +214,27 @@ export default {
         </div>
       </UContainer>
     </div>
+    <div>
+      <UContainer class="mb-1 container-row">
+        <UButtonGroup class="container-row-element-xs" size="sm" orientation="horizontal">
+          <USelectMenu
+              class="w-full"
+              v-model="sort"
+              :options="sortOptions"
+              placeholder="Sort by"
+              value-attribute="key"
+              option-attribute="label"
+          />
+          <UButton :icon="sortingDirectionIcon" color="gray" @click="toggleSortingDirection()"/>
+        </UButtonGroup>
+        <div class="container-row-element">
+        </div>
+      </UContainer>
+    </div>
 
     <UContainer>
       <div>
-        <template v-for="scenario in scenarios">
+        <template v-for="scenario in orderedScenarios">
           <div class="scenario-box mt-4 mb-4">
             <!-- Scenario Header -->
             <div class="container-row mt-1 mb-1">
