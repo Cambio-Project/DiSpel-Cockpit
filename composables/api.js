@@ -7,21 +7,23 @@ export async function initScenario() {
 }
 
 export async function startSimulation(simulationID) {
-    await fetch("/api/startSimulation", {
+    const response = await fetch("/api/startSimulation", {
         method: "POST",
         body: JSON.stringify({
             simulationID: simulationID
         })
     })
+    return await response.json();
 }
 
 export async function startSearch(simulationID) {
-    await fetch("/api/startSearch", {
+    const response = await fetch("/api/startSearch", {
         method: "POST",
         body: JSON.stringify({
             simulationID: simulationID
         })
     })
+    return await response.json();
 }
 
 export async function allScenarios() {

@@ -39,6 +39,7 @@ export default defineEventHandler(async (event) => {
     const resText = await moSimResponse.text()
     return {
         "simulationID": simulationID,
-        "status": resText,
+        "status": moSimResponse.ok,
+        "text": resText,
     };
 })

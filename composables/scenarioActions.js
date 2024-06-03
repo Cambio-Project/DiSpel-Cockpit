@@ -5,19 +5,29 @@ import JSZip from "jszip";
 export async function startScenarioSimulation(scenario) {
     await successMessage("Simulation started", 'SimID: ' + scenario.simulationID)
     scenario.analysisState = 'simrunning';
-    await startSimulation(scenario.simulationID)
-    await successMessage("Simulation finished", 'SimID: ' + scenario.simulationID)
-    scenario.analysisState = 'simdone';
-    return 'done'
+    const response = await startSimulation(scenario.simulationID)
+    if (response.status) {
+        await successMessage("Simulation finished", 'SimID: ' + scenario.simulationID)
+        scenario.analysisState = 'simdone';
+    } else {
+        await failureMessage("Simulation failed", 'SimID: ' + scenario.simulationID + "\n" + response.text)
+        scenario.analysisState = 'simfailed';
+        console.log(response.text)
+    }
 }
 
 export async function startScenarioSearch(scenario) {
     await successMessage("Search started", 'SimID: ' + scenario.simulationID)
     scenario.analysisState = 'searchrunning';
-    await startSearch(scenario.simulationID);
-    await successMessage("Search finished", 'SimID: ' + scenario.simulationID)
-    scenario.analysisState = 'searchdone';
-    return 'done'
+    const response = await startSearch(scenario.simulationID);
+    if (response.status) {
+        await successMessage("Search finished", 'SimID: ' + scenario.simulationID)
+        scenario.analysisState = 'searchdone';
+    } else {
+        await failureMessage("Search failed", 'SimID: ' + scenario.simulationID + "\n" + response.text)
+        scenario.analysisState = 'searchfailed';
+        console.log(response.text)
+    }
 }
 
 //Changes all target logics to the same one
