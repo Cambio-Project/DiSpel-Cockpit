@@ -5,7 +5,7 @@ export function getSimulationVerificationResultsPerResponse(result, responseInde
     }
     const totals = result.simulationResultsTotal;
     const successes = result.simulationResultsResponseSuccesses;
-    if (totals === undefined || successes === undefined) {
+    if (totals === undefined || successes === undefined || successes[responseIndex] === undefined) {
         return defaultResult
     }
     return successes[responseIndex] + " / " + totals + computePercentageString(successes[responseIndex], totals)
@@ -33,7 +33,7 @@ export function getSearchVerificationResultsPerResponse(result, responseIndex) {
     }
     const totals = result.searchResultsTotal;
     const successes = result.searchResultsResponseSuccesses;
-    if (totals === undefined || successes === undefined) {
+    if (totals === undefined || successes === undefined || successes[responseIndex] === undefined) {
         return defaultResult
     }
     return successes[responseIndex] + " / " + totals + computePercentageString(successes[responseIndex], totals)
