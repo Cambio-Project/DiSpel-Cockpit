@@ -49,7 +49,7 @@ services:
       - ./data/search_results:/app/search_results
 
   misim:
-    image: ghcr.io/cambio-project/misim:v4.1.2
+    image: ghcr.io/cambio-project/misim:v4.1.3
     container_name: misim
     ports:
       - 8084:8080
