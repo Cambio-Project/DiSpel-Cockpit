@@ -158,10 +158,12 @@ export default {
     async verifyScenario(scenario) {
       await verifySimulation(scenario)
       await this.updateResults()
+      scenario.analysisState = 'simverified';
     },
     async verifySearch(scenario) {
       await verifySearch(scenario)
       await this.updateResults()
+      scenario.analysisState = 'searchverified';
     },
     async initiateSimulation(scenario) {
       await startScenarioSimulation(scenario);
@@ -180,8 +182,7 @@ export default {
     this.scenarios = await allScenarios()
 
     for (let i = 0; i < this.scenarios.length; i++) {
-      this.scenarios[i].simState = "none"
-      this.scenarios[i].mosimState = "none"
+      this.scenarios[i].analysisState = "none"
     }
   },
 };
@@ -475,15 +476,50 @@ export default {
               </div>
 
               <div class="container-row-element pt-1 pb-1">
-                <div v-if="scenario.simState === 'running'">
+                <div v-if="scenario.analysisState === 'simrunning'">
                   <UProgress animation="carousel"></UProgress>
                   <p>Simulation is running</p>
                 </div>
-                <div v-if="scenario.mosimState === 'running'">
+                <div v-if="scenario.analysisState === 'searchrunning'">
                   <UProgress animation="carousel"></UProgress>
                   <p>Search is running</p>
                 </div>
-
+                <div v-if="scenario.analysisState === 'simdone'">
+                  <p class="mt-1">
+                    <Icon name="heroicons:check" color="green" size="1.3em" class="mb-1 mr-1"/>
+                    Simulation finished! Please verify results!
+                  </p>
+                </div>
+                <div v-if="scenario.analysisState === 'searchdone'">
+                  <p class="mt-1">
+                    <Icon name="heroicons:check" color="green" size="1.3em" class="mb-1 mr-1"/>
+                    Search finished! Please verify results!
+                  </p>
+                </div>
+                <div v-if="scenario.analysisState === 'simfailed'">
+                  <p class="mt-1">
+                    <Icon name="heroicons:no-symbol" color="red" size="1.3em" class="mb-1 mr-1"/>
+                    Simulation failed! Please check container logs!
+                  </p>
+                </div>
+                <div v-if="scenario.analysisState === 'searchfailed'">
+                  <p class="mt-1">
+                    <Icon name="heroicons:no-symbol" color="red" size="1.3em" class="mb-1 mr-1"/>
+                    Search failed! Please check container logs!
+                  </p>
+                </div>
+                <div v-if="scenario.analysisState === 'simverified'">
+                  <p class="mt-1">
+                    <Icon name="heroicons:check" color="green" size="1.3em" class="mb-1 mr-1"/>
+                    Simulation results verified! Metrics updated!
+                  </p>
+                </div>
+                <div v-if="scenario.analysisState === 'searchverified'">
+                  <p class="mt-1">
+                    <Icon name="heroicons:check" color="green" size="1.3em" class="mb-1 mr-1"/>
+                    Search results verified! Metrics updated!
+                  </p>
+                </div>
               </div>
 
               <div class="container-row-element-s pt-1 pb-1">

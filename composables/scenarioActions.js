@@ -4,19 +4,19 @@ import JSZip from "jszip";
 
 export async function startScenarioSimulation(scenario) {
     await successMessage("Simulation started", 'SimID: ' + scenario.simulationID)
-    scenario.simState = 'running';
+    scenario.analysisState = 'simrunning';
     await startSimulation(scenario.simulationID)
     await successMessage("Simulation finished", 'SimID: ' + scenario.simulationID)
-    scenario.simState = 'done';
+    scenario.analysisState = 'simdone';
     return 'done'
 }
 
 export async function startScenarioSearch(scenario) {
     await successMessage("Search started", 'SimID: ' + scenario.simulationID)
-    scenario.mosimState = 'running';
+    scenario.analysisState = 'searchrunning';
     await startSearch(scenario.simulationID);
     await successMessage("Search finished", 'SimID: ' + scenario.simulationID)
-    scenario.mosimState = 'done';
+    scenario.analysisState = 'searchdone';
     return 'done'
 }
 
