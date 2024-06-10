@@ -3,6 +3,13 @@
 export default {
   data() {
     return {
+      patterTypeOptions: [{
+        value: 'Occurrence',
+        label: 'Occurrence'
+      }, {
+        value: 'Order',
+        label: 'Order'
+      }],
       stimulusItems: [{
         key: 'addCommand',
         label: 'Add Command',
@@ -111,6 +118,7 @@ export default {
       checkedTime: false,
       formulas: [],
       timeBoundOptions: ["Interval", "Lower", "Upper"],
+      upperTimeBoundOptions: ["none", "Upper"],
       probabilityBoundOptions: ["GreaterEqual", "Greater", "LowerEqual", "Lower"],
       showCopyFeedback: false,
       componentKey: 0,
@@ -118,7 +126,287 @@ export default {
       importErrorMessage: null
     };
   },
+  watch: {
+    'pspSpecification.selectedScope': {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    'pspSpecification.selectedPatternType': {
+      handler() {
+        this.handleInputChange()
+        this.handleTypeChange()
+      },
+      deep: true
+    },
+    'pspSpecification.selectedOccurrence': {
+      handler() {
+        this.handleInputChange()
+        this.handleOccurrenceChange()
+      },
+      deep: true
+    },
+    checkedProbability: {
+      handler() {
+        this.handleInputChange()
+        this.handleProbabilityChange()
+      },
+      deep: true
+    },
+    'pspSpecification.selectedProbabilityBound': {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    'pspSpecification.probability': {
+      handler() {
+        this.checkProbability()
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    checkedTime: {
+      handler() {
+        this.handleTimeChange()
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedTimeBound": {
+      handler() {
+        this.handleLimitChange()
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.upperLimit": {
+      handler() {
+        this.checkTime()
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.timeUnit": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.lowerLimit": {
+      handler() {
+        this.checkTime()
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "customPredicateName": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "customPredicateLogic": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "customMeasurementSource": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "customPredicateComparisonValue": {
+      handler() {
+        this.handleComparisonInputChange()
+      },
+      deep: true
+    },
+    "eventToChange": {
+      handler() {
+        this.eventToChangeSelected()
+      },
+      deep: true
+    },
+    "changedPredicateName": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "changedPredicateLogic": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "changedMeasurementSource": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "changedPredicateComparisonValue": {
+      handler() {
+        this.handleComparisonInputChange()
+      },
+      deep: true
+    },
+    "customCommandName": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "customCommandContent": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "commandToChange": {
+      handler() {
+        this.commandToChangeSelected()
+      },
+      deep: true
+    },
+    "changedCommandName": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "changedCommandContent": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "customListenerName": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "customListenerContent": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "listenerToChange": {
+      handler() {
+        this.listenerToChangeSelected()
+      },
+      deep: true
+    },
+    "changedListenerName": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "changedListenerContent": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedScopeEventR": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedScopeEventQ": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedEventP": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedEventS": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedConstraintEvent": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedChainedEvents": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedInterval": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedTime": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedTimeUnitType": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    },
+    "pspSpecification.selectedTargetLogic": {
+      handler() {
+        this.handleInputChange()
+      },
+      deep: true
+    }
+  },
   computed: {
+    predicates: function () {
+      let predicates = []
+      if (this.type === 'response') {
+        for (let event of this.state.events) {
+          predicates.push(event.event_name)
+        }
+      }
+      if (this.type === 'stimulus') {
+        for (let command of this.state.commands) {
+          predicates.push(command.command_name)
+        }
+        for (let listener of this.state.listeners) {
+          predicates.push(listener.listener_name)
+        }
+      }
+      return predicates
+    }
+    ,
+    constraintPredicates: function () {
+      let constraintPredicates = [...this.predicates]
+      constraintPredicates.push("Constraint")
+      return constraintPredicates
+    }
+    ,
+    extendedTimeBoundOptions: function () {
+      let extendedTimeBoundOptions = [...this.timeBoundOptions]
+      extendedTimeBoundOptions.push("none")
+      return extendedTimeBoundOptions
+    }
+    ,
     displayPredicateLogics() {
       // Map technical names to better display names
       const logicMap = {
@@ -135,7 +423,8 @@ export default {
 
       // Create an array of objects with label and value properties
       return this.predicateLogicOptions.map(logic => ({label: logicMap[logic], value: logic}));
-    },
+    }
+    ,
     displayScopes() {
       // Map technical names to better display names
       const scopeMap = {
@@ -148,7 +437,8 @@ export default {
 
       // Create an array of objects with label and value properties
       return this.scopeOptions.map(scope => ({label: scopeMap[scope], value: scope}));
-    },
+    }
+    ,
     displayOccurrenceOptions() {
       const occurenceMap = {
         "SteadyState": "Steady State",
@@ -162,7 +452,8 @@ export default {
         "TransientState": "Transient State",
       };
       return this.occurrenceOptions.map(option => ({label: occurenceMap[option], value: option}));
-    },
+    }
+    ,
     displayOrderOptions() {
       const orderMap = {
         "Response": "Response",
@@ -175,34 +466,39 @@ export default {
         "Until": "Until"
       };
       return this.orderOptions.map(option => ({label: orderMap[option], value: option}));
-    },
+    }
+    ,
     timeboundShouldGrayOut() {
       return !(this.pspSpecification.selectedPatternType === 'Order' ||
           this.pspSpecification.selectedOccurrence === 'Universality' ||
           this.pspSpecification.selectedOccurrence === 'Absence' ||
           this.pspSpecification.selectedOccurrence === 'Existence' ||
           this.pspSpecification.selectedOccurrence === 'BoundedExistence');
-    },
+    }
+    ,
     comparisonValueShouldGrayOut() {
       return !(this.customPredicateLogic === "bigger" ||
           this.customPredicateLogic === "biggerEqual" ||
           this.customPredicateLogic === "smaller" ||
           this.customPredicateLogic === "smallerEqual" ||
           this.customPredicateLogic === "equal");
-    },
+    }
+    ,
     comparisonValueShouldGrayOutEdit() {
       return !(this.changedPredicateLogic === "bigger" ||
           this.changedPredicateLogic === "biggerEqual" ||
           this.changedPredicateLogic === "smaller" ||
           this.changedPredicateLogic === "smallerEqual" ||
           this.changedPredicateLogic === "equal");
-    },
-  },
+    }
+    ,
+  }
+  ,
   setup() {
     const state = reactive({
-      events: null,
-      commands: null,
-      listeners: null,
+      events: [],
+      commands: [],
+      listeners: [],
     });
 
     onMounted(async () => {
@@ -221,7 +517,8 @@ export default {
     return {
       state,
     };
-  },
+  }
+  ,
   methods: {
     toScenarioEditor,
     async initFields() {
@@ -229,7 +526,8 @@ export default {
       if (typeof scenario.specification.measurementSources !== "undefined") {
         this.measurementSourceOptions = scenario.specification.measurementSources
       }
-    },
+    }
+    ,
     /**
      * Creates a scope object with the given parameters.
      *
@@ -255,7 +553,8 @@ export default {
       }
 
       return scope;
-    },
+    }
+    ,
 
 // creates the time_bound part of the payload
     createTimeBound(type, timeUnit, upperLimit, lowerLimit) {
@@ -265,7 +564,8 @@ export default {
         upper_limit: upperLimit,
         lower_limit: lowerLimit
       };
-    },
+    }
+    ,
 
 // creates probability part of the payload
     createProbabilityBound(type, probability) {
@@ -273,7 +573,8 @@ export default {
         type: type,
         probability: probability
       };
-    },
+    }
+    ,
 
 // creates the pattern part of the payload
     createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit) {
@@ -380,7 +681,8 @@ export default {
       }
 
       return pattern;
-    },
+    }
+    ,
 
 // creates the payload
     createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit) {
@@ -389,7 +691,8 @@ export default {
         pattern: this.createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit),
         target_logic: selectedTargetLogic
       };
-    },
+    }
+    ,
 // creates the event part of the payload. Takes the predicate from the events-array based on the event name
     /**
      * Creates an event object with the given name from an array of events.
@@ -405,7 +708,7 @@ export default {
     createEvent(name) {
       if (this.type === "response") {
         const event = this.state.events.find(event => event.event_name === name);
-        if(event === undefined){
+        if (event === undefined) {
           return
         }
         return {
@@ -448,7 +751,8 @@ export default {
           };
         }
       }
-    },
+    }
+    ,
     resetAllFields() {
       this.pspSpecification = {
         selectedPatternType: null,
@@ -485,19 +789,23 @@ export default {
       }]
       this.checkedProbability = false
       this.checkedTime = false
-    },
+    }
+    ,
     async addValue(field, newValue) {
       await pushScenarioField(this.simID, field, newValue)
-    },
+    }
+    ,
     handleOccurrenceChange() {
       // Reset selected event when occurrence changes
       this.pspSpecification.selectedEvent = null;
-    },
+    }
+    ,
     handleTypeChange() {
       // Reset preview when pattern type changes
       this.pspSpecification.selectedOccurrence = null;
       this.pspSpecification.selectedOrder = null;
-    },
+    }
+    ,
     async addCustomMeasurementSource() {
       if (this.newMeasurementSource.trim() !== "" && !this.measurementSourceOptions.includes(this.newMeasurementSource.trim())) {
         this.measurementSourceOptions.push(this.newMeasurementSource.trim())
@@ -507,7 +815,8 @@ export default {
         }
         this.newMeasurementSource = "" // reset
       }
-    },
+    }
+    ,
     async addCustomEvent() {
       let trimmedName = this.customPredicateName.trim()
       // Add the custom event to the list if it is not empty
@@ -538,7 +847,8 @@ export default {
 
         await successMessage("Added Event", "The event " + body.customPredicateName + " has been added successfully")
       }
-    },
+    }
+    ,
     async addCustomCommand() {
       let trimmedName = this.customCommandName.trim()
       // Add the custom command to the list if it is not empty
@@ -564,7 +874,8 @@ export default {
 
         await successMessage("Added Command", "The command " + body.command_name + " has been added successfully")
       }
-    },
+    }
+    ,
     listenerNameExists(name) {
       for (let listener of this.state.listeners) {
         if (listener.listener_name.trim() === name) {
@@ -572,7 +883,8 @@ export default {
         }
       }
       return false
-    },
+    }
+    ,
     commandNameExists(name) {
       for (let command of this.state.commands) {
         if (command.command_name.trim() === name) {
@@ -580,7 +892,8 @@ export default {
         }
       }
       return false
-    },
+    }
+    ,
     eventNameExists(name) {
       for (let event of this.state.events) {
         if (event.predicate_name.trim() === name) {
@@ -588,7 +901,8 @@ export default {
         }
       }
       return false
-    },
+    }
+    ,
     async addCustomListener() {
       // Add the custom event to the list if it is not empty
       let trimmedName = this.customListenerName.trim()
@@ -614,17 +928,24 @@ export default {
 
         await successMessage("Added Listener", "The listener " + body.listener_name + " has been added successfully")
       }
-    },
+    }
+    ,
     handleComparisonInputChange() {
       // remove non-numeric characters from the input
-      this.customPredicateComparisonValue = this.customPredicateComparisonValue.replace(/\D/g, '');
-      this.changedPredicateComparisonValue = this.changedPredicateComparisonValue.replace(/\D/g, '');
+      if (this.customPredicateComparisonValue !== undefined) {
+        this.customPredicateComparisonValue = this.customPredicateComparisonValue.replace(/\D/g, '');
+      }
+      if (this.changedPredicateComparisonValue !== undefined) {
+        this.changedPredicateComparisonValue = this.changedPredicateComparisonValue.replace(/\D/g, '');
+      }
 
       this.handleInputChange();
-    },
+    }
+    ,
     eventToChangeSelected() {
       setTimeout(this.setEventChangeFields, 200)
-    },
+    }
+    ,
     async setEventChangeFields() {
       this.changedEventId = this.eventToChange._id;
 
@@ -635,10 +956,12 @@ export default {
 
       this.forceRerender()
       this.handleInputChange()
-    },
+    }
+    ,
     commandToChangeSelected() {
       setTimeout(this.setCommandChangeFields, 200)
-    },
+    }
+    ,
     async setCommandChangeFields() {
       this.changedCommandId = this.commandToChange._id;
 
@@ -647,10 +970,12 @@ export default {
 
       this.forceRerender()
       this.handleInputChange()
-    },
+    }
+    ,
     listenerToChangeSelected() {
       setTimeout(this.setListenerChangeFields, 200)
-    },
+    }
+    ,
     async setListenerChangeFields() {
       this.changedListenerId = this.listenerToChange._id;
 
@@ -659,7 +984,8 @@ export default {
 
       this.forceRerender()
       this.handleInputChange()
-    },
+    }
+    ,
     async changeEvent() {
       let trimmedName = this.changedPredicateName.trim()
       if (this.eventNameExists(trimmedName)) {
@@ -687,7 +1013,8 @@ export default {
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
       await successMessage("Changed Event", "The event " + body.customPredicateName + " has been changed successfully")
-    },
+    }
+    ,
     async changeCommand() {
       let trimmedName = this.changedCommandName.trim()
       if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
@@ -711,7 +1038,8 @@ export default {
       this.changedCommandContent = "";
 
       await successMessage("Changed Command", "The command " + body.command_name + " has been changed successfully")
-    },
+    }
+    ,
     async changeListener() {
       let trimmedName = this.changedListenerName.trim()
       if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
@@ -735,7 +1063,8 @@ export default {
       this.changedListenerContent = "";
 
       await successMessage("Changed Listener", "The listener " + body.listener_name + " has been changed successfully")
-    },
+    }
+    ,
     async deleteEvent() {
       // delete the event from the mongodb database
       await deleteEvent(this.eventToChange._id)
@@ -748,7 +1077,8 @@ export default {
       this.changedPredicateLogic = "";
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
-    },
+    }
+    ,
     async deleteCommand() {
       // delete the command from the mongodb database
       await deleteCommand(this.commandToChange._id)
@@ -759,7 +1089,8 @@ export default {
       // clear the input fields after adding the custom command
       this.changedCommandName = "";
       this.changedCommandContent = "";
-    },
+    }
+    ,
     async deleteListener() {
       // delete the listener from the mongodb database
       await deleteListener(this.listenerToChange._id)
@@ -770,7 +1101,8 @@ export default {
       // clear the input fields after adding the custom event
       this.changedListenerName = "";
       this.changedListenerContent = "";
-    },
+    }
+    ,
     async deleteMeasurementSource() {
       const deleteIndex = this.measurementSourceOptions.indexOf(this.deleteMarkedMeasurementSource)
       // delete mongodb database
@@ -778,22 +1110,26 @@ export default {
 
       // also delete from the local array
       this.measurementSourceOptions.splice(deleteIndex, 1)
-    },
+    }
+    ,
     handleProbabilityChange() {
       // Reset probabilityBound and probability when unchecked
       this.pspSpecification.selectedProbabilityBound = null;
       this.pspSpecification.probability = null;
-    },
+    }
+    ,
     handleTimeChange() {
       // Reset timeBound and timUnit when unchecked
       this.pspSpecification.selectedTimeBound = null;
       this.pspSpecification.timeUnit = "time units";
-    },
+    }
+    ,
     handleLimitChange() {
       // Reset limits when timeBound changes
       this.pspSpecification.upperLimit = null;
       this.pspSpecification.lowerLimit = null;
-    },
+    }
+    ,
     checkProbability() {
       //Checks if probability is between 0 and 1
       if (this.pspSpecification.probability < 0) {
@@ -801,17 +1137,18 @@ export default {
       } else if (this.pspSpecification.probability > 1) {
         this.pspSpecification.probability = 1;
       }
-    },
+    }
+    ,
     checkTime() {
       if (this.pspSpecification.upperLimit != null && this.pspSpecification.lowerLimit != null) {
         if (this.pspSpecification.upperLimit < this.pspSpecification.lowerLimit) {
           this.pspSpecification.lowerLimit = this.pspSpecification.upperLimit;
         }
       }
-    },
+    }
+    ,
     async sendTransformRequest(payload) {
-      console.log(payload)
-      if(payload.scope.type === null || payload.pattern.type === null || payload.pattern.p_event === undefined){
+      if (payload.scope.type === null || payload.pattern.type === null || payload.pattern.p_event === undefined) {
         return
       }
       payload = JSON.stringify(payload)
@@ -832,15 +1169,18 @@ export default {
         // Handle any errors that occur during the HTTP request
         console.error('Error transforming to temporal logic:', error);
       }
-    },
+    }
+    ,
     async transformToTemporalLogic() {
       const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
       await this.sendTransformRequest(payload)
       this.forceRerender()
-    },
+    }
+    ,
     handleInputChange() {
       setTimeout(this.transformToTemporalLogic, 100)
-    },
+    }
+    ,
     copyToClipboard() {
       const textarea = document.createElement("textarea");
       textarea.value = this.pspSpecification.mapping;
@@ -854,7 +1194,8 @@ export default {
       setTimeout(() => {
         this.showCopyFeedback = false;
       }, 2000);
-    },
+    }
+    ,
     addChainedEvent() {
       this.pspSpecification.selectedChainedEvents.push({
         event: {},
@@ -867,7 +1208,8 @@ export default {
         }
       });
       this.forceRerender()
-    },
+    }
+    ,
     deleteChainedEvent(index) {
       if (index >= 0 && index < this.pspSpecification.selectedChainedEvents.length) {
         this.pspSpecification.selectedChainedEvents.splice(index, 1);
@@ -875,7 +1217,8 @@ export default {
         console.log("Error deleting the chained event");
       }
       this.handleInputChange()
-    },
+    }
+    ,
     // used for the specification import
     handleFileChange() {
       const fileInput = this.$refs.fileInput;
@@ -1072,7 +1415,8 @@ export default {
       fileReader.readAsText(file);
 
       this.forceRerender()
-    },
+    }
+    ,
     // Save the mapping to the MongoDB Database and direct to the Scenario Editor
     async confirm() {
       let index;
@@ -1157,15 +1501,19 @@ export default {
       await pushScenarioField(this.simID, type, responseObject)
 
       toScenarioEditor(this.simID, this.$router)
-    },
+    }
+    ,
     forceRerender() {
       this.componentKey += 1;
     }
-  },
+  }
+  ,
   beforeMount() {
     this.initFields()
-  },
-};
+  }
+  ,
+}
+;
 </script>
 
 <template :key="componentKey">
@@ -1210,128 +1558,106 @@ export default {
               </p>
 
               <div v-if="item.key === 'scope'" class="selection-group">
-                <select v-model="this.pspSpecification.selectedScope" @input="handleInputChange(state.events)"
-                        class="select-box">
-                  <option v-for="scope in displayScopes" :key="scope.value" :value="scope.value" class="option">
-                    {{ scope.label }}
-                  </option>
-                </select>
+                <USelectMenu v-model="this.pspSpecification.selectedScope" :options="displayScopes"
+                             value-attribute="value"
+                             option-attribute="label">
+                </USelectMenu>
               </div>
 
               <div v-if="item.key === 'pattern'" class="selection-group">
                 <div class="radio-group">
-                  <div class="radio">
-                    <input type="radio" v-model="this.pspSpecification.selectedPatternType" value="Occurrence"
-                           id="occurrence"
-                           @change="handleTypeChange" @input="handleInputChange"/>
-                    <label for="occurrence">Occurrence</label>
-                  </div>
-                  <div class="radio">
-                    <input type="radio" v-model="this.pspSpecification.selectedPatternType" value="Order" id="order"
-                           @change="handleTypeChange" @input="handleInputChange"/>
-                    <label for="order">Order</label>
-                  </div>
+                  <URadioGroup v-model="this.pspSpecification.selectedPatternType" :options="this.patterTypeOptions"
+                               :class="'breaking-div'"/>
+                  <br/>
                 </div>
+
                 <div
                     v-if="this.pspSpecification.selectedPatternType !== 'Occurrence' && this.pspSpecification.selectedPatternType !== 'Order'"
-                    class="fake-selection-group">
-                  <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange"
-                          @input="handleInputChange" class="select-box">
-                    <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value"
-                            :value="occurrence.value">
-                      {{ occurrence.label }}
-                    </option>
-                  </select>
+                    class="selection-group">
+                  <USelectMenu disabled placeholder="Select Type First"></USelectMenu>
                 </div>
 
                 <div v-if="this.pspSpecification.selectedPatternType === 'Occurrence'" class="selection-group">
-                  <label class="title">Pattern:</label><br>
-                  <select v-model="this.pspSpecification.selectedOccurrence" @change="handleOccurrenceChange"
-                          @input="handleInputChange" class="select-box">
-                    <option v-for="occurrence in displayOccurrenceOptions" :key="occurrence.value"
-                            :value="occurrence.value">
-                      {{ occurrence.label }}
-                    </option>
-                  </select>
+                  <USelectMenu v-model="this.pspSpecification.selectedOccurrence" :options="displayOccurrenceOptions"
+                               value-attribute="value"
+                               option-attribute="label" placeholder="Select Pattern">
+                  </USelectMenu>
                 </div>
 
                 <div v-if="this.pspSpecification.selectedPatternType === 'Order'" class="selection-group">
-                  <select v-model="this.pspSpecification.selectedOrder" @change="handleOccurrenceChange"
-                          @input="handleInputChange" class="select-box">
-                    <option v-for="order in displayOrderOptions" :key="order.value" :value="order.value">{{
-                        order.label
-                      }}
-                    </option>
-                  </select>
+                  <USelectMenu v-model="this.pspSpecification.selectedOrder" :options="displayOrderOptions"
+                               value-attribute="value"
+                               option-attribute="label" placeholder="Select Pattern"/>
                 </div>
               </div>
 
               <div v-if="item.key === 'probability-bound'" class="selection-group">
-                <input type="checkbox" id="checkboxProb" v-model="this.checkedProbability"
-                       @change="handleProbabilityChange"
-                       @input="handleInputChange">
-                <label class="title">Probability Bound</label>
+                <UCheckbox v-model="this.checkedProbability" class="center" name="Probability Bound"
+                           label="Probability Bound"/>
 
-              <div class="selection-group">
                 <div v-show="this.checkedProbability">
-                  <select v-model="this.pspSpecification.selectedProbabilityBound" @input="handleInputChange"
-                          class="select-box">
-                    <option v-for="prob in probabilityBoundOptions" :key="prob">{{ prob }}</option>
-                  </select> <br><br>
-                  <input v-model="this.pspSpecification.probability" :min="0" :max="1" step="0.1" type="number"
-                         placeholder="Enter Probability" @change="checkProbability" @input="handleInputChange">
+                  <br/>
+                  <div class="container-row">
+                    <div class="container-row-element  mr-1">
+                      <label class="Type">Type:</label><br>
+                      <USelectMenu v-model="this.pspSpecification.selectedProbabilityBound"
+                                   :options="probabilityBoundOptions" placeholder="Select Type"/>
+                    </div>
+                    <div class="container-row-element  ml-1">
+                      <label class="Type">Value:</label><br>
+                      <UInput v-model="this.pspSpecification.probability" :min="0" :max="1" step="0.1" type="number"
+                              placeholder="Enter Probability"/>
+                    </div>
+                  </div>
                 </div>
-              </div>
               </div>
 
               <div v-if="item.key === 'time-bound'" class="selection-group">
                 <div class="selection-group" :class="{ 'grayed-out': timeboundShouldGrayOut }">
-                  <input type="checkbox" id="checkboxTime" v-model="this.checkedTime" @change="handleTimeChange"
-                         @input="handleInputChange">
-                  <label class="title">Time Bound</label>
+                  <UCheckbox v-model="this.checkedTime" class="center" name="Time Bound"
+                             label="Time Bound" :disabled="timeboundShouldGrayOut"/>
                 </div>
 
                 <div class="selection-group">
                   <div
                       v-show="this.checkedTime && this.pspSpecification.selectedOrder !== 'Precedence' && this.pspSpecification.selectedOrder !== 'PrecedenceChain1N' && this.pspSpecification.selectedOrder !== 'PrecedenceChainN1'">
-                    <select v-model="this.pspSpecification.selectedTimeBound" @change="handleLimitChange"
-                            @input="handleInputChange" class="select-box">
-                      <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
-                    </select> <br><br>
+                    <USelectMenu v-model="this.pspSpecification.selectedTimeBound" :options="timeBoundOptions"/>
+                    <br><br>
                     <div v-if="this.pspSpecification.selectedTimeBound === 'Upper' ">
-                      <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
-                             placeholder="Within"
-                             @input="handleInputChange">
-                      <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
+                      <UInput v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
+                              placeholder="Within"/>
+                      <UInput v-model="this.pspSpecification.timeUnit" type="text"/>
                     </div>
                     <div v-if="this.pspSpecification.selectedTimeBound === 'Lower' ">
-                      <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
-                             placeholder="After"
-                             @input="handleInputChange">
-                      <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
+                      <UInput v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
+                              placeholder="After"/>
+                      <UInput v-model="this.pspSpecification.timeUnit" type="text"/>
                     </div>
                     <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
-                      <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
-                             placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
-                      <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
-                             placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
-                      <input v-model="this.pspSpecification.timeUnit" type="text">
+                      <div class="container-row">
+                        <UInput v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
+                                placeholder="Enter lower Limit" class="container-row-element mr-1"/>
+                        <UInput v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
+                                placeholder="Enter upper Limit" class="container-row-element ml-1 mr-1"/>
+                        <UInput v-model="this.pspSpecification.timeUnit" type="text"
+                                class="container-row-element ml-1"/>
+                      </div>
                     </div>
                   </div>
                 </div>
                 <div class="selection-group">
                   <div
                       v-show="this.checkedTime && (this.pspSpecification.selectedOrder === 'Precedence' || this.pspSpecification.selectedOrder === 'PrecedenceChain1N' || this.pspSpecification.selectedOrder === 'PrecedenceChainN1')">
-                    <select v-model="this.pspSpecification.selectedTimeBound" @change="handleLimitChange"
-                            @input="handleInputChange" class="select-box">
-                      <option v-for="time in this.pspSpecification.interval" :key="time">{{ time }}</option>
-                    </select>
+                    <USelectMenu v-model="this.pspSpecification.selectedTimeBound"/>
                     <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
-                      <input v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
-                             placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
-                      <input v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
-                             placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
-                      <input v-model="this.pspSpecification.timeUnit" type="text" @input="handleInputChange">
+                      <div class="container-row">
+                        <UInput v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
+                                placeholder="Enter lower Limit" class="container-row-element mr-1"/>
+                        <UInput v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
+                                placeholder="Enter upper Limit" class="container-row-element ml-1 mr-1"/>
+                        <UInput v-model="this.pspSpecification.timeUnit" type="text"
+                                class="container-row-element ml-1"/>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1357,80 +1683,123 @@ export default {
 
                 <div v-if="item.key === 'addEvent'">
                   <br/>
-                  <label class="subtitle">Predicate Name: </label>
-                  <input v-model="customPredicateName" type="text" @input="handleInputChange" class="select-event-box"/>
-                  <br><br>
-                  <label class="subtitle">Predicate Logic: </label>
-                  <select v-model="customPredicateLogic" @input="handleInputChange" class="select-box">
-                    <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{
-                        logic.label
-                      }}
-                    </option>
-                  </select> <br><br>
-                  <label class="subtitle">Measurement Source: </label>
-                  <select v-model="customMeasurementSource" @input="handleInputChange" class="select-box">
-                    <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{
-                        source
-                      }}
-                    </option>
-                  </select> <br><br>
-                  <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison
-                    Value: </label>
-                  <input v-model="customPredicateComparisonValue" type="text" @input="handleComparisonInputChange"
-                         :class="{ 'grayed-out': comparisonValueShouldGrayOut }" class="select-event-box"/> <br><br>
-                  <button class="add-event-button event-button" @click="addCustomEvent">Add Event</button>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle">Predicate Name: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <UInput v-model="customPredicateName" type="text"/>
+                    </div>
+                  </div>
+                  <br>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle">Predicate Logic: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <USelectMenu v-model="customPredicateLogic" :options="displayPredicateLogics"
+                                   option-attribute="label" value-attribute="value"/>
+                    </div>
+                  </div>
+                  <br>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle">Measurement Source: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <USelectMenu searchable v-model="customMeasurementSource" :options="measurementSourceOptions"/>
+                    </div>
+                  </div>
+                  <br>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison
+                        Value: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <UInput v-model="customPredicateComparisonValue"
+                              :class="{ 'grayed-out': comparisonValueShouldGrayOut }" type="text"/>
+                    </div>
+                  </div>
+                  <br>
+                  <UButton label="Add Event" @click="addCustomEvent"/>
                 </div>
 
                 <div v-if="item.key === 'editEvent'">
                   <br/>
-                  <label class="subtitle">Choose Event: </label>
-                  <select v-model="this.eventToChange" class="select-box" @input="eventToChangeSelected">
-                    <option v-for="event of state.events" :key="event.event_name" :value="event">{{
-                        event.predicate_name
-                      }}
-                    </option>
-                  </select> <br><br>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle">Choose Event: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <USelectMenu searchable v-model="this.eventToChange" :options="state.events" value-attribute=""
+                                   option-attribute="predicate_name"/>
+                    </div>
+                  </div>
+                  <br>
                   <div v-if="this.eventToChange !== ''">
-                    <label class="subtitle">Predicate Name: </label>
-                    <input v-model="changedPredicateName" type="text" @input="handleInputChange"
-                           class="select-event-box"/>
-                    <br><br>
-                    <label class="subtitle">Predicate Logic: </label>
-                    <select v-model="changedPredicateLogic" @input="handleInputChange" class="select-box">
-                      <option v-for="logic in displayPredicateLogics" :key="logic.value" :value="logic.value">{{
-                          logic.label
-                        }}
-                      </option>
-                    </select> <br><br>
-                    <label class="subtitle">Measurement Source: </label>
-                    <select v-model="changedMeasurementSource" @input="handleInputChange" class="select-box">
-                      <option v-for="source in measurementSourceOptions" :key="source" :value="source">{{
-                          source
-                        }}
-                      </option>
-                    </select> <br><br>
-                    <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }">Comparison
-                      Value: </label>
-                    <input v-model="changedPredicateComparisonValue" type="text" @input="handleComparisonInputChange"
-                           :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }" class="select-event-box"/>
-                    <br><br>
-                    <button class="add-event-button event-button" @click="changeEvent">Save Changes</button>
-                    <button class="delete-event-button event-button" @click="deleteEvent">Delete this event</button>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                        <label class="subtitle">Predicate Name: </label>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="changedPredicateName" type="text"/>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                        <label class="subtitle">Predicate Logic: </label>
+                      </div>
+                      <div class="container-row-element">
+                        <USelectMenu v-model="changedPredicateLogic" :options="displayPredicateLogics"/>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                        <label class="subtitle">Measurement Source: </label>
+                      </div>
+                      <div class="container-row-element">
+                        <USelectMenu v-model="changedMeasurementSource" :options="measurementSourceOptions"/>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                        <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }">Comparison
+                          Value: </label>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="changedPredicateComparisonValue" type="text"/>
+                      </div>
+                    </div>
+                    <br>
+                    <UButton class="m-1" color="green" @click="changeEvent">Save Changes</UButton>
+                    <UButton class="m-1" color="red" @click="deleteEvent">Delete Event</UButton>
                   </div>
                 </div>
 
                 <div v-if="item.key === 'manageMeasurementSource'">
                   <br/>
-                  <input v-model="newMeasurementSource" type="text" class="select-event-box"/>
-                  <button class="add-event-button event-button" @click="addCustomMeasurementSource">Add</button>
-                  <br>
-                  <select v-model="deleteMarkedMeasurementSource" class="select-box">
-                    <option v-for="option in measurementSourceOptions">{{
-                        option
-                      }}
-                    </option>
-                  </select>
-                  <button class="delete-event-button event-button" @click="deleteMeasurementSource">Delete</button>
+                  <div class="container-row">
+                    <div class="container-row-element mr-2">
+                      <UInput v-model="newMeasurementSource" type="text"/>
+                    </div>
+                    <div class="container-row-element-xs left">
+                      <UButton @click="addCustomMeasurementSource">Add</UButton>
+                    </div>
+                  </div>
+                  <br/>
+                  <div class="container-row">
+                    <div class="container-row-element mr-2">
+                      <USelectMenu searchable v-model="deleteMarkedMeasurementSource"
+                                   :options="measurementSourceOptions"/>
+                    </div>
+                    <div class="container-row-element-xs left">
+                      <UButton color="red" @click="deleteMeasurementSource"> Delete</UButton>
+                    </div>
+                  </div>
                 </div>
               </UCard>
             </template>
@@ -1438,7 +1807,7 @@ export default {
         </div>
 
 
-        <div v-if="this.type === 'stimulus'">
+        <div v-if=" this.type==='stimulus'">
 
           <UTabs :items="stimulusItems" class="w-full">
             <template #item="{ item }">
@@ -1452,71 +1821,119 @@ export default {
 
                 <div v-if="item.key === 'addCommand'">
                   <br/>
-                  <label class="subtitle">Command Name: </label>
-                  <input v-model="customCommandName" type="text" @input="handleInputChange" class="select-event-box"/>
-                  <br><br>
-                  <label class="subtitle">Command Content: </label>
-                  <input v-model="customCommandContent" type="text" @input="handleInputChange"
-                         class="select-event-box"/>
-                  <br>
-                  <button class="add-event-button event-button" @click="addCustomCommand">Add</button>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle">Command Name: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <UInput v-model="customCommandName" type="text"/>
+                    </div>
+                  </div>
+                  <br/>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle">Command Content: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <UInput v-model="customCommandContent" type="text"/>
+                    </div>
+                  </div>
+                  <br/>
+                  <UButton @click="addCustomCommand">Add</UButton>
                 </div>
 
                 <div v-if="item.key === 'editCommand'">
                   <br/>
-                  <label class="subtitle">Choose Command: </label>
-                  <select v-model="this.commandToChange" class="select-box" @input="commandToChangeSelected">
-                    <option v-for="command of state.commands" :key="command.command_name" :value="command">{{
-                        command.command_name
-                      }}
-                    </option>
-                  </select> <br><br>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle">Choose Command: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <USelectMenu searchable v-model="this.commandToChange" :options="state.commands"
+                                   option-attribute="command_name" value-attribute=""/>
+                    </div>
+                  </div>
+                  <br>
                   <div v-if="this.commandToChange !== ''">
-                    <label class="subtitle">Command Name: </label>
-                    <input v-model="changedCommandName" type="text" @input="handleInputChange"
-                           class="select-event-box"/>
-                    <br><br>
-                    <label class="subtitle">Command Content: </label>
-                    <input v-model="changedCommandContent" type="text" @input="handleInputChange"
-                           class="select-event-box"/>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                        <label class="subtitle">Command Name: </label>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="changedCommandName" type="text"></UInput>
+                      </div>
+                    </div>
                     <br>
-                    <button class="add-event-button event-button" @click="changeCommand">Save</button>
-                    <button class="delete-event-button event-button" @click="deleteCommand">Delete</button>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                        <label class="subtitle">Command Content: </label>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="changedCommandContent" type="text"></UInput>
+                      </div>
+                    </div>
+                    <br>
+                    <UButton class="mr-2" @click="changeCommand">Save</UButton>
+                    <UButton color="red" @click="deleteCommand">Delete</UButton>
                   </div>
                 </div>
 
                 <div v-if="item.key === 'addListener'">
                   <br/>
-                  <label class="subtitle">Listener Name: </label>
-                  <input v-model="customListenerName" type="text" @input="handleInputChange" class="select-event-box"/>
-                  <br><br>
-                  <label class="subtitle">Listener Content: </label>
-                  <input v-model="customListenerContent" type="text" @input="handleInputChange"
-                         class="select-event-box"/>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle">Listener Name: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <UInput v-model="customListenerName" type="text"></UInput>
+                    </div>
+                  </div>
                   <br>
-                  <button class="add-event-button event-button" @click="addCustomListener">Add</button>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle">Listener Content: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <UInput v-model="customListenerContent" type="text"></UInput>
+                    </div>
+                  </div>
+                  <br>
+                  <UButton @click="addCustomListener">Add</UButton>
                 </div>
 
                 <div v-if="item.key === 'editListener'">
                   <br/>
-                  <label class="subtitle">Choose Listener: </label>
-                  <select v-model="this.listenerToChange" class="select-box" @input="listenerToChangeSelected">
-                    <option v-for="listener of state.listeners" :key="listener.event_name" :value="listener">{{
-                        listener.listener_name
-                      }}
-                    </option>
-                  </select> <br><br>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                      <label class="subtitle">Choose Listener: </label>
+                    </div>
+                    <div class="container-row-element">
+                      <USelectMenu searchable v-model="this.listenerToChange" :options="state.listeners"
+                                   option-attribute="listener_name" value-attribute=""></USelectMenu>
+                    </div>
+                  </div>
+                  <br>
                   <div v-if="this.listenerToChange !== ''">
-                    <label class="subtitle">Listener Name: </label>
-                    <input v-model="changedListenerName" type="text" @input="handleInputChange"
-                           class="select-event-box"/>
-                    <br><br>
-                    <label class="subtitle">Listener Content: </label>
-                    <input v-model="changedListenerContent" type="text" @input="handleInputChange"
-                           class="select-event-box"/>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                        <label class="subtitle">Listener Name: </label>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="changedListenerName" type="text"/>
+                      </div>
+                    </div>
                     <br>
-                    <button class="add-event-button event-button" @click="changeListener">Save</button>
-                    <button class="delete-event-button event-button" @click="deleteListener">Delete</button>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                        <label class="subtitle">Listener Content: </label>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="changedListenerContent" type="text"/>
+                      </div>
+                    </div>
+                    <br>
+                    <UButton class="mr-2" @click="changeListener">Save</UButton>
+                    <UButton color="red" @click="deleteListener">Delete</UButton>
                   </div>
                 </div>
               </UCard>
@@ -1537,317 +1954,227 @@ export default {
         </div>
         <div v-if="this.pspSpecification.selectedScope === 'BeforeR'">
           Before
-          <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedScopeEventR"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
         </div>
         <div v-if="this.pspSpecification.selectedScope === 'AfterQ'">
           After
-          <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedScopeEventQ"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
         </div>
         <div v-if="this.pspSpecification.selectedScope === 'BetweenQandR'">
           Between
-          <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedScopeEventQ"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           and
-          <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedScopeEventR"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
         </div>
         <div v-if="this.pspSpecification.selectedScope === 'AfterQUntilR'">
           After
-          <select v-model="this.pspSpecification.selectedScopeEventQ" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedScopeEventQ"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           until
-          <select v-model="this.pspSpecification.selectedScopeEventR" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedScopeEventR"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
         </div>
 
         <br>
 
         <div v-if="this.pspSpecification.selectedOccurrence === 'SteadyState'">
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds] in the long run.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'MinimumDuration'">
           once
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [becomes satisfied] <br>
           it remains so for at least
-          <input v-model="this.pspSpecification.selectedTime" type="number" @input="handleInputChange"
-                 class="select-pattern-box"/>
-          <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" @input="handleInputChange"
-                 class="select-pattern-box"/>
+          <div class="container-row center">
+            <div class="min-width">
+              <div class="container-row center">
+                <div class="container-row-element">
+                  <UInput v-model="this.pspSpecification.selectedTime" type="number"/>
+                </div>
+                <div class="container-row-element">
+                  <UInput v-model="this.pspSpecification.selectedTimeUnitType" type="text"/>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'MaximumDuration'">
           once
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [becomes satisfied] <br>
           it remains so for less than
-          <input v-model="this.pspSpecification.selectedTime" type="number" @input="handleInputChange"
-                 class="select-pattern-box"/>
-          <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" @input="handleInputChange"
-                 class="select-pattern-box"/>
+          <div class="container-row center">
+            <div class="min-width">
+              <div class="container-row center">
+                <div class="container-row-element">
+                  <UInput v-model="this.pspSpecification.selectedTime" type="number"/>
+                </div>
+                <div class="container-row-element">
+                  <UInput v-model="this.pspSpecification.selectedTimeUnitType" type="text"/>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'Recurrence'">
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds] repeatedly <br>
           [every
-          <input v-model="this.pspSpecification.selectedTime" type="number" @input="handleInputChange"
-                 class="select-pattern-box"/>
-          <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" @input="handleInputChange"
-                 class="select-pattern-box"/>
+          <div class="container-row center">
+            <div class="min-width">
+              <div class="container-row center">
+                <div class="container-row-element">
+                  <UInput v-model="this.pspSpecification.selectedTime" type="number"/>
+                </div>
+                <div class="container-row-element">
+                  <UInput v-model="this.pspSpecification.selectedTimeUnitType" type="text"/>
+                </div>
+              </div>
+            </div>
+          </div>
           ]
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'Universality'">
           it is always the case that
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           holds.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'Absence'">
           it is never the case that
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           holds.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'Existence'">
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds] eventually.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'BoundedExistence'">
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds] at most
-          <input v-model="this.pspSpecification.selectedInterval" type="number" @input="handleInputChange"
-                 class="select-pattern-box"/>
+          <div class="container-row center">
+            <div class="min-width">
+              <UInput v-model="this.pspSpecification.selectedInterval" type="number"/>
+            </div>
+          </div>
           times.
         </div>
         <div v-if="this.pspSpecification.selectedOccurrence === 'TransientState'">
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds] after
-          <input v-model="this.pspSpecification.selectedTime" type="number" @input="handleInputChange"
-                 class="select-pattern-box"/>
-          <input v-model="this.pspSpecification.selectedTimeUnitType" type="text" @input="handleInputChange"
-                 class="select-pattern-box"/>
+          <div class="container-row center">
+            <div class="min-width">
+              <div class="container-row center">
+                <div class="container-row-element">
+                  <UInput v-model="this.pspSpecification.selectedTime" type="number"/>
+                </div>
+                <div class="container-row-element">
+                  <UInput v-model="this.pspSpecification.selectedTimeUnitType" type="text"/>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div v-if="this.pspSpecification.selectedOrder=== 'Response'">
           if
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [has occurred] <br>
           then in response
-          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+
           [eventually holds]. <br>
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
@@ -1859,54 +2186,32 @@ export default {
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
-          <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
-            <option value="Constraint">Constraint</option>
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" placeholder="Constraint" searchable
+                           v-model="this.pspSpecification.selectedConstraintEvent"
+                           :options="constraintPredicates"></USelectMenu>
+            </div>
+          </div>
+
         </div>
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChain1N'">
           if
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [has occurred] <br>
           then in response
-          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [eventually holds] <br>
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
@@ -1918,180 +2223,202 @@ export default {
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
-          <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
-            <option value="Constraint">Constraint</option>
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select> <br>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" placeholder="Constraint" searchable
+                           v-model="this.pspSpecification.selectedConstraintEvent"
+                           :options="constraintPredicates"></USelectMenu>
+            </div>
+          </div>
+          <br>
 
           <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index"
                class="chained-event-section">
             <label class="title">followed by </label>
-            <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                      :value="event.event_name">
-                {{ event.predicate_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                      :value="command.command_name">
-                {{ command.command_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                      :value="listener.listener_name">
-                {{ listener.listener_name }}
-              </option>
-            </select> <br>
-            <div>
-              <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" @input="handleInputChange"
-                      class="select-box">
-                <option value="none">---</option>
-                <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
-              </select>
-              <div v-if="chainedEvent.time_bound.type === 'Upper' ">
-                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
-                       placeholder="Within" @input="handleInputChange">
-                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
-              </div>
-              <div v-if="chainedEvent.time_bound.type === 'Lower' ">
-                <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="After"
-                       @input="handleInputChange">
-                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
-              </div>
-              <div v-if="chainedEvent.time_bound.type === 'Interval' ">
-                <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number"
-                       placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
-                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
-                       placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
-                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
+
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" searchable v-model="chainedEvent.event.name"
+                             :options="predicates"></USelectMenu>
               </div>
             </div>
-            <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
-              <option value="Constraint">Constraint</option>
-              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                      :value="event.event_name">
-                {{ event.predicate_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                      :value="command.command_name">
-                {{ command.command_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                      :value="listener.listener_name">
-                {{ listener.listener_name }}
-              </option>
-            </select> <br>
-            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
-          </div>
-          <br>
+            <br>
+            <div>
 
-          <button class="button" @click="addChainedEvent">Add Chained Event</button>
+              <div class="container-row center">
+                <div class="min-width">
+                  <USelectMenu class="w-full" v-model="chainedEvent.time_bound.type"
+                               :options="extendedTimeBoundOptions" option-attribute="" value-attribute=""></USelectMenu>
+                </div>
+              </div>
+
+              <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                placeholder="Within"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Lower' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number"
+                                placeholder="After"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Interval' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number"
+                                placeholder="Enter lower Limit"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                placeholder="Enter upper Limit"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" placeholder="Constraint" searchable
+                             v-model="chainedEvent.constrain_event.name"
+                             :options="constraintPredicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <UButton color="gray" @click="deleteChainedEvent(index)">Remove Chained Event</UButton>
+          </div>
+
+          <UButton color="gray" @click="addChainedEvent">Add Chained Event</UButton>
           <br>
           [eventually holds]
         </div>
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChainN1'">
           if
-          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select> <br>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          <br>
 
           <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index"
                class="chained-event-section">
             <label class="title">followed by </label>
-            <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                      :value="event.event_name">
-                {{ event.predicate_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                      :value="command.command_name">
-                {{ command.command_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                      :value="listener.listener_name">
-                {{ listener.listener_name }}
-              </option>
-            </select> <br>
-            <div>
-              <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" @input="handleInputChange"
-                      class="select-box">
-                <option value="none">---</option>
-                <option v-for="time in timeBoundOptions" :key="time">{{ time }}</option>
-              </select>
-              <div v-if="chainedEvent.time_bound.type === 'Upper' ">
-                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
-                       placeholder="Within" @input="handleInputChange">
-                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
-              </div>
-              <div v-if="chainedEvent.time_bound.type === 'Lower' ">
-                <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number" placeholder="After"
-                       @input="handleInputChange">
-                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
-              </div>
-              <div v-if="chainedEvent.time_bound.type === 'Interval' ">
-                <input v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number"
-                       placeholder="Enter lower Limit" @change="checkTime" @input="handleInputChange">
-                <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
-                       placeholder="Enter upper Limit" @change="checkTime" @input="handleInputChange">
-                <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" searchable v-model="chainedEvent.event.name"
+                             :options="predicates"></USelectMenu>
               </div>
             </div>
-            <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
-              <option value="Constraint">Constraint</option>
-              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                      :value="event.event_name">
-                {{ event.predicate_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                      :value="command.command_name">
-                {{ command.command_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                      :value="listener.listener_name">
-                {{ listener.listener_name }}
-              </option>
-            </select> <br>
-            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
+            <br>
+            <div>
+              <div class="container-row center">
+                <div class="min-width">
+                  <USelectMenu class="w-full" v-model="chainedEvent.time_bound.type"
+                               :options="extendedTimeBoundOptions" option-attribute="" value-attribute=""></USelectMenu>
+                </div>
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                placeholder="Within"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Lower' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number"
+                                placeholder="After"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Interval' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number"
+                                placeholder="Enter lower Limit"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                placeholder="Enter upper Limit"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" placeholder="Constraint" searchable
+                             v-model="chainedEvent.constrain_event.name"
+                             :options="constraintPredicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event
+            </button>
           </div>
           <br>
           <button class="button" @click="addChainedEvent">Add Chained Event</button>
           <br>
           [have occured] <br>
           then in response
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [eventually holds] <br>
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
@@ -2103,54 +2430,31 @@ export default {
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
-          <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
-            <option value="Constraint">Constraint</option>
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" placeholder="Constraint" searchable
+                           v-model="this.pspSpecification.selectedConstraintEvent"
+                           :options="constraintPredicates"></USelectMenu>
+            </div>
+          </div>
         </div>
         <div v-if="this.pspSpecification.selectedOrder=== 'ResponseInvariance'">
           if
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [has occurred] <br>
           then in response
-          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds] continually.
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
@@ -2165,123 +2469,91 @@ export default {
         </div>
         <div v-if="this.pspSpecification.selectedOrder=== 'Precedence'">
           if
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds] then it must have been the case <br>
           that
-          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
-          [has occured] <br>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          [has occurred] <br>
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
           before
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds].
         </div>
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChain1N'">
           if
-          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [has occurred] <br>
 
           <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index"
                class="chained-event-section">
             <label class="title">and afterwards </label>
-            <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                      :value="event.event_name">
-                {{ event.predicate_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                      :value="command.command_name">
-                {{ command.command_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                      :value="listener.listener_name">
-                {{ listener.listener_name }}
-              </option>
-            </select> <br>
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" searchable v-model="chainedEvent.event.name"
+                             :options="predicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
             <div>
               <div>
-                <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" @input="handleInputChange"
-                        class="select-box">
-                  <option value="none">---</option>
-                  <option value="Upper">Upper</option>
-                </select>
+                <div class="container-row center">
+                  <div class="min-width">
+                    <USelectMenu class="w-full" v-model="chainedEvent.time_bound.type"
+                                 :options="upperTimeBoundOptions" option-attribute="" value-attribute=""></USelectMenu>
+                  </div>
+                </div>
                 <div v-if="chainedEvent.time_bound.type === 'Upper' ">
-                  <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
-                         placeholder="Within" @input="handleInputChange">
-                  <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
+                  <div class="container-row center">
+                    <div class="min-width">
+                      <div class="container-row center">
+                        <div class="container-row-element">
+                          <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                  placeholder="Within"/>
+                        </div>
+                        <div class="container-row-element">
+                          <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
-              <option value="Constraint">Constraint</option>
-              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                      :value="event.event_name">
-                {{ event.predicate_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                      :value="command.command_name">
-                {{ command.command_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                      :value="listener.listener_name">
-                {{ listener.listener_name }}
-              </option>
-            </select> <br>
-            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" placeholder="Constraint" searchable
+                             v-model="chainedEvent.constrain_event.name"
+                             :options="constraintPredicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event
+            </button>
           </div>
           <br>
 
@@ -2290,137 +2562,100 @@ export default {
 
           [holds] <br>
           then it must be the case that
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [has occured] <br>
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
           before
-          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select> <br>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          <br>
           [holds].
-          <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
-            <option value="Constraint">Constraint</option>
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" placeholder="Constraint" searchable
+                           v-model="this.pspSpecification.selectedConstraintEvent"
+                           :options="constraintPredicates"></USelectMenu>
+            </div>
+          </div>
         </div>
         <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChainN1'">
           if
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds] <br>
           then it must be the case that
-          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select> <br>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          <br>
 
           <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index"
                class="chained-event-section">
             <label class="title">and afterwards </label>
-            <select v-model="chainedEvent.event.name" @input="handleInputChange">
-              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                      :value="event.event_name">
-                {{ event.predicate_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                      :value="command.command_name">
-                {{ command.command_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                      :value="listener.listener_name">
-                {{ listener.listener_name }}
-              </option>
-            </select> <br>
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" searchable v-model="chainedEvent.event.name"
+                             :options="predicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
             <div>
               <div>
-                <select v-model="chainedEvent.time_bound.type" @change="handleLimitChange" @input="handleInputChange"
-                        class="select-box">
-                  <option value="none">---</option>
-                  <option value="Upper">Upper</option>
-                </select>
+                <div class="container-row center">
+                  <div class="min-width">
+                    <USelectMenu class="w-full" v-model="chainedEvent.time_bound.type"
+                                 :options="extendedTimeBoundOptions" option-attribute=""
+                                 value-attribute=""></USelectMenu>
+                  </div>
+                </div>
                 <div v-if="chainedEvent.time_bound.type === 'Upper' ">
-                  <input v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
-                         placeholder="Within" @input="handleInputChange">
-                  <input v-model="chainedEvent.time_bound.time_unit" type="text" @input="handleInputChange">
+                  <div class="container-row center">
+                    <div class="min-width">
+                      <div class="container-row center">
+                        <div class="container-row-element">
+                          <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                  placeholder="Within"/>
+                        </div>
+                        <div class="container-row-element">
+                          <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <select v-model="chainedEvent.constrain_event.name" @input="handleInputChange">
-              <option value="Constraint">Constraint</option>
-              <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                      :value="event.event_name">
-                {{ event.predicate_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                      :value="command.command_name">
-                {{ command.command_name }}
-              </option>
-              <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                      :value="listener.listener_name">
-                {{ listener.listener_name }}
-              </option>
-            </select> <br>
-            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event</button>
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" placeholder="Constraint" searchable
+                             v-model="chainedEvent.constrain_event.name"
+                             :options="constraintPredicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event
+            </button>
           </div>
           <br>
 
@@ -2432,68 +2667,39 @@ export default {
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
-          <select v-model="this.pspSpecification.selectedConstraintEvent" @input="handleInputChange">
-            <option value="Constraint">Constraint</option>
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select> <br>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" placeholder="Constraint" searchable
+                           v-model="this.pspSpecification.selectedConstraintEvent"
+                           :options="constraintPredicates"></USelectMenu>
+            </div>
+          </div>
+          <br>
           before
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds] <br>
         </div>
         <div v-if="this.pspSpecification.selectedOrder=== 'Until'">
-          <select v-model="this.pspSpecification.selectedEventP" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds] without interruption until <br>
-          <select v-model="this.pspSpecification.selectedEventS" @input="handleInputChange">
-            <option v-if="this.type === 'response'" v-for="event of state.events" :key="event.event_name"
-                    :value="event.event_name">
-              {{ event.predicate_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="command of state.commands" :key="command.command_name"
-                    :value="command.command_name">
-              {{ command.command_name }}
-            </option>
-            <option v-if="this.type === 'stimulus'" v-for="listener of state.listeners" :key="listener.listener_name"
-                    :value="listener.listener_name">
-              {{ listener.listener_name }}
-            </option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
           [holds]
           <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
@@ -2548,10 +2754,19 @@ export default {
       <div class="message-container">
         <p>Preview:</p>
         <div v-if="this.pspSpecification.mapping">
-          Target Logic:
-          <select v-model="this.pspSpecification.selectedTargetLogic" @input="handleInputChange">
-            <option v-for="targetLogic in targetLogicOptions" :key="targetLogic">{{ targetLogic }}</option>
-          </select>
+          <div class="container-row center">
+            <div class="min-width">
+              <div class="container-row center">
+                <div class="container-row-element right mr-2">
+                  Target Logic:
+                </div>
+                <div class="container-row-element">
+                  <USelectMenu v-model="this.pspSpecification.selectedTargetLogic" value-attribute=""
+                               option-attribute="" :options="targetLogicOptions"/>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <br/>
         <div>
@@ -2595,14 +2810,12 @@ export default {
   flex: 1;
 }
 
-.selection-group {
-  margin: 1vw;
+.center {
+  justify-content: center;
 }
 
-.fake-selection-group {
+.selection-group {
   margin: 1vw;
-  pointer-events: none;
-  opacity: 0.5;
 }
 
 .title {
@@ -2615,29 +2828,6 @@ export default {
   margin: 1vw;
 }
 
-.select-box {
-  width: 15vw;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
-}
-
-.select-pattern-box {
-  width: 30%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.select-event-box {
-  width: 30%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-left: 0.4vw;
-}
-
 .radio-group {
   display: flex;
   justify-content: center;
@@ -2645,10 +2835,6 @@ export default {
 
 .radio-group input {
   margin-right: 5px;
-}
-
-.radio {
-  margin-right: 1vw;
 }
 
 .file-upload-container {
@@ -2731,8 +2917,6 @@ export default {
   padding-bottom: 1.5vw;
   margin: auto;
   min-height: 6vw;
-  max-height: 40vh;
-  overflow-y: auto;
 }
 
 .message-container p {
@@ -2752,43 +2936,6 @@ export default {
   cursor: pointer;
   border-radius: 4px;
   width: 8vw;
-}
-
-.event-button {
-  background-color: #ccc;
-  border: none;
-  color: black;
-  padding: 0.5vw 0.5vw;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 0.6vw;
-  margin: 1vw;
-  cursor: pointer;
-  border-radius: 4px;
-  width: 8vw;
-}
-
-.event-button:hover {
-  background-color: #b9b9b9;
-}
-
-.add-event-button {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.add-event-button:hover {
-  background-color: #3d8d41;
-}
-
-.delete-event-button {
-  background-color: #da2222;
-  color: white;
-}
-
-.delete-event-button:hover {
-  background-color: #a11414;
 }
 
 .chained-event-section {
@@ -2868,6 +3015,14 @@ export default {
 .grayed-out {
   pointer-events: none;
   opacity: 0.5;
+}
+
+.breaking-div {
+  display: inline;
+}
+
+.min-width {
+  width: 15vw;
 }
 
 </style>

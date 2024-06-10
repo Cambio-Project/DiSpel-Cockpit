@@ -20,6 +20,12 @@
     display: block;
 }
 
+.right {
+    text-align: right;
+    overflow: auto;
+    display: block;
+}
+
 @keyframes blue-glowing {
     0% {
         background-color: rgb(59 130 246 / var(--tw-bg-opacity));
