@@ -362,7 +362,7 @@ export default {
                   Resilience Score:
                 </h4>
                 <UCard :style="{ 'background-color': getResilienceScoreColor(this.result)}"
-                       class='text-center text-2xl font-bold'>
+                       class='text-center text-2xl font-bold simple-shadow'>
               <span>
                     {{ getResilienceScore(this.result) }}
               </span>
@@ -373,7 +373,7 @@ export default {
                 <h4 class="text-mb font-bold mb-1 text-center">
                   Simulation Response Satisfaction:
                 </h4>
-                <UCard class='text-center text-2xl font-bold'>
+                <UCard class='text-center text-2xl font-bold simple-shadow'>
               <span>
                     {{ getSimulationVerificationResultsPerScenario(this.result) }}
               </span>
@@ -384,7 +384,7 @@ export default {
                 <h4 class="text-mb font-bold mb-1 text-center">
                   Monitoring Response Satisfaction:
                 </h4>
-                <UCard class='text-center text-2xl font-bold'>
+                <UCard class='text-center text-2xl font-bold simple-shadow'>
               <span>
                     {{ getSearchVerificationResultsPerScenario(this.result) }}
               </span>
@@ -455,7 +455,7 @@ export default {
 
               <UDivider label="Executions" class="mt-2 mb-2"/>
               <div v-for="(resultName,resultIndex) in result.simulationNames">
-                <div class="scenario-box mb-2"
+                <div class="scenario-box mb-4"
                      :class="{ 'green-border' : this.result.searchResultsScenarioSuccesses[resultIndex], 'red-border' : !this.result.searchResultsScenarioSuccesses[resultIndex] }">
                   <div class="container-row">
                     <div class="container-element-xs w-full">
@@ -549,7 +549,7 @@ export default {
 
               <UDivider label="Executions" class="mt-2 mb-2"/>
               <div v-for="(resultName,resultIndex) in result.searchNames">
-                <div class="scenario-box mb-2"
+                <div class="scenario-box mb-4"
                      :class="{ 'green-border' : this.result.searchResultsScenarioSuccesses[resultIndex], 'red-border' : !this.result.searchResultsScenarioSuccesses[resultIndex] }">
                   <div class="container-row">
                     <div class="container-element-xs w-full">

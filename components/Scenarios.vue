@@ -236,7 +236,7 @@ export default {
     <UContainer>
       <div>
         <template v-for="scenario in orderedScenarios">
-          <div class="scenario-box mt-4 mb-4">
+          <div class="scenario-box mt-4 mb-4" :style="{'border-color': getResilienceScoreColor(this.findResults(scenario.simulationID))}">
             <!-- Scenario Header -->
             <div class="container-row mt-1 mb-1">
               <!-- Category -->
