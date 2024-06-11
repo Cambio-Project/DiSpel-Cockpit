@@ -565,30 +565,12 @@ body {
   background-color: #f4f4f4;
 }
 
-
 .select-box {
   width: 15vw;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
   background-color: white;
-}
-
-.scenario-box {
-  border-radius: 0;
-  padding: 0;
-  border: 1px solid #ddd;
-  background-color: #f9f9f9;
-  transition: background-color 0.3s;
-}
-
-.scenario-box:hover {
-  background-color: #f0f0f0;
-}
-
-.scenario-title {
-  text-align: center;
-  font-size: 1.2em;
 }
 
 </style>

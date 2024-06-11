@@ -14,6 +14,10 @@
     width: 25%;
 }
 
+.container-row-element-xxs {
+    width: 5%;
+}
+
 .left {
     text-align: left;
     overflow: auto;
@@ -24,6 +28,31 @@
     text-align: right;
     overflow: auto;
     display: block;
+}
+
+.scenario-title {
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.scenario-box {
+    border-radius: 0;
+    padding: 0;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    transition: background-color 0.3s;
+}
+
+.scenario-box:hover {
+    background-color: #f0f0f0;
+}
+
+.green-border {
+    border: 2px solid green;
+}
+
+.red-border {
+    border: 2px solid red;
 }
 
 @keyframes blue-glowing {
