@@ -212,18 +212,6 @@ export default {
 </script>
 
 <template>
-  <!--Headline-->
-  <div class="mb-4 mt-2">
-    <h1 class="text-3xl"> Scenarios
-      <UTooltip text="">
-        <template #text>
-          <span> Using this view, you can manage resilience scenarios. </span>
-        </template>
-        <Icon name="i-material-symbols-info-outline-rounded" class="text-lg"></Icon>
-      </UTooltip>
-    </h1>
-  </div>
-
   <!--Mainframe-->
   <div>
     <!--Tools-->

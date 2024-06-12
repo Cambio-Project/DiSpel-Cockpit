@@ -36,8 +36,6 @@ export default {
 </script>
 
 <template>
-  <h1 class="text-3xl">Dashboard Landing Page</h1>
-
   <UContainer class="flex flex-col items-center space-y-5">
     <UDivider class="mt-2" label=""/>
     <div>

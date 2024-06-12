@@ -320,10 +320,6 @@ const config = useRuntimeConfig()
 
 <template :key="componentKey">
   <!--Headline-->
-  <div>
-    <h1 class="text-3xl mt-2"> Scenario Editor </h1>
-  </div>
-
   <!--Main Frame-->
   <div>
     <h3 class="center">

@@ -14,6 +14,10 @@ export function toScenariosOverview(router = this.$router) {
     router.push('/scenariosSite');
 }
 
+export function toStatus(router = this.$router) {
+    router.push('/');
+}
+
 export function toRefinement(simID, responseIndex, file, isSimulation, router = this.$router) {
     router.push('/tqPropRefinerSiteDynamic?sim_id=' + simID + '&response_index=' + responseIndex + '&file=' + file + '&isSimulation=' + isSimulation);
 }

@@ -1517,10 +1517,6 @@ export default {
 </script>
 
 <template :key="componentKey">
-  <div class="mb-4 mt-2">
-    <h1 class="text-3xl"> PSPWizard </h1>
-  </div>
-
   <div class="page-container">
     <div class="file-upload-container">
       <div class="file-upload">

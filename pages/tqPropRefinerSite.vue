@@ -1,5 +1,7 @@
 <script setup lang="ts">
 
+import Navbar from "~/components/Navbar.vue";
+
 const simId = ref("")
 const pattern = ref("Absence")
 
@@ -12,6 +14,7 @@ let src = computed(() => "http://"+config.public.tqPropRefinerDomain+":"+config.
 </script>
 
 <template>
+  <Navbar title="Scenario Refinement"></Navbar>
 
   <input v-model="simId" placeholder="enter simulation id...">
 

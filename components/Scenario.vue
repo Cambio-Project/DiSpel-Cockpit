@@ -167,8 +167,8 @@ export default {
 <template>
   <div v-if="scenario">
     <!--Headline-->
-    <div class="mb-2 mt-2">
-      <h1 class="text-3xl">Title: {{ scenario.name }} </h1>
+    <div class="mb-4 mt-2">
+      <h1 class="text-3xl">{{ scenario.name }} </h1>
 
       <div class="text-gray-300">
         {{ "Scenario-ID: " + scenario.simulationID }}
@@ -621,11 +621,12 @@ export default {
           </UContainer>
         </template>
       </UAccordion>
+      <UDivider/>
     </UContainer>
 
   </div>
 
-  <div class="mt-2">
+  <div class="mt-4 mb-4">
     <UButton @click="toScenariosOverview()">Complete</UButton>
   </div>
 </template>
