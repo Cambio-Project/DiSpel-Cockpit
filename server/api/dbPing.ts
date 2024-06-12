@@ -6,19 +6,19 @@ export default defineEventHandler(async (event) => {
 
     const endpointStatus = {
         pspWizard: {
-            domain: "http://"+config.public.pspDomain+":"+config.public.pspPort,
+            domain: "http://" + config.public.pspDomain + ":" + config.public.pspPort,
             status: "red"
         },
         miSim: {
-            domain: "http://"+config.public.miSimDomain+":"+config.public.miSimPort,
+            domain: "http://" + config.public.miSimDomain + ":" + config.public.miSimPort,
             status: "red"
         },
         moSim: {
-            domain: "http://"+config.public.moSimDomain+":"+config.public.moSimPort,
+            domain: "http://" + config.public.moSimDomain + ":" + config.public.moSimPort,
             status: "red"
         },
         tbVerifier: {
-            domain: "http://"+config.public.tbVerifierDomain+":"+config.public.tbVerifierPort,
+            domain: "http://" + config.public.tbVerifierDomain + ":" + config.public.tbVerifierPort,
             status: "red"
         },
         tqPropRefiner: {
@@ -31,20 +31,43 @@ export default defineEventHandler(async (event) => {
         }
     };
 
+    var someRed = false
+    var someGreen = false
+
     for (let endpoint in endpointStatus) {
         if (endpoint === "db") {
-            continue
+            if (mongoose.connection.readyState === 1) {
+                endpointStatus.db.status = "green"
+                someGreen = true
+            } else {
+                someRed = true
+            }
+        } else {
+            try {
+                // @ts-ignore
+                await fetch(endpointStatus[endpoint].domain, {method: 'POST'});
+                // @ts-ignore
+                endpointStatus[endpoint].status = "green"
+                someGreen = true
+            } catch (error) {
+                someRed = true
+            }
         }
-        try {
-            // @ts-ignore
-            await fetch(endpointStatus[endpoint].domain, { method: 'POST' });
-            // @ts-ignore
-            endpointStatus[endpoint].status = "green"
-        } catch (error) {}
     }
 
-    if (mongoose.connection.readyState === 1){
-        endpointStatus.db.status = "green"
+    let allStatus = "red"
+    if (someGreen) {
+        if (someRed) {
+            allStatus = "yellow"
+        } else {
+            allStatus = "green"
+        }
+    }
+
+    // @ts-ignore
+    endpointStatus["all"] = {
+        domain: "",
+        status: allStatus
     }
 
     return endpointStatus;

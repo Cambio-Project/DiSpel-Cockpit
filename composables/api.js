@@ -1,3 +1,17 @@
+export async function updateServiceState() {
+    let serviceStatus = {}
+    const res = await fetch("/api/dbPing", {
+        method: "POST"
+    })
+    const body = await res.json()
+
+    for (const bodyElement in body) {
+        // @ts-ignore
+        serviceStatus[bodyElement] = body[bodyElement].status
+    }
+    return serviceStatus
+}
+
 export async function initScenario() {
     const res = await fetch("/api/initScenario", {
         method: "POST"
