@@ -115,7 +115,8 @@ export default {
       results: null,
       scenarios: [],
       sort: null,
-      sortDirectionDown: true
+      sortDirectionDown: true,
+      showTransformations: false
     };
   },
   methods: {
@@ -237,6 +238,9 @@ export default {
           </UButton>
         </div>
         <div class="float-right container-row-element-s">
+          <UCheckbox v-model="this.showTransformations" label="Show Transformations" class="mt-2"/>
+        </div>
+        <div class="float-right container-row-element-s">
           <USelectMenu placeholder="Transform to Target Logic" v-model="target" :options="targetLogics"
                        value-attribute="id" size="lg"
                        option-attribute="name"/>
@@ -341,15 +345,14 @@ export default {
                     <span>
                 <!--{{scenario.responses[0]}}-->
                 <ul>
-                <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus">
-                  <div class="left">
-                {{ index + 1 }}.
-                <span>
-                <i class="sel-line "> <strong>SEL: </strong> {{ stimulus.SEL }} </i>
-                </span>
-                  </div>
-                  <div>
-                    <div class="container-row">
+                <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus" class="mb-1">
+                  <div class="container-row">
+                    <div class="container-row-element-xxs">
+                      {{ index + 1 }}.
+                    </div>
+                    <div class="container-row-element">
+                       <i class="left"> <strong> {{ stimulus.SEL }} </strong> </i>
+                      <div v-if="showTransformations" class="container-row">
                       <div class="container-row-element-xs">
                       <USelectMenu class="foreground" v-model="stimulus.target_logic" :options="targetLogics"
                                    value-attribute="id"
@@ -379,7 +382,8 @@ export default {
                 </span>
                       </div>
                     </div>
-                </div>
+                    </div>
+                  </div>
               </li>
               </ul>
               </span>
@@ -389,7 +393,7 @@ export default {
                   <div v-if="item.key === 'response'">
               <span>
                 <ul>
-                <li v-for="(response, index) in scenario.responses" :key="response" class="">
+                <li v-for="(response, index) in scenario.responses" :key="response" class="mb-1">
                 <div class="container-row">
                   <div class="container-row-element-xs">
                     <!-- Response Statistics -->
@@ -413,8 +417,8 @@ export default {
 
                   <div class="container-row-element">
                 <span>
-                <i class="left"> <strong>SEL:</strong> {{ response.SEL }} </i>
-                    <div class="container-row">
+                <i class="left"> <strong> {{ response.SEL }} </strong> </i>
+                    <div v-if="showTransformations" class="container-row">
                       <div class="container-row-element-xs">
                       <USelectMenu v-model="response.target_logic" :options="targetLogics" value-attribute="id"
                                    option-attribute="name"/>
@@ -456,26 +460,26 @@ export default {
                   <div v-if="item.key === 'environment'" class="left">
                     <ul>
                       <li v-for="architecture in scenario.environment.architecture">
-                        - Architecture: <i>{{ Object.keys(architecture)[0] }}</i>
+                        - <strong>Architecture:</strong> <i>{{ Object.keys(architecture)[0] }}</i>
                       </li>
                     </ul>
                     <ul>
                       <li v-for="experiment in scenario.environment.experiment">
-                        - Experiment: <i>{{ Object.keys(experiment)[0] }}</i>
+                        - <strong>Experiment:</strong> <i>{{ Object.keys(experiment)[0] }}</i>
                       </li>
                     </ul>
                     <ul>
                       <li v-for="load in scenario.environment.load">
-                        - Load Profile: <i>{{ Object.keys(load)[0] }}</i>
+                        - <strong>Load Profile:</strong> <i>{{ Object.keys(load)[0] }}</i>
                       </li>
                     </ul>
                     <ul>
                       <li v-for="monitoringData in scenario.environment.monitoringData">
-                        - Monitoring Data: <i>{{ Object.keys(monitoringData)[0] }}</i>
+                        - <strong>Monitoring Data:</strong> <i>{{ Object.keys(monitoringData)[0] }}</i>
                       </li>
                     </ul>
                     <div>
-                      - Search Window Size: {{ scenario.searchWindowSize }}
+                      - <strong>Search Window Size:</strong> {{ scenario.searchWindowSize }}
                     </div>
                   </div>
                 </UContainer>
