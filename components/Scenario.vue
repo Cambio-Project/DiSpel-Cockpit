@@ -192,22 +192,16 @@ export default {
               <h4 class="text-mb font-bold mb-2">
                 Type:
               </h4>
-
-              <UBadge v-if="scenario.category === 'None' " color="gray" class="customCategory">
-                {{ 'None category defined' }}
-              </UBadge>
-
-              <UBadge v-if="scenario.category === 'Exploratory' " color="purple" class="customCategory">
-                {{ 'Exploratory' }}
-              </UBadge>
-
-              <UBadge v-if="scenario.category === 'Growth' " color="blue" class="customCategory">
-                {{ 'Growth' }}
-              </UBadge>
-
-              <UBadge v-if="scenario.category === 'UseCase' " color="yellow" class="customCategory">
-                {{ 'Use Case' }}
-              </UBadge>
+              <div class="container-row">
+                <span>
+                  <UButton :icon="getScenarioTypeIcon(scenario.category)" :ui="{ rounded: 'rounded-full' }"
+                           :color="getScenarioTypeColor(scenario.category)"
+                           size="2xs" square/>
+                </span>
+                <span class="left mt-1 ml-1">
+                  {{ scenario.category }}
+                </span>
+              </div>
             </div>
 
             <div class="left mb-2 mt-2">
