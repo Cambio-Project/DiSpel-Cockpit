@@ -27,6 +27,14 @@ export default {
       preparePopups();
     });
   },
+  watch: {
+    'target': {
+      handler() {
+        this.changeAllTargets(this.scenarios, this.target)
+      },
+      deep: true
+    },
+  },
   computed: {
     sortingDirectionIcon: function () {
       if (this.sortDirectionDown) {
@@ -92,7 +100,17 @@ export default {
         key: 'category',
         label: 'Category'
       }],
-      targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
+      targetLogics: [
+        {name: "SEL", id: 0},
+        {
+          name: "LTL",
+          id: 1
+        }, {name: "MTL", id: 2},
+        {name: "Prism", id: 3},
+        {name: "Quantitative Prism", id: 4}, {
+          name: "TBV (untimed)",
+          id: 5
+        }, {name: "TBV (timed)", id: 6}],
       target: null,
       results: null,
       scenarios: [],
@@ -191,52 +209,55 @@ export default {
 <template>
   <!--Headline-->
   <div class="mb-4 mt-2">
-    <h1 class="text-3xl"> Scenarios </h1>
+    <h1 class="text-3xl"> Scenarios
+      <UTooltip text="">
+        <template #text>
+          <span> Using this view, you can manage resilience scenarios. </span>
+        </template>
+        <Icon name="i-material-symbols-info-outline-rounded" class="text-lg"></Icon>
+      </UTooltip>
+    </h1>
   </div>
 
   <!--Mainframe-->
   <div>
     <!--Tools-->
-    <div>
-      <UContainer class="mb-4 container-row">
+    <UContainer>
+      <div class="container-row mt-2 mb-4">
         <div class="float-left container-row-element">
-          <UButton class="float-left mr-4" size="lg" @click="openEditor">New Scenario</UButton>
-          <UButton class="float-left" color="blue" size="lg" @click="downloadZip()">Download all Scenarios
+          <UButton icon="i-heroicons-plus" class="float-left mr-4" color="green" size="lg" @click="openEditor">New
+            Scenario
+          </UButton>
+          <UButton icon="i-heroicons-cloud-arrow-down-16-solid" class="float-left" size="lg" @click="downloadZip()">
+            Download Scenarios
           </UButton>
         </div>
-        <div class="float-right container-row-element">
-          <div class="float-right">
-            {{ "Transform all Target Logics to " }}
-            <select class="select-box" @change="changeAllTargets(this.scenarios, this.target)" v-model="target">
-              <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
-                {{ targetLogic }}
-              </option>
-            </select></div>
+        <div class="float-right container-row-element-s">
+          <USelectMenu placeholder="Transform to Target Logic" v-model="target" :options="targetLogics"
+                       value-attribute="id" size="lg"
+                       option-attribute="name"/>
         </div>
-      </UContainer>
-    </div>
-    <div>
-      <UContainer class="mb-1 container-row">
-        <UButtonGroup class="container-row-element-xs" size="sm" orientation="horizontal">
-          <USelectMenu
-              class="w-full"
-              v-model="sort"
-              :options="sortOptions"
-              placeholder="Sort by"
-              value-attribute="key"
-              option-attribute="label"
-          />
-          <UButton :icon="sortingDirectionIcon" color="gray" @click="toggleSortingDirection()"/>
-        </UButtonGroup>
-        <div class="container-row-element">
+        <div class="container-row-element-s ml-2">
+          <UButtonGroup class="w-full" :class="w-full" size="lg" orientation="horizontal">
+            <USelectMenu
+                :class="'w-full'"
+                v-model="sort"
+                :options="sortOptions"
+                placeholder="Sort by"
+                value-attribute="key"
+                option-attribute="label"
+            />
+            <UButton :icon="sortingDirectionIcon" color="gray" @click="toggleSortingDirection()"/>
+          </UButtonGroup>
         </div>
-      </UContainer>
-    </div>
+      </div>
+    </UContainer>
 
     <UContainer>
       <div>
         <template v-for="scenario in orderedScenarios">
-          <div class="scenario-box mt-4 mb-4" :style="{'border-color': getResilienceScoreColor(this.findResults(scenario.simulationID))}">
+          <div class="scenario-box mt-4 mb-4"
+               :style="{'border-color': getResilienceScoreColor(this.findResults(scenario.simulationID))}">
             <!-- Scenario Header -->
             <div class="container-row mt-1 mb-1">
               <!-- Category -->
@@ -320,17 +341,21 @@ export default {
                     <span>
                 <!--{{scenario.responses[0]}}-->
                 <ul>
-                <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus" class="left">
+                <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus">
+                  <div class="left">
                 {{ index + 1 }}.
                 <span>
-                <i class="sel-line"> <strong>SEL: </strong> {{ stimulus.SEL }} </i>
+                <i class="sel-line "> <strong>SEL: </strong> {{ stimulus.SEL }} </i>
                 </span>
-
+                  </div>
                   <div>
-                <select v-model="stimulus.target_logic" class="select-box mr-2">
-                  <option v-for="targetLogic in targetLogics" :key="targetLogic"
-                          :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-                </select>
+                    <div class="container-row">
+                      <div class="container-row-element-xs">
+                      <USelectMenu class="foreground" v-model="stimulus.target_logic" :options="targetLogics"
+                                   value-attribute="id"
+                                   option-attribute="name"/>
+                      </div>
+                      <div class="container-row-element ml-2 left">
                 <span v-if="stimulus.target_logic===0">
                   {{ stimulus.SEL }}
                 </span>
@@ -352,6 +377,8 @@ export default {
                 <span v-if="stimulus.target_logic===6">
                   {{ stimulus.TBV_timed }}
                 </span>
+                      </div>
+                    </div>
                 </div>
               </li>
               </ul>
@@ -362,7 +389,7 @@ export default {
                   <div v-if="item.key === 'response'">
               <span>
                 <ul>
-                <li v-for="(response, index) in scenario.responses" :key="response" class="left">
+                <li v-for="(response, index) in scenario.responses" :key="response" class="">
                 <div class="container-row">
                   <div class="container-row-element-xs">
                     <!-- Response Statistics -->
@@ -386,12 +413,13 @@ export default {
 
                   <div class="container-row-element">
                 <span>
-                <i> <strong>SEL:</strong> {{ response.SEL }} </i>
-                <br>
-                  <select v-model="response.target_logic" class="select-box mr-2">
-                  <option v-for="targetLogic in targetLogics" :key="targetLogic"
-                          :value="targetLogics.indexOf(targetLogic)">{{ targetLogic }}</option>
-                </select>
+                <i class="left"> <strong>SEL:</strong> {{ response.SEL }} </i>
+                    <div class="container-row">
+                      <div class="container-row-element-xs">
+                      <USelectMenu v-model="response.target_logic" :options="targetLogics" value-attribute="id"
+                                   option-attribute="name"/>
+                      </div>
+                      <div class="container-row-element ml-2 left">
                 <span v-if="response.target_logic===0">
                   {{ response.SEL }}
                 </span>
@@ -413,6 +441,8 @@ export default {
                 <span v-if="response.target_logic===6">
                   {{ response.TBV_timed }}
                 </span>
+                      </div>
+                    </div>
               </span>
               </div>
               </div>
