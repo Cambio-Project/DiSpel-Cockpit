@@ -174,14 +174,18 @@ export default {
       this.scenarios = await allScenarios();
     },
     async verifyScenario(scenario) {
+      await successMessage("Starting Verification", "Please wait!")
       await verifySimulation(scenario)
       await this.updateResults()
       scenario.analysisState = 'simverified';
+      await successMessage("Simulation Results verified", "Results have been updated")
     },
     async verifySearch(scenario) {
+      await successMessage("Starting Verification", "Please wait!")
       await verifySearch(scenario)
       await this.updateResults()
       scenario.analysisState = 'searchverified';
+      await successMessage("Monitoring Results verified", "Results have been updated")
     },
     async initiateSimulation(scenario) {
       await startScenarioSimulation(scenario);
@@ -261,22 +265,17 @@ export default {
             <!-- Scenario Header -->
             <div class="container-row mt-1 mb-1">
               <!-- Category -->
-              <div class="container-row-element-xs">
-                <UBadge :ui="{ rounded: 'rounded-full' }" v-if="scenario.category === 'None' " color="gray"
-                        class="customCategory">{{ 'None' }}
-                </UBadge>
-
-                <UBadge v-if="scenario.category === 'Exploratory' " color="purple" class="customCategory">
-                  {{ 'Exploratory' }}
-                </UBadge>
-
-                <UBadge v-if="scenario.category === 'Growth' " color="blue" class="customCategory">
-                  {{ 'Growth' }}
-                </UBadge>
-
-                <UBadge v-if="scenario.category === 'UseCase' " color="yellow" class="customCategory">
-                  {{ 'Use Case' }}
-                </UBadge>
+              <div class="container-row-element-xs left ml-2">
+                <div class="container-row">
+                  <div class="container-row-element-xs">
+                    <UButton :icon="getScenarioTypeIcon(scenario.category)" :ui="{ rounded: 'rounded-full' }"
+                             :color="getScenarioTypeColor(scenario.category)"
+                             size="2xs" square/>
+                  </div>
+                  <div class="container-row-element ml-1">
+                    {{ scenario.category }}
+                  </div>
+                </div>
               </div>
 
               <!-- Stimuli Counter -->
@@ -327,7 +326,8 @@ export default {
             <UDivider></UDivider>
 
             <!-- Scenario Contents -->
-            <UTabs :items="scenarioContents" class="w-full">
+            <UTabs :items="scenarioContents" class="w-full"
+                   :ui="{ list: {background: '', marker:{background: 'bg-gray-300'}} }">
               <template #item="{ item }">
                 <UContainer class="mt-4 mb-4" style="min-height: 5em;">
 
@@ -582,10 +582,6 @@ export default {
 
 <style scoped>
 
-.customCategory {
-  border-radius: 40px !important;
-}
-
 .sel-line {
   margin: 0.8vw;
 }
@@ -593,14 +589,6 @@ export default {
 body {
   font-family: 'Arial', sans-serif;
   background-color: #f4f4f4;
-}
-
-.select-box {
-  width: 15vw;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
 }
 
 </style>

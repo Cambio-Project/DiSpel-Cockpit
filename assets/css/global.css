@@ -30,6 +30,10 @@
     display: block;
 }
 
+.breaking-div {
+    display: inline;
+}
+
 .scenario-title {
     text-align: center;
     font-size: 1.2em;

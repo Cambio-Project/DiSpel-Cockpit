@@ -86,3 +86,29 @@ export async function downloadZip() {
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
 }
+
+export function getScenarioTypeColor(type){
+    switch (type){
+        case "Exploratory":
+            return "purple"
+        case "Growth":
+            return "blue"
+        case "UseCase":
+            return "green"
+        default:
+            return "black"
+    }
+}
+
+export function getScenarioTypeIcon(type){
+    switch (type){
+        case "Exploratory":
+            return "i-heroicons-light-bulb-solid"
+        case "Growth":
+            return "i-heroicons-arrow-trending-up-solid"
+        case "UseCase":
+            return "i-heroicons-user-group-solid"
+        default:
+            return "i-heroicons-no-symbol-solid"
+    }
+}

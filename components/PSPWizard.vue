@@ -3017,10 +3017,6 @@ export default {
   opacity: 0.5;
 }
 
-.breaking-div {
-  display: inline;
-}
-
 .min-width {
   width: 15vw;
 }
