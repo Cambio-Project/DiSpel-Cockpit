@@ -102,15 +102,13 @@ export default {
       }],
       targetLogics: [
         {name: "SEL", id: 0},
-        {
-          name: "LTL",
-          id: 1
-        }, {name: "MTL", id: 2},
+        {name: "LTL", id: 1},
+        {name: "MTL", id: 2},
         {name: "Prism", id: 3},
-        {name: "Quantitative Prism", id: 4}, {
-          name: "TBV (untimed)",
-          id: 5
-        }, {name: "TBV (timed)", id: 6}],
+        {name: "Quantitative Prism", id: 4},
+        {name: "TBV (untimed)", id: 5},
+        {name: "TBV (timed)", id: 6}
+      ],
       target: null,
       results: null,
       scenarios: [],
@@ -573,10 +571,6 @@ export default {
 
 
 <style scoped>
-
-.sel-line {
-  margin: 0.8vw;
-}
 
 body {
   font-family: 'Arial', sans-serif;
