@@ -227,7 +227,7 @@ export default {
                              icon="i-heroicons-chevron-up" @click="toggleDetails(stimulus)"></UButton>
                   </div>
                   <div class="container-row-element">
-                    <strong>{{ stimulus.SEL }}</strong>
+                    <strong>{{ stimulus.SSEL }}</strong>
                     <div>
                       <span v-if="stimulus.showDetails">
                         <ul>
@@ -276,7 +276,7 @@ export default {
                              icon="i-heroicons-chevron-up" @click="toggleDetails(response)"></UButton>
                   </div>
                   <div class="container-row-element">
-                    <strong>{{ response.SEL }}</strong>
+                    <strong>{{ response.SSEL }}</strong>
                     <div>
                       <span v-if="response.showDetails">
                         <ul>
@@ -415,7 +415,7 @@ export default {
                   </div>
                   <div class="container-row-element mt-1">
                 <span>
-                <i> <strong> {{ response.SEL }} </strong></i>
+                <i> <strong> {{ response.SSEL }} </strong></i>
               </span>
               </div>
               </div>
@@ -509,7 +509,7 @@ export default {
                           <div class="container-row-element mt-2">
                             <i class="sel-line"
                                :style="{'color': mapResultToColor(findSimulationResults(result, resultIndex, index))}">
-                              <strong>{{ response.SEL }}</strong> </i>
+                              <strong>{{ response.SSEL }}</strong> </i>
                           </div>
                         </div>
                       </li>
@@ -603,7 +603,7 @@ export default {
                           <div class="container-row-element mt-2">
                             <i class="sel-line"
                                :style="{'color': mapResultToColor(findSearchResults(result, resultIndex, index))}">
-                              <strong>{{ response.SEL }}</strong> </i>
+                              <strong>{{ response.SSEL }}</strong> </i>
                           </div>
                         </div>
                       </li>

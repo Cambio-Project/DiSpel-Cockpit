@@ -486,7 +486,7 @@ const config = useRuntimeConfig()
               </span>
             </div>
             <div class="container-row-element">
-              <i class="left"> <strong> {{ stimulus.SEL }} </strong> </i>
+              <i class="left"> <strong> {{ stimulus.SSEL }} </strong> </i>
               <div v-if="showTransformations" class="container-row">
                 <div class="container-row-element-xs">
                   <USelectMenu class="foreground" v-model="stimulus.target_logic" :options="targetLogics"
@@ -548,7 +548,7 @@ const config = useRuntimeConfig()
               </span>
             </div>
             <div class="container-row-element">
-              <i class="left"> <strong> {{ response.SEL }} </strong> </i>
+              <i class="left"> <strong> {{ response.SSEL }} </strong> </i>
               <div v-if="showTransformations" class="container-row">
                 <div class="container-row-element-xs">
                   <USelectMenu class="foreground" v-model="response.target_logic" :options="targetLogics"
