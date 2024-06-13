@@ -123,7 +123,8 @@ export default {
       showCopyFeedback: false,
       componentKey: 0,
       jsonData: null,
-      importErrorMessage: null
+      importErrorMessage: null,
+      transformationPerformed: false
     };
   },
   watch: {
@@ -1072,6 +1073,8 @@ export default {
       // also add this event to the local event array
       this.state.events = await allEvents()
 
+      await successMessage("Deleted Event", "The event " + this.eventToChange.event_name + " has been deleted")
+
       // clear the input fields after adding the custom event
       this.changedPredicateName = "";
       this.changedPredicateLogic = "";
@@ -1086,6 +1089,8 @@ export default {
       // also add this event to the local command array
       this.state.commands = await allCommands();
 
+      await successMessage("Deleted Command", "The command " + this.commandToChange.command_name + " has been deleted")
+
       // clear the input fields after adding the custom command
       this.changedCommandName = "";
       this.changedCommandContent = "";
@@ -1094,6 +1099,8 @@ export default {
     async deleteListener() {
       // delete the listener from the mongodb database
       await deleteListener(this.listenerToChange._id)
+
+      await successMessage("Deleted Listener", "The listener " + this.listenerToChange.listener_name + " has been deleted")
 
       // also add this listener to the local listener array
       this.state.listeners = await allListeners();
@@ -1162,11 +1169,12 @@ export default {
         } else {
           this.pspSpecification.mapping = responsePayload.payload.error
         }
-
+        this.transformationPerformed = true
         this.forceRerender()
 
       } catch (error) {
         // Handle any errors that occur during the HTTP request
+        this.transformationPerformed = false
         console.error('Error transforming to temporal logic:', error);
       }
     }
@@ -1524,10 +1532,11 @@ export default {
           <label for="fileInput" class="custom-file-upload">Import Specification</label>
           <input id="fileInput" type="file" ref="fileInput" @change="handleFileChange" style="display: none;">
         </div>
-        <div class="info-icon">
-          <i>i</i>
-          <span class="info-text">Browse your local files to import a specification JSON matching the schema.</span>
-        </div>
+        <UTooltip text="Import a specification JSON matching the schema.">
+          <div class="info-icon">
+            <i>i</i>
+          </div>
+        </UTooltip>
         <div class="download-schema">
           <a href="/request_schema.json" download="">Download schema</a>
         </div>
@@ -1576,14 +1585,14 @@ export default {
                 <div v-if="this.pspSpecification.selectedPatternType === 'Occurrence'" class="selection-group">
                   <USelectMenu v-model="this.pspSpecification.selectedOccurrence" :options="displayOccurrenceOptions"
                                value-attribute="value"
-                               option-attribute="label" placeholder="Select Pattern">
+                               option-attribute="label" searchable placeholder="Select Pattern">
                   </USelectMenu>
                 </div>
 
                 <div v-if="this.pspSpecification.selectedPatternType === 'Order'" class="selection-group">
                   <USelectMenu v-model="this.pspSpecification.selectedOrder" :options="displayOrderOptions"
                                value-attribute="value"
-                               option-attribute="label" placeholder="Select Pattern"/>
+                               option-attribute="label" searchable placeholder="Select Pattern"/>
                 </div>
               </div>
 
@@ -1718,7 +1727,7 @@ export default {
                     </div>
                   </div>
                   <br>
-                  <UButton label="Add Event" @click="addCustomEvent"/>
+                  <UButton color="green" label="Save" @click="addCustomEvent"/>
                 </div>
 
                 <div v-if="item.key === 'editEvent'">
@@ -1835,7 +1844,7 @@ export default {
                     </div>
                   </div>
                   <br/>
-                  <UButton @click="addCustomCommand">Add</UButton>
+                  <UButton color="green" @click="addCustomCommand">Save</UButton>
                 </div>
 
                 <div v-if="item.key === 'editCommand'">
@@ -1894,7 +1903,7 @@ export default {
                     </div>
                   </div>
                   <br>
-                  <UButton @click="addCustomListener">Add</UButton>
+                  <UButton color="green" @click="addCustomListener">Save</UButton>
                 </div>
 
                 <div v-if="item.key === 'editListener'">
@@ -1945,6 +1954,9 @@ export default {
     <div class="selection-container">
       <div class="message-container">
         <p>Build Specification:</p>
+        <div v-if="this.pspSpecification.selectedScope === null">
+          <span class="warning"> {{"< No Scope Selected >"}} </span>
+        </div>
         <div v-if="this.pspSpecification.selectedScope === 'Globally'">
           Globally
         </div>
@@ -2000,6 +2012,10 @@ export default {
         </div>
 
         <br>
+
+        <div v-if="this.pspSpecification.selectedOccurrence === null && this.pspSpecification.selectedOrder === null">
+          <span class="warning"> {{"< No Pattern Selected >"}} </span>
+        </div>
 
         <div v-if="this.pspSpecification.selectedOccurrence === 'SteadyState'">
           <div class="container-row center">
@@ -2749,7 +2765,11 @@ export default {
 
       <div class="message-container">
         <p>Preview:</p>
-        <div v-if="this.pspSpecification.mapping">
+        <div v-if="!this.pspSpecification.mapping ||  !this.transformationPerformed">
+          <br/>
+          <span class="warning"> {{"< Specification Incomplete >"}} </span>
+        </div>
+        <div v-if="this.pspSpecification.mapping && this.transformationPerformed">
           <div class="container-row center">
             <div class="min-width">
               <div class="container-row center">
@@ -2766,13 +2786,13 @@ export default {
         </div>
         <br/>
         <div>
-          <pre v-if="this.pspSpecification.mapping" style="white-space: normal;">{{
+          <pre v-if="this.pspSpecification.mapping && this.transformationPerformed" style="white-space: normal;">{{
               this.pspSpecification.mapping
             }}</pre>
         </div>
         <br/>
         <span>
-          <UButton @click="copyToClipboard" v-if="this.pspSpecification.mapping" class="copy-button">Copy to Clipboard
+          <UButton @click="copyToClipboard" v-if="this.pspSpecification.mapping  && this.transformationPerformed" class="copy-button">Copy to Clipboard
           </UButton>
         </span>
         <div class="copy-feedback" v-if="this.showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
@@ -2790,7 +2810,7 @@ export default {
         </span>
     </div>
   </div>
-  <div class="selection-container">
+  <div class="selection-container text-gray-400">
     Scenario ID: {{ this.simID }}
   </div>
 </template>
@@ -2878,18 +2898,6 @@ export default {
   font-size: 1.5vh;
 }
 
-.info-text {
-  display: none;
-  position: absolute;
-  top: calc(100% + 5px);
-  right: 0;
-  padding: 8px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  z-index: 1;
-}
-
 .download-schema {
   margin: auto;
   transform: translateX(2.5vh);
@@ -2901,8 +2909,9 @@ export default {
   color: red;
 }
 
-.info-icon:hover .info-text {
-  display: block;
+.warning {
+  color: red;
+  font-weight: bolder;
 }
 
 .message-container {

@@ -628,10 +628,6 @@ export default {
 
 <style scoped>
 
-.customCategory {
-  border-radius: 40px !important;
-}
-
 .sel-line {
   margin: 0.8vw;
 }
