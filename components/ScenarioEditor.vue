@@ -646,24 +646,6 @@ h3 {
   background-color: #9bb8d3;
 }
 
-.remove-button {
-  background-color: rgb(219, 65, 65);
-  border: none;
-  color: white;
-  padding: 5px 10px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin: 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.remove-button:hover {
-  background-color: rgb(160, 40, 40);
-}
-
 .message-container p {
   font-weight: bold;
 }

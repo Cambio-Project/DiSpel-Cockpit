@@ -57,6 +57,15 @@ export default {
         label: 'Probability Bound',
         description: 'Add a probability bound to the pattern.'
       }],
+      commandOptions: [
+        "kill", "load"
+      ],
+      listenerOptions: [
+        "event"
+      ],
+      loadFunctionOptions: [
+        "constant", "exponential", "exponential-inverse", "linear", "linear-inverse"
+      ],
       pspSpecification: {
         selectedPatternType: null,
         selectedScope: null,
@@ -125,7 +134,30 @@ export default {
       jsonData: null,
       importErrorMessage: null,
       transformationPerformed: false,
-      useNames: true
+      useNames: true,
+      listenerAssistant: {
+        isOpen: false,
+        eventOptions: {
+          eventName: ""
+        }
+      },
+      commandAssistant: {
+        type: null, isOpen: false,
+        killOptions: {
+          targetServiceName: "",
+          instanceCountActive: false,
+          instanceCount: "",
+          eventNameActive: false,
+          eventName: ""
+        }, loadOptions: {
+          startTime: "",
+          endTime: "",
+          factor: "",
+          function: "",
+          targetServiceName: "",
+          targetEndpointName: ""
+        }
+      },
     };
   },
   watch: {
@@ -536,6 +568,86 @@ export default {
       }
     }
     ,
+    cancelListenerAssistant() {
+      this.listenerAssistant.type = "";
+      this.listenerAssistant.eventOptions.eventName = ""
+      this.listenerAssistant.isOpen = false
+    },
+    applyListenerAssistant() {
+      let listener = "";
+      switch (this.listenerAssistant.type) {
+        case "event":
+          listener = this.buildEventListener();
+          break;
+      }
+      this.customListenerContent = listener;
+      this.cancelListenerAssistant();
+    },
+    buildEventListener() {
+      let listener = "(event["
+      listener += this.listenerAssistant.eventOptions.eventName.trim()
+      listener += "])"
+      return listener;
+    },
+    cancelCommandAssistant() {
+      this.commandAssistant.type = "";
+      this.commandAssistant.killOptions.instanceCountActive = false
+      this.commandAssistant.killOptions.eventNameActive = false
+      this.commandAssistant.killOptions.targetServiceName = ""
+      this.commandAssistant.killOptions.instanceCount = ""
+      this.commandAssistant.killOptions.eventName = ""
+      this.commandAssistant.loadOptions.endTime = ""
+      this.commandAssistant.loadOptions.startTime = ""
+      this.commandAssistant.loadOptions.targetServiceName = ""
+      this.commandAssistant.loadOptions.targetEndpointName = ""
+      this.commandAssistant.loadOptions.factor = ""
+      this.commandAssistant.loadOptions.function = ""
+      this.commandAssistant.isOpen = false
+    },
+    applyCommandAssistant() {
+      let command = "";
+      switch (this.commandAssistant.type) {
+        case "kill":
+          command = this.buildKillCommand();
+          break;
+        case "load":
+          command = this.buildLoadCommand();
+          break;
+      }
+      this.customCommandContent = command;
+      this.cancelCommandAssistant();
+    },
+    buildKillCommand() {
+      let command = "(kill["
+      command += this.commandAssistant.killOptions.targetServiceName.trim()
+      if (this.commandAssistant.killOptions.instanceCountActive) {
+        command += ","
+        command += this.commandAssistant.killOptions.instanceCount.trim()
+      }
+      command += "])"
+      if (this.commandAssistant.killOptions.eventNameActive) {
+        command += " & (event["
+        command += this.commandAssistant.killOptions.eventName.trim()
+        command += "])"
+      }
+      return command;
+    },
+    buildLoadCommand() {
+      let command = "(load["
+      command += this.commandAssistant.loadOptions.startTime.trim()
+      command += ","
+      command += this.commandAssistant.loadOptions.endTime.trim()
+      command += "][x"
+      command += this.commandAssistant.loadOptions.factor.trim()
+      command += ":"
+      command += this.commandAssistant.loadOptions.function.trim()
+      command += ":"
+      command += this.commandAssistant.loadOptions.targetServiceName.trim()
+      command += "."
+      command += this.commandAssistant.loadOptions.targetEndpointName.trim()
+      command += "])"
+      return command
+    },
     /**
      * Creates a scope object with the given parameters.
      *
@@ -1854,8 +1966,12 @@ export default {
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Command Content: </label>
                     </div>
-                    <div class="container-row-element">
-                      <UInput v-model="customCommandContent" type="text"/>
+                    <div class="container-row-element w-full">
+                      <UButtonGroup class="w-full">
+                        <UInput v-model="customCommandContent" type="text" class="w-full"/>
+                        <UButton @click="commandAssistant.isOpen = true" color="white" label="Assistant"
+                                 trailing-icon="i-heroicons-chevron-down-20-solid"/>
+                      </UButtonGroup>
                     </div>
                   </div>
                   <br/>
@@ -1913,8 +2029,12 @@ export default {
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Listener Content: </label>
                     </div>
-                    <div class="container-row-element">
-                      <UInput v-model="customListenerContent" type="text"></UInput>
+                    <div class="container-row-element w-full">
+                      <UButtonGroup class="w-full">
+                        <UInput v-model="customListenerContent" type="text" class="w-full"/>
+                        <UButton @click="listenerAssistant.isOpen = true" color="white" label="Assistant"
+                                 trailing-icon="i-heroicons-chevron-down-20-solid"/>
+                      </UButtonGroup>
                     </div>
                   </div>
                   <br>
@@ -2833,6 +2953,89 @@ export default {
   <div class="selection-container text-gray-400">
     Scenario ID: {{ this.simID }}
   </div>
+
+  <!-- Command Assistant Modal -->
+  <UModal v-model="commandAssistant.isOpen">
+    <UContainer class="mt-6 mb-6">
+
+      <UFormGroup label="Command Type" class="mb-1 mt-1">
+        <USelectMenu v-model="commandAssistant.type" :options="commandOptions"/>
+      </UFormGroup>
+
+      <div v-if="commandAssistant.type === 'kill'" class="mt-3">
+        <UDivider label="Options"/>
+        <UFormGroup label="Target Service Name" class="mb-1 mt-4" required>
+          <UInput v-model="commandAssistant.killOptions.targetServiceName" placeholder="Enter Target Service Name"/>
+        </UFormGroup>
+        <UCheckbox v-model="commandAssistant.killOptions.instanceCountActive" label="Kill Service Instances"
+                   class="mb-1 mt-4"></UCheckbox>
+        <UFormGroup label="Instance Count" class="mb-1 mt-1">
+          <UInput v-model="commandAssistant.killOptions.instanceCount"
+                  :disabled="!commandAssistant.killOptions.instanceCountActive" placeholder="Enter Instance Count"/>
+        </UFormGroup>
+        <UCheckbox v-model="commandAssistant.killOptions.eventNameActive" label="Throw Event"
+                   class="mb-1 mt-4"></UCheckbox>
+        <UFormGroup label="Event Name" class="mb-1 mt-1">
+          <UInput v-model="commandAssistant.killOptions.eventName"
+                  :disabled="!commandAssistant.killOptions.eventNameActive"
+                  placeholder="Enter Event Name"/>
+        </UFormGroup>
+      </div>
+
+      <div v-if="commandAssistant.type === 'load'">
+        <UDivider label="Options"/>
+        <UFormGroup label="Target Service Name" class="mb-1 mt-4" required>
+          <UInput v-model="commandAssistant.loadOptions.targetServiceName" placeholder="Enter Target Service Name"/>
+        </UFormGroup>
+        <UFormGroup label="Endpoint Name" class="mb-1 mt-1" required>
+          <UInput v-model="commandAssistant.loadOptions.targetEndpointName" placeholder="Enter Target Endpoint Name"/>
+        </UFormGroup>
+        <UFormGroup label="Function Type" class="mb-1 mt-1" required>
+          <USelectMenu v-model="commandAssistant.loadOptions.function" :options="loadFunctionOptions"
+                       placeholder="Select Function Type"/>
+        </UFormGroup>
+        <UFormGroup label="Relative Load Increase Factor" class="mb-1 mt-1" required>
+          <UInput v-model="commandAssistant.loadOptions.factor" placeholder="Enter Factor"/>
+        </UFormGroup>
+        <UFormGroup label="Start Time" class="mb-1 mt-1" required>
+          <UInput v-model="commandAssistant.loadOptions.startTime" placeholder="Enter Start Time"/>
+        </UFormGroup>
+        <UFormGroup label="End Time" class="mb-1 mt-1" required>
+          <UInput v-model="commandAssistant.loadOptions.endTime" placeholder="Enter End Time"/>
+        </UFormGroup>
+      </div>
+
+      <div class="mt-2 container-row center">
+        <UButton @click="applyCommandAssistant()" color="green" class="mr-1 ml-1">Apply</UButton>
+        <UButton @click="cancelCommandAssistant()" color="red" class="mr-1 ml-1">Cancel</UButton>
+      </div>
+    </UContainer>
+  </UModal>
+
+
+  <!-- Listener Assistant Modal -->
+  <UModal v-model="listenerAssistant.isOpen">
+    <UContainer class="mt-6 mb-6">
+
+      <UFormGroup label="Listener Type" class="mb-1 mt-1">
+        <USelectMenu v-model="listenerAssistant.type" :options="listenerOptions"/>
+      </UFormGroup>
+
+      <div v-if="listenerAssistant.type === 'event'" class="mt-3">
+        <UDivider label="Options"/>
+        <UFormGroup label="Event Name" class="mb-1 mt-4">
+          <UInput v-model="listenerAssistant.eventOptions.eventName"
+                  placeholder="Enter Event Name"/>
+        </UFormGroup>
+      </div>
+
+      <div class="mt-2 container-row center">
+        <UButton @click="applyListenerAssistant()" color="green" class="mr-1 ml-1">Apply</UButton>
+        <UButton @click="cancelListenerAssistant()" color="red" class="mr-1 ml-1">Cancel</UButton>
+      </div>
+    </UContainer>
+  </UModal>
+
 </template>
 
 <style scoped>
@@ -2987,14 +3190,6 @@ export default {
 
 .delete-chainedevent-button:hover {
   background-color: rgba(130, 46, 46, 0.83);
-}
-
-.cancel-button, .commit-button {
-  margin-left: 0.6vw;
-}
-
-.commit-button:hover {
-  background-color: #3d8d41;
 }
 
 .copy-button {
