@@ -1,3 +1,5 @@
+import {setSearchUpdateRequired} from "~/server/utils/pushSearchResult";
+import {setSimulationUpdateRequired} from "~/server/utils/pushSimulationResult";
 
 export default defineEventHandler(async (event) => {
     let body = await readBody(event)
@@ -47,6 +49,11 @@ export default defineEventHandler(async (event) => {
             // if the field is not an array, update it directly
             // @ts-ignore
             scenario[fullFieldName] = fieldValue;
+        }
+
+        if (fullFieldName === "responses") {
+            await setSearchUpdateRequired(simulationID)
+            await setSimulationUpdateRequired(simulationID)
         }
 
         await scenario.save();

@@ -5,10 +5,10 @@ export function getSimulationVerificationResultsPerResponse(result, responseInde
     }
     const totals = result.simulationResultsTotal;
     const successes = result.simulationResultsResponseSuccesses;
-    if (totals === undefined || successes === undefined) {
+    if (totals === undefined || successes === undefined || successes[responseIndex] === undefined) {
         return defaultResult
     }
-    return successes[responseIndex] + " / " + totals
+    return successes[responseIndex] + " / " + totals + computePercentageString(successes[responseIndex], totals)
 }
 
 export function getResilienceScore(result) {
@@ -33,10 +33,10 @@ export function getSearchVerificationResultsPerResponse(result, responseIndex) {
     }
     const totals = result.searchResultsTotal;
     const successes = result.searchResultsResponseSuccesses;
-    if (totals === undefined || successes === undefined) {
+    if (totals === undefined || successes === undefined || successes[responseIndex] === undefined) {
         return defaultResult
     }
-    return successes[responseIndex] + " / " + totals
+    return successes[responseIndex] + " / " + totals + computePercentageString(successes[responseIndex], totals)
 }
 
 export function getSearchVerificationResultsPerScenario(result) {
@@ -49,7 +49,7 @@ export function getSearchVerificationResultsPerScenario(result) {
     if (totals === undefined || successes === undefined) {
         return defaultResult
     }
-    return successes + " / " + totals
+    return successes + " / " + totals + computePercentageString(successes, totals)
 }
 
 export function getSimulationVerificationResultsPerScenario(result) {
@@ -62,7 +62,16 @@ export function getSimulationVerificationResultsPerScenario(result) {
     if (totals === undefined || successes === undefined) {
         return defaultResult
     }
-    return successes + " / " + totals
+    return successes + " / " + totals + computePercentageString(successes, totals)
+}
+
+function computePercentageString(top, bottom) {
+    if (bottom === 0) {
+        return ""
+    } else {
+        const value = Math.round(100 * (top / bottom))
+        return " (" + value + "%)"
+    }
 }
 
 export function mapResultToColor(resultValue) {

@@ -1,3 +1,6 @@
+import {setSearchUpdateRequired} from "~/server/utils/pushSearchResult";
+import {setSimulationUpdateRequired} from "~/server/utils/pushSimulationResult";
+
 export default defineEventHandler(async (event) => {
     // Read the request body
     let body = await readBody(event)
@@ -44,6 +47,11 @@ export default defineEventHandler(async (event) => {
         const responses = field;
         // @ts-ignore
         responses.splice(fieldIndex, 1)
+
+        if (fullFieldName === "responses") {
+            await setSearchUpdateRequired(simulationID)
+            await setSimulationUpdateRequired(simulationID)
+        }
 
         await scenario.save();
 

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 
+import Navbar from "~/components/Navbar.vue";
+
 const simulationDirectoryName = "simulations_results"
 const searchDirectoryName = "search_results"
 
@@ -41,9 +43,8 @@ const src = computed(() => "http://" + config.public.tqPropRefinerDomain + ":" +
 </script>
 
 <template>
-
+  <Navbar title="Scenario Refinement"></Navbar>
   <!-- TODO add button style -->
-  <h1 class="text-3xl">Refinement</h1>
   <br>
 
   <div class="flex justify-center">

@@ -4,17 +4,19 @@ export async function getOrCreateResults(simulationID: string) {
     let result = await Result.findOne({simulationID: simulationID});
     if (!result) {
         result = await Result.create({
-            simulationID: simulationID
+            simulationID: simulationID,
+            simulationUpdateRequired: true,
+            searchUpdateRequired: true,
         });
     }
     return result
 }
 
-export function updateResilienceScore(result: any){
+export function updateResilienceScore(result: any) {
     let resilienceScore = 0;
     let testSum = 0;
     let testSuccesses = 0;
-    if (result.searchResultsTotal !== undefined && result.searchResultsTotal !== null  && result.searchResultsScenarioSuccessesTotal != undefined) {
+    if (result.searchResultsTotal !== undefined && result.searchResultsTotal !== null && result.searchResultsScenarioSuccessesTotal != undefined) {
         testSum += result.searchResultsTotal
         testSuccesses += result.searchResultsScenarioSuccessesTotal
     }

@@ -1,3 +1,17 @@
+export async function updateServiceState() {
+    let serviceStatus = {}
+    const res = await fetch("/api/dbPing", {
+        method: "POST"
+    })
+    const body = await res.json()
+
+    for (const bodyElement in body) {
+        // @ts-ignore
+        serviceStatus[bodyElement] = body[bodyElement].status
+    }
+    return serviceStatus
+}
+
 export async function initScenario() {
     const res = await fetch("/api/initScenario", {
         method: "POST"
@@ -7,21 +21,23 @@ export async function initScenario() {
 }
 
 export async function startSimulation(simulationID) {
-    await fetch("/api/startSimulation", {
+    const response = await fetch("/api/startSimulation", {
         method: "POST",
         body: JSON.stringify({
             simulationID: simulationID
         })
     })
+    return await response.json();
 }
 
 export async function startSearch(simulationID) {
-    await fetch("/api/startSearch", {
+    const response = await fetch("/api/startSearch", {
         method: "POST",
         body: JSON.stringify({
             simulationID: simulationID
         })
     })
+    return await response.json();
 }
 
 export async function allScenarios() {

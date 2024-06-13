@@ -15,10 +15,21 @@ export default {
   },
   data() {
     return {
-      categories: ["None", "UseCase", "Growth", "Exploratory"],
-      targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
+      categories: [
+        {id: "None", label: "None", icon: "i-heroicons-no-symbol-solid", color: "black"},
+        {id: "UseCase", label: "UseCase", icon: "i-heroicons-user-group-solid", color: "green"},
+        {id: "Growth", label: "Growth", icon: "i-heroicons-arrow-trending-up-solid", color: "blue"},
+        {id: "Exploratory", label: "Exploratory", icon: "i-heroicons-light-bulb-solid", color: "purple"}],
+      targetLogics: [
+        {name: "SEL", id: 0},
+        {name: "LTL", id: 1},
+        {name: "MTL", id: 2},
+        {name: "Prism", id: 3},
+        {name: "Quantitative Prism", id: 4},
+        {name: "TBV (untimed)", id: 5},
+        {name: "TBV (timed)", id: 6}
+      ],
       target: null,
-
       simID: this.$route.query.simID,
       name: null,
       category: "None",
@@ -33,9 +44,18 @@ export default {
       scenario: null,
       importErrorMessage: null,
       componentKey: 0,
+      showTransformations: false,
     }
   },
   methods: {
+    findCategoryIcon(categoryName) {
+      for (let category of this.categories) {
+        if (category.id === categoryName) {
+          return category.icon
+        }
+      }
+      return ""
+    },
     // get fields from DB object with simulationID
     async initFields() {
       this.scenario = await getScenario(this.simID);
@@ -303,7 +323,13 @@ export default {
     },
     searchWindowSize(newSearchWindowSize) {
       this.addValue("searchWindowSize", newSearchWindowSize)
-    }
+    },
+    'target': {
+      handler() {
+        changeAllTargets([this.scenario], this.target)
+      },
+      deep: true
+    },
   },
 }
 
@@ -312,209 +338,281 @@ export default {
 
 <script setup>
 
-import {changeAllTargets} from "~/composables/scenarioActions.js";
-
 const config = useRuntimeConfig()
 
 </script>
 
 <template :key="componentKey">
   <!--Headline-->
-  <div>
-    <h1 class="text-3xl mt-2"> Scenario Editor </h1>
-  </div>
-
   <!--Main Frame-->
   <div>
-    <h3 class="center">
-
-      <input v-model="name" type="text" placeholder="Enter scenario name"
-             class="small-text-field p-1 border-2 rounded-xl"/>
-      Category:
-      <select v-model="category" class="select-box">
-        <option v-for="category in categories" :key="category">{{ category }}</option>
-      </select>
-
-      <div class="file-upload-label" style="margin-left: 0.6vw;">
-        <label for="fileInput" class="custom-file-upload">Import Scenario</label>
-        <input class="bg-gray-500" id="fileInput" type="file" ref="fileInput" @change="handleFileChange"
-               style="display: none;">
+    <div class="container-row top-bar">
+      <div class="container-row-element-xs left">
+        <div class="file-upload-label">
+          <label for="fileInput" class="custom-file-upload">Import Scenario</label>
+          <input class="bg-blue-500" id="fileInput" type="file" ref="fileInput" @change="handleFileChange"
+                 style="display: none;">
+        </div>
       </div>
-    </h3>
 
-    <textarea v-model="description" type="text" placeholder="Enter description"
-              class="larger-text-field p-1 border-2 rounded-xl"/>
+      <div class="container-row-element">
+        <UCheckbox v-model="showTransformations" label="Show Transformations" class=" float-right mt-1 mr-2"/>
+      </div>
 
-    <div>
-      {{ "Transform all Target Logics to " }}
-      <select class="select-box fw" @change="changeAllTargets([this.scenario], this.target)" v-model="target">
-        <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
-          {{ targetLogic }}
-        </option>
-      </select>
+      <div class="float-right container-row-element-xs">
+        <USelectMenu placeholder="Transform to Target Logic" v-model="target" :options="targetLogics"
+                     value-attribute="id" size="sm"
+                     option-attribute="name"/>
+      </div>
     </div>
 
     <div class="message-container">
+      <h3> General Data</h3>
+      <UDivider size="md" class="mt-2 mb-2"/>
+      <br/>
 
-      <p>Stimuli:</p>
-      <ul>
-        <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="left">
-          {{ index + 1 }}.
-          <select v-model="stimulus.target_logic" class="select-box">
-            <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
-              {{ targetLogic }}
-            </option>
-          </select>
+      <UFormGroup label="Title" required class="mb-2">
+        <UInput v-model="name" type="text" placeholder="My Scenario"/>
+      </UFormGroup>
 
-          <span v-if="stimulus.target_logic===0">
-          {{ stimulus.SEL }}
-        </span>
-          <span v-if="stimulus.target_logic===1">
-          {{ stimulus.LTL }}
-        </span>
-          <span v-if="stimulus.target_logic===2">
-          {{ stimulus.MTL }}
-        </span>
-          <span v-if="stimulus.target_logic===3">
-          {{ stimulus.Prism }}
-        </span>
-          <span v-if="stimulus.target_logic===4">
-          {{ stimulus.Quantitative_Prism }}
-        </span>
-          <span v-if="stimulus.target_logic===5">
-          {{ stimulus.TBV_untimed }}
-        </span>
-          <span v-if="stimulus.target_logic===6">
-          {{ stimulus.TBV_timed }}
-        </span>
+      <UFormGroup label="Category" class="mb-2">
+        <USelectMenu v-model="category" :options="categories" value-attribute="id">
+          <template #leading>
+            <UIcon v-if="findCategoryIcon(category)" :name="(findCategoryIcon(category))" class="w-5 h-5"/>
+          </template>
+        </USelectMenu>
+      </UFormGroup>
 
-          <button class="remove-button" @click="removeStimulus(index)">Remove</button>
-          <br>
-          <i class="sel-line"> <strong>SEL:</strong> {{ stimulus.SEL }} </i> <br> <br>
-
-        </li>
-      </ul>
-
-      <UButton @click="toPSPWizardStimulus(this.simID, this.$router)">Add Stimulus</UButton>
+      <UFormGroup label="Description">
+        <UTextarea v-model="description" type="text" placeholder="Enter description"></UTextarea>
+      </UFormGroup>
     </div>
 
+
     <div class="message-container">
+      <h3> Environment</h3>
+      <UDivider size="md" class="mt-2 mb-2"/>
+      <br/>
 
-      <p>Environment:</p>
+      <UDivider label="Simulation"></UDivider>
 
-      <UDivider></UDivider>
-      <p>Architecture:</p>
-      <input class="custom-file-input" id="fileInput" type="file"
-             ref="fileInputEnvironmentArchitecture" @change="uploadArchitecture('environment.architecture')">
+      <div class="container-row">
+        <div class="container-row-element">
+          <UFormGroup label="Architecture" class="mb-2">
+            <input class="custom-file-input left" id="fileInput" type="file"
+                   ref="fileInputEnvironmentArchitecture" @change="uploadArchitecture('environment.architecture')">
+          </UFormGroup>
+        </div>
+        <div class="container-row-element">
+          <UFormGroup label="Experiment" class="mb-2">
+            <input class="custom-file-input left" id="fileInput" type="file"
+                   ref="fileInputEnvironmentExperiment" @change="uploadExperiment('environment.experiment')">
+          </UFormGroup>
+        </div>
+        <div class="container-row-element">
+          <UFormGroup label="Load" class="mb-2">
+            <input class="custom-file-input left" id="fileInput" type="file"
+                   ref="fileInputEnvironmentLoad" @change="uploadLoad('environment.load')" multiple="multiple">
+          </UFormGroup>
+        </div>
+      </div>
 
-      <ul>
-        <li v-for="(file, index) in environmentArchitecture">
-          {{ Object.keys(file) }}
-          <button class="remove-button" @click="removeEnvironmentArchitecture(index)">Remove</button>
-          <br>
-        </li>
-      </ul>
+      <div class="container-row mb-4">
+        <div class="container-row-element left">
+          <ul>
+            <li v-for="(file, index) in environmentArchitecture">
+              <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
+                       @click="removeEnvironmentArchitecture(index)"></UButton>
+              {{ Object.keys(file) }}
+              <br>
+            </li>
+          </ul>
+        </div>
+        <div class="container-row-element left">
+          <ul>
+            <li v-for="(file, index) in environmentExperiment">
+              <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
+                       @click="removeEnvironmentExperiment(index)"></UButton>
+              {{ Object.keys(file) }}
+              <br>
+            </li>
+          </ul>
+        </div>
+        <div class="container-row-element left">
+          <ul>
+            <li v-for="(file, index) in environmentLoad">
+              <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
+                       @click="removeEnvironmentLoad(index)"></UButton>
+              {{ Object.keys(file) }}
+              <br>
+            </li>
+          </ul>
+        </div>
+      </div>
 
-      <UDivider></UDivider>
-      <p>Experiment:</p>
-      <input class="custom-file-input" id="fileInput" type="file"
-             ref="fileInputEnvironmentExperiment" @change="uploadExperiment('environment.experiment')">
+      <UDivider label="Monitoring"></UDivider>
 
-      <ul>
-        <li v-for="(file, index) in environmentExperiment">
-          {{ Object.keys(file) }}
-          <button class="remove-button" @click="removeEnvironmentExperiment(index)">Remove</button>
-          <br>
-        </li>
-      </ul>
+      <UFormGroup label="Search Window Size" class="mb-2">
+        <UInput v-model="searchWindowSize" type="text" placeholder="Enter Search Window Size"/>
+      </UFormGroup>
 
-      <UDivider></UDivider>
-      <p>Load:</p>
-      <input class="custom-file-input" id="fileInput" type="file"
-             ref="fileInputEnvironmentLoad" @change="uploadLoad('environment.load')" multiple="multiple">
+      <UFormGroup label="Monitoring Data" class="mb-2">
+        <input class="custom-file-input left" id="fileInput" type="file"
+               ref="fileInputEnvironmentMonitoringData" @change="uploadMonitoringData('environment.monitoringData')">
+      </UFormGroup>
 
-      <ul>
-        <li v-for="(file, index) in environmentLoad">
-          {{ Object.keys(file) }}
-          <button class="remove-button" @click="removeEnvironmentLoad(index)">Remove</button>
-          <br>
-        </li>
-      </ul>
-
-      <UDivider></UDivider>
-      <p>Monitoring Data:</p>
-      <input class="custom-file-input" id="fileInput" type="file"
-             ref="fileInputEnvironmentMonitoringData" @change="uploadMonitoringData('environment.monitoringData')">
-
-      <ul>
+      <ul class="left mb-4">
         <li v-for="(file, index) in environmentMonitoringData">
+          <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
+                   @click="removeEnvironmentMonitoringData(index)"></UButton>
           {{ Object.keys(file) }}
-          <button class="remove-button" @click="removeEnvironmentMonitoringData(index)">Remove</button>
           <br>
         </li>
       </ul>
-
-      <UDivider></UDivider>
-      <p>Search Window Size:</p>
-      <textarea v-model="searchWindowSize" type="text" placeholder="Enter Search Window Size"
-                class="p-1 border-2 rounded-xl"/>
 
     </div>
 
     <div class="message-container">
-      <p class="mb-2">Responses:</p>
+      <h3> Stimuli</h3>
+      <UDivider size="md" class="mt-2 mb-2"/>
+      <br/>
+
       <ul>
-        <li v-for="(response, index) in responses" :key="response" class="left">
-          {{ index + 1 }}.
-          <select v-model="response.target_logic" class="select-box">
-            <option v-for="targetLogic in targetLogics" :key="targetLogic" :value="targetLogics.indexOf(targetLogic)">
-              {{ targetLogic }}
-            </option>
-          </select>
-
-          <span v-if="response.target_logic===0">
-          {{ response.SEL }}
-        </span>
-          <span v-if="response.target_logic===1">
-          {{ response.LTL }}
-        </span>
-          <span v-if="response.target_logic===2">
-          {{ response.MTL }}
-        </span>
-          <span v-if="response.target_logic===3">
-          {{ response.Prism }}
-        </span>
-          <span v-if="response.target_logic===4">
-          {{ response.Quantitative_Prism }}
-        </span>
-          <span v-if="response.target_logic===5">
-          {{ response.TBV_untimed }}
-        </span>
-          <span v-if="response.target_logic===6">
-          {{ response.TBV_timed }}
-        </span>
-
-          <button class="remove-button" @click="removeResponse(index)">Remove</button>
-          <br>
-          <i class="sel-line"> <strong>SEL:</strong> {{ response.SEL }} </i> <br> <br>
+        <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="mb-2">
+          <div class="container-row">
+            <div class="container-row-element-xxs">
+              <span class="">
+                {{ index + 1 }}.
+              </span>
+            </div>
+            <div class="container-row-element">
+              <i class="left"> <strong> {{ stimulus.SSEL }} </strong> </i>
+              <div v-if="showTransformations" class="container-row">
+                <div class="container-row-element-xs">
+                  <USelectMenu class="foreground" v-model="stimulus.target_logic" :options="targetLogics"
+                               value-attribute="id"
+                               option-attribute="name"/>
+                </div>
+                <div class="container-row-element mt-1 ml-2 left">
+                <span v-if="stimulus.target_logic===0">
+                  {{ stimulus.SEL }}
+                </span>
+                  <span v-if="stimulus.target_logic===1">
+                  {{ stimulus.LTL }}
+                </span>
+                  <span v-if="stimulus.target_logic===2">
+                  {{ stimulus.MTL }}
+                </span>
+                  <span v-if="stimulus.target_logic===3">
+                  {{ stimulus.Prism }}
+                </span>
+                  <span v-if="stimulus.target_logic===4">
+                  {{ stimulus.Quantitative_Prism }}
+                </span>
+                  <span v-if="stimulus.target_logic===5">
+                  {{ stimulus.TBV_untimed }}
+                </span>
+                  <span v-if="stimulus.target_logic===6">
+                  {{ stimulus.TBV_timed }}
+                </span>
+                </div>
+              </div>
+            </div>
+            <div class="container-row-element-xxs">
+              <UTooltip text="Delete Stimulus Specification">
+                <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
+                         @click="removeStimulus(index)"></UButton>
+              </UTooltip>
+            </div>
+          </div>
 
         </li>
       </ul>
-      <UButton @click="toPSPWizardResponse(this.simID, this.$router)">Add Response</UButton>
+
+      <UButton icon="i-heroicons-plus" color="green" size="lg" @click="toPSPWizardStimulus(this.simID, this.$router)">
+        New Stimulus
+      </UButton>
+    </div>
+
+    <div class="message-container">
+      <h3> Responses</h3>
+      <UDivider size="md" class="mt-2 mb-2"/>
+      <br/>
+
+      <ul>
+        <li v-for="(response, index) in responses" :key="response" class="mb-2">
+          <div class="container-row">
+            <div class="container-row-element-xxs">
+              <span class="">
+                {{ index + 1 }}.
+              </span>
+            </div>
+            <div class="container-row-element">
+              <i class="left"> <strong> {{ response.SSEL }} </strong> </i>
+              <div v-if="showTransformations" class="container-row">
+                <div class="container-row-element-xs">
+                  <USelectMenu class="foreground" v-model="response.target_logic" :options="targetLogics"
+                               value-attribute="id"
+                               option-attribute="name"/>
+                </div>
+                <div class="container-row-element mt-1 ml-2 left">
+                <span v-if="response.target_logic===0">
+                  {{ response.SEL }}
+                </span>
+                  <span v-if="response.target_logic===1">
+                  {{ response.LTL }}
+                </span>
+                  <span v-if="response.target_logic===2">
+                  {{ response.MTL }}
+                </span>
+                  <span v-if="response.target_logic===3">
+                  {{ response.Prism }}
+                </span>
+                  <span v-if="response.target_logic===4">
+                  {{ response.Quantitative_Prism }}
+                </span>
+                  <span v-if="response.target_logic===5">
+                  {{ response.TBV_untimed }}
+                </span>
+                  <span v-if="response.target_logic===6">
+                  {{ response.TBV_timed }}
+                </span>
+                </div>
+              </div>
+            </div>
+            <div class="container-row-element-xxs">
+              <UTooltip text="Delete Response Specification">
+                <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
+                         @click="removeResponse(index)"></UButton>
+              </UTooltip>
+            </div>
+          </div>
+
+        </li>
+      </ul>
+      <UButton icon="i-heroicons-plus" color="green" size="lg" @click="toPSPWizardResponse(this.simID, this.$router)">
+        New Response
+      </UButton>
 
     </div>
 
-    <div class="mt-2">
-      <!-- TODO: add stimulus check again as soon as supported -->
-      <div v-if="name !== null && responses != null">
-        <UButton @click="toScenariosOverview(this.$router)">Complete</UButton>
-      </div>
+    <div class="top-bar">
+      <UDivider/>
 
-      <div v-else>
-        <div>
-          <UTooltip text="Minimum: Name and 1 Response!">
-            <UButton color="gray" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">Complete</UButton>
-          </UTooltip>
+      <div class="mt-4 mb-4">
+        <!-- TODO: add stimulus check again as soon as supported -->
+        <div v-if="name !== null && responses != null">
+          <UButton size="xl" @click="toScenariosOverview(this.$router)">Complete</UButton>
+        </div>
+
+        <div v-else>
+          <div>
+            <UTooltip text="Minimum: Name and 1 Response!">
+              <UButton size="xl" color="gray" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">
+                Complete
+              </UButton>
+            </UTooltip>
+          </div>
         </div>
       </div>
     </div>
@@ -525,9 +623,9 @@ const config = useRuntimeConfig()
 
 <style scoped>
 
-.center {
-  align-items: center;
-  justify-content: center;
+h3 {
+  font-size: 1.3em;
+  font-weight: bolder;
 }
 
 .file-upload-label {
@@ -540,7 +638,7 @@ const config = useRuntimeConfig()
   display: inline-block;
   font-size: 16px;
   font-weight: normal;
-  margin: 20px 2px 2px;
+  margin: 0 2px 2px;
   border-radius: 4px;
 }
 
@@ -548,50 +646,22 @@ const config = useRuntimeConfig()
   background-color: #9bb8d3;
 }
 
-.remove-button {
-  background-color: rgb(219, 65, 65);
-  border: none;
-  color: white;
-  padding: 5px 10px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 10px;
-  margin: 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.remove-button:hover {
-  background-color: rgb(160, 40, 40);
-}
-
 .message-container p {
   font-weight: bold;
 }
 
 .message-container {
-  background-color: #f2f2f2;
+  background-color: #f4f4f4;
   border: 1px solid #ddd;
   border-radius: 1vw;
   padding: 0.5vw 2vw 1.5vw;
   margin: 1vw;
   height: 25%;
-  overflow-y: auto;
 }
 
-.larger-text-field {
-  width: 90%;
-  height: 10vh;
-  resize: vertical;
-  font-size: large;
-}
-
-.small-text-field {
-  width: 40vh;
-  font-size: x-large;
-  resize: vertical;
-  margin: 10px;
+.top-bar {
+  margin-right: 1vw;
+  margin-left: 1vw;
 }
 
 .left {
@@ -600,22 +670,12 @@ const config = useRuntimeConfig()
   display: block;
 }
 
-.select-box {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-.sel-line {
-  margin: 0.8vw;
-}
-
 .custom-file-upload {
   cursor: pointer;
 }
 
 .custom-file-input::file-selector-button {
-  background: #22C55E;
+  background: #a0a0a0;
   border-radius: 5px;
   color: white;
   font-size: .9rem;
@@ -624,20 +684,7 @@ const config = useRuntimeConfig()
 }
 
 .custom-file-input::file-selector-button:hover {
-  background: #16A34A;
-  border-radius: 5px;
-  color: white;
-  font-size: .9rem;
-  border: none;
-  margin-right: 10px;
-}
-
-.select-box {
-  width: 15vw;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
+  background: #b0b0b0;
 }
 
 </style>

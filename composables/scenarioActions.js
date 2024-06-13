@@ -4,20 +4,30 @@ import JSZip from "jszip";
 
 export async function startScenarioSimulation(scenario) {
     await successMessage("Simulation started", 'SimID: ' + scenario.simulationID)
-    scenario.simState = 'running';
-    await startSimulation(scenario.simulationID)
-    await successMessage("Simulation finished", 'SimID: ' + scenario.simulationID)
-    scenario.simState = 'done';
-    return 'done'
+    scenario.analysisState = 'simrunning';
+    const response = await startSimulation(scenario.simulationID)
+    if (response.status) {
+        await successMessage("Simulation finished", 'SimID: ' + scenario.simulationID)
+        scenario.analysisState = 'simdone';
+    } else {
+        await failureMessage("Simulation failed", 'SimID: ' + scenario.simulationID + "\n" + response.text)
+        scenario.analysisState = 'simfailed';
+        console.log(response.text)
+    }
 }
 
 export async function startScenarioSearch(scenario) {
     await successMessage("Search started", 'SimID: ' + scenario.simulationID)
-    scenario.mosimState = 'running';
-    await startSearch(scenario.simulationID);
-    await successMessage("Search finished", 'SimID: ' + scenario.simulationID)
-    scenario.mosimState = 'done';
-    return 'done'
+    scenario.analysisState = 'searchrunning';
+    const response = await startSearch(scenario.simulationID);
+    if (response.status) {
+        await successMessage("Search finished", 'SimID: ' + scenario.simulationID)
+        scenario.analysisState = 'searchdone';
+    } else {
+        await failureMessage("Search failed", 'SimID: ' + scenario.simulationID + "\n" + response.text)
+        scenario.analysisState = 'searchfailed';
+        console.log(response.text)
+    }
 }
 
 //Changes all target logics to the same one
@@ -75,4 +85,30 @@ export async function downloadZip() {
 
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
+}
+
+export function getScenarioTypeColor(type){
+    switch (type){
+        case "Exploratory":
+            return "purple"
+        case "Growth":
+            return "blue"
+        case "UseCase":
+            return "green"
+        default:
+            return "black"
+    }
+}
+
+export function getScenarioTypeIcon(type){
+    switch (type){
+        case "Exploratory":
+            return "i-heroicons-light-bulb-solid"
+        case "Growth":
+            return "i-heroicons-arrow-trending-up-solid"
+        case "UseCase":
+            return "i-heroicons-user-group-solid"
+        default:
+            return "i-heroicons-no-symbol-solid"
+    }
 }

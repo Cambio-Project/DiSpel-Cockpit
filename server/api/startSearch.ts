@@ -1,5 +1,7 @@
 import {appendExistingFile} from "~/server/utils/appendExistingFile";
 import {exportStimuli} from "~/server/utils/exportStimuli";
+import fs from "fs";
+import {pushSearchNames} from "~/server/utils/pushSearchResult";
 
 export default defineEventHandler(async (event) => {
 
@@ -27,9 +29,17 @@ export default defineEventHandler(async (event) => {
         body: formData
     });
 
+    // Update result names
+    const searchResultFolder = 'data/search_results/' + simulationID;
+    if (fs.existsSync(searchResultFolder)) {
+        const fileNames = fs.readdirSync(searchResultFolder);
+        await pushSearchNames(simulationID, fileNames)
+    }
+
     const resText = await moSimResponse.text()
     return {
         "simulationID": simulationID,
-        "status": resText,
+        "status": moSimResponse.ok,
+        "text": resText,
     };
 })
