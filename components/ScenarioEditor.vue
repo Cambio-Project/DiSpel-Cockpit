@@ -1,6 +1,7 @@
 <script>
 
 import * as domain from "domain";
+import {getPSPWizardResponseURL, getScenariosOverviewURL} from "~/composables/navigation.js";
 
 export default {
   computed: {
@@ -48,6 +49,8 @@ export default {
     }
   },
   methods: {
+    getPSPWizardResponseURL,
+    getScenariosOverviewURL,
     findCategoryIcon(categoryName) {
       for (let category of this.categories) {
         if (category.id === categoryName) {
@@ -332,14 +335,6 @@ export default {
     },
   },
 }
-
-
-</script>
-
-<script setup>
-
-const config = useRuntimeConfig()
-
 </script>
 
 <template :key="componentKey">
@@ -529,7 +524,7 @@ const config = useRuntimeConfig()
         </li>
       </ul>
 
-      <UButton icon="i-heroicons-plus" color="green" size="lg" @click="toPSPWizardStimulus(this.simID, this.$router)">
+      <UButton icon="i-heroicons-plus" color="green" size="lg" :to="getPSPWizardStimulusURL(simID)">
         New Stimulus
       </UButton>
     </div>
@@ -590,7 +585,7 @@ const config = useRuntimeConfig()
 
         </li>
       </ul>
-      <UButton icon="i-heroicons-plus" color="green" size="lg" @click="toPSPWizardResponse(this.simID, this.$router)">
+      <UButton icon="i-heroicons-plus" color="green" size="lg" :to="getPSPWizardResponseURL(simID)">
         New Response
       </UButton>
 
@@ -602,7 +597,7 @@ const config = useRuntimeConfig()
       <div class="mt-4 mb-4">
         <!-- TODO: add stimulus check again as soon as supported -->
         <div v-if="name !== null && responses != null">
-          <UButton size="xl" @click="toScenariosOverview(this.$router)">Complete</UButton>
+          <UButton size="xl" :to="getScenariosOverviewURL()">Complete</UButton>
         </div>
 
         <div v-else>
