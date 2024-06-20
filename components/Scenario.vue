@@ -395,10 +395,10 @@ export default {
                 <ul>
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left">
                 <div class="container-row">
-                  <div class="container-row-element-xs">
+                  <div class="container-row-element-s">
                     <!-- Response Statistics -->
                   <div class="container-row">
-                  <div class="container-row-element-s">
+                  <div class="container-row-element-xs">
                     <span>{{ index + 1 }}.</span>
                   </div>
                    <div class="container-row-element">
