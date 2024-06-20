@@ -381,7 +381,7 @@ export default {
                 <ul>
                 <li v-for="(response, index) in scenario.responses" :key="response" class="mb-1">
                 <div class="container-row">
-                  <div class="container-row-element-xs">
+                  <div class="container-row-element-s">
                     <!-- Response Statistics -->
                   <div class="container-row">
                   <div class="container-row-element-s">

@@ -1,3 +1,6 @@
+import {setSimulationUpdateRequired} from "~/server/utils/pushSimulationResult";
+import {setSearchUpdateRequired} from "~/server/utils/pushSearchResult";
+
 export default defineEventHandler(async (event) => {
     setResponseHeaders(event, {
         "Access-Control-Allow-Methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -34,6 +37,9 @@ export default defineEventHandler(async (event) => {
         await Scenario.updateOne({simulationID: simId}, {
             responses: responses,
         });
+
+        await setSimulationUpdateRequired(simId)
+        await setSearchUpdateRequired(simId)
 
     } catch (e) {
         console.log(e)

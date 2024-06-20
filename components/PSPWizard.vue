@@ -217,7 +217,6 @@ export default {
     },
     "pspSpecification.upperLimit": {
       handler() {
-        this.checkTime()
         this.handleInputChange()
       },
       deep: true
@@ -230,7 +229,6 @@ export default {
     },
     "pspSpecification.lowerLimit": {
       handler() {
-        this.checkTime()
         this.handleInputChange()
       },
       deep: true
@@ -1264,14 +1262,6 @@ export default {
         this.pspSpecification.probability = 0;
       } else if (this.pspSpecification.probability > 1) {
         this.pspSpecification.probability = 1;
-      }
-    }
-    ,
-    checkTime() {
-      if (this.pspSpecification.upperLimit != null && this.pspSpecification.lowerLimit != null) {
-        if (this.pspSpecification.upperLimit < this.pspSpecification.lowerLimit) {
-          this.pspSpecification.lowerLimit = this.pspSpecification.upperLimit;
-        }
       }
     }
     ,

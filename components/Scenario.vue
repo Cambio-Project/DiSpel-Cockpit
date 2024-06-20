@@ -395,10 +395,10 @@ export default {
                 <ul>
                 <li v-for="(response, index) in scenario.responses" :key="response" class="left">
                 <div class="container-row">
-                  <div class="container-row-element-xs">
+                  <div class="container-row-element-s">
                     <!-- Response Statistics -->
                   <div class="container-row">
-                  <div class="container-row-element-s">
+                  <div class="container-row-element-xs">
                     <span>{{ index + 1 }}.</span>
                   </div>
                    <div class="container-row-element">
@@ -450,7 +450,7 @@ export default {
               <UDivider label="Executions" class="mt-2 mb-2"/>
               <div v-for="(resultName,resultIndex) in result.simulationNames">
                 <div class="scenario-box mb-4"
-                     :class="{ 'green-border' : this.result.searchResultsScenarioSuccesses[resultIndex], 'red-border' : !this.result.searchResultsScenarioSuccesses[resultIndex] }">
+                     :class="{ 'green-border' : this.result.simulationResultsScenarioSuccesses[resultIndex], 'red-border' : !this.result.simulationResultsScenarioSuccesses[resultIndex] }">
                   <div class="container-row">
                     <div class="container-element-xs w-full">
                     </div>
