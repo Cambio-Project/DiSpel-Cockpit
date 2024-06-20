@@ -63,7 +63,8 @@ back.
 
 ### General Usage Workflow
 
-1. **Startup:** On the Cockpit you will find an overview of all required services on the 'Configuration' page. A green
+1. **Startup:** You will find an overview of all required services on the 'Configuration' page, which is also the
+   starting page. A green
    light signals that the
    service is available. If the service is red something is wrong with your setup. A yellow light signals that some
    services are not available. The status of dependencies is also visible in the menu bar on every page.
@@ -93,7 +94,8 @@ back.
    or the verify search button.
    The color of the response text on the `Scenario Details' page will indicate whether the response is satisfied for a
    specific run or not.
-5. **Refine Scenario:** Finally you can start the response refinement on the 'Scenario Details' page. With the click of the button you will be
+5. **Refine Scenario:** Finally you can start the response refinement on the 'Scenario Details' page. With the click of
+   the button you will be
    redirected to the interface of the TQPropRefiner.
    Here you can use all the provided functionality and save the refined specification in the Cockpit.
 
