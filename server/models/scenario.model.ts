@@ -12,6 +12,10 @@ const ScenarioSchema = new Schema({
         load: [{}],
         monitoringData: [{}],
     },
+    architectureData: {
+        serviceNames: [String],
+        endpointNames: [String],
+    },
     searchWindowSize: String,
     stimuli: [{}],
     responses: [{}],
