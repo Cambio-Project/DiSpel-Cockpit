@@ -93,6 +93,7 @@ export default {
       events: [],
       simID: this.$route.query.simID,
       type: this.$route.query.type,
+      scenario: null,
       customCommandName: "",
       customCommandContent: "",
       customListenerName: "",
@@ -560,7 +561,8 @@ export default {
   methods: {
     toScenarioEditor,
     async initFields() {
-      const scenario = await getScenario(this.simID)
+      this.scenario = await getScenario(this.simID);
+      const scenario = this.scenario
       if (typeof scenario.specification.measurementSources !== "undefined") {
         this.measurementSourceOptions = scenario.specification.measurementSources
       }
@@ -596,7 +598,6 @@ export default {
       this.commandAssistant.killOptions.eventName = ""
       this.commandAssistant.loadOptions.endTime = ""
       this.commandAssistant.loadOptions.startTime = ""
-      this.commandAssistant.loadOptions.targetServiceName = ""
       this.commandAssistant.loadOptions.targetEndpointName = ""
       this.commandAssistant.loadOptions.factor = ""
       this.commandAssistant.loadOptions.function = ""
@@ -640,8 +641,6 @@ export default {
       command += ":"
       command += this.commandAssistant.loadOptions.function.trim()
       command += ":"
-      command += this.commandAssistant.loadOptions.targetServiceName.trim()
-      command += "."
       command += this.commandAssistant.loadOptions.targetEndpointName.trim()
       command += "])"
       return command
@@ -2955,7 +2954,12 @@ export default {
       <div v-if="commandAssistant.type === 'kill'" class="mt-3">
         <UDivider label="Options"/>
         <UFormGroup label="Target Service Name" class="mb-1 mt-4" required>
-          <UInput v-model="commandAssistant.killOptions.targetServiceName" placeholder="Enter Target Service Name"/>
+          <USelectMenu searchable creatable v-model="commandAssistant.killOptions.targetServiceName"
+                       :options="scenario.architectureData.serviceNames">
+            <template #option-create="{ option }">
+              <span class="flex-shrink-0">Use Custom Name</span>
+            </template>
+          </USelectMenu>
         </UFormGroup>
         <UCheckbox v-model="commandAssistant.killOptions.instanceCountActive" label="Kill Service Instances"
                    class="mb-1 mt-4"></UCheckbox>
@@ -2974,11 +2978,13 @@ export default {
 
       <div v-if="commandAssistant.type === 'load'">
         <UDivider label="Options"/>
-        <UFormGroup label="Target Service Name" class="mb-1 mt-4" required>
-          <UInput v-model="commandAssistant.loadOptions.targetServiceName" placeholder="Enter Target Service Name"/>
-        </UFormGroup>
         <UFormGroup label="Endpoint Name" class="mb-1 mt-1" required>
-          <UInput v-model="commandAssistant.loadOptions.targetEndpointName" placeholder="Enter Target Endpoint Name"/>
+          <USelectMenu searchable creatable v-model="commandAssistant.loadOptions.targetEndpointName"
+                       :options="scenario.architectureData.endpointNames">
+            <template #option-create="{ option }">
+              <span class="flex-shrink-0">Use Custom Name</span>
+            </template>
+          </USelectMenu>
         </UFormGroup>
         <UFormGroup label="Function Type" class="mb-1 mt-1" required>
           <USelectMenu v-model="commandAssistant.loadOptions.function" :options="loadFunctionOptions"

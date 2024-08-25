@@ -58,6 +58,9 @@ export default defineEventHandler(async (event) => {
 
         await scenario.save();
 
+        if (fullFieldName === "environment.architecture") {
+            await updateArchitectureData(simulationID, useRuntimeConfig(event))
+        }
     } catch (e) {
         console.log(e)
         return {

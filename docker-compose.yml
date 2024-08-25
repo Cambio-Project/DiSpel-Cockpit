@@ -2,7 +2,7 @@ name: "dashboard-project"
 
 services:
   dashboard:
-    image: ghcr.io/cambio-project/dispel-cockpit:1.2.1
+    image: ghcr.io/cambio-project/dispel-cockpit:1.2.2
     container_name: dashboard
     ports:
       - 8080:3000
@@ -49,7 +49,7 @@ services:
       - ./data/search_results:/app/search_results
 
   misim:
-    image: ghcr.io/cambio-project/misim:v4.1.3
+    image: ghcr.io/cambio-project/misim:v4.1.4
     container_name: misim
     ports:
       - 8084:8080
@@ -60,7 +60,7 @@ services:
       - ./data/simulations_results:/simulations_results
 
   mosim:
-    image: ghcr.io/cambio-project/mosim:0.3.2
+    image: ghcr.io/cambio-project/mosim:0.3.5
     container_name: mosim
     ports:
       - 8087:8080

@@ -36,9 +36,10 @@ correct.
 
 1. Copy the content (or the file itself) from the ``docker-compose.yml`` in an empty folder.
     - Docker will need write access in that directory
-2. Start Docker with the command ```docker compose up -d```
+2. Copy the content (or the file itself) from the ``.env`` in the same folder.
+3. Start Docker with the command ```docker compose up -d```
     - The flag ```-d``` starts the containers in the background
-3. After all Container are started up, you can reach the Cockpit via your browser at ``http://localhost:8080``
+4. After all Container are started up, you can reach the Cockpit via your browser at ``http://localhost:8080``
 
 ### Manual setup
 
