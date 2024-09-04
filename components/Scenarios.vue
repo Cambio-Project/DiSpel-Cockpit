@@ -270,14 +270,22 @@ export default {
 
               <!-- Stimuli Counter -->
               <div class="container-row-element-xs">
+                <UTooltip text="Stimulus Count">
+                <span>
                 <Icon name="icon-park-solid:lightning" color="red"/>
                 {{ scenario.stimuli.length }}
+                </span>
+                </UTooltip>
               </div>
 
               <!-- Response Counter -->
               <div class="container-row-element-xs">
-                <Icon name="material-symbols:ecg-heart" color="purple"/>
-                {{ scenario.responses.length }}
+                <UTooltip text="Response Count">
+                <span>
+                  <Icon name="material-symbols:ecg-heart" color="purple"/>
+                  {{ scenario.responses.length }}
+                </span>
+                </UTooltip>
               </div>
 
               <!-- ID -->
@@ -288,15 +296,23 @@ export default {
               <!-- Buttons -->
               <div class="container-row-element-s">
                 <div class="float-right">
-                  <UButton class="mr-1" icon="i-heroicons-pencil-square-16-solid" square size="xs" color="blue"
-                           @click="toScenarioEditor(scenario.simulationID);"></UButton>
-                  <UButton class="mr-1" icon="i-heroicons-document-magnifying-glass-16-solid" square size="xs"
-                           color="blue"
-                           @click="toScenarioDetails(scenario.simulationID)"></UButton>
-                  <UButton class="mr-1" icon="i-heroicons-cloud-arrow-down-16-solid" square size="xs" color="blue"
-                           @click="downloadJSON(scenario.simulationID);"></UButton>
-                  <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                           @click="removeScenario(scenario.simulationID);"></UButton>
+                  <UTooltip text="Edit Scenario">
+                    <UButton class="mr-1" icon="i-heroicons-pencil-square-16-solid" square size="xs" color="blue"
+                             @click="toScenarioEditor(scenario.simulationID);"></UButton>
+                  </UTooltip>
+                  <UTooltip text="Show Scenario Details">
+                    <UButton class="mr-1" icon="i-heroicons-document-magnifying-glass-16-solid" square size="xs"
+                             color="blue"
+                             @click="toScenarioDetails(scenario.simulationID)"></UButton>
+                  </UTooltip>
+                  <UTooltip text="Download Scenario">
+                    <UButton class="mr-1" icon="i-heroicons-cloud-arrow-down-16-solid" square size="xs" color="blue"
+                             @click="downloadJSON(scenario.simulationID);"></UButton>
+                  </UTooltip>
+                  <UTooltip text="Delete Scenario">
+                    <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                             @click="removeScenario(scenario.simulationID);"></UButton>
+                  </UTooltip>
                 </div>
               </div>
             </div>
@@ -388,14 +404,18 @@ export default {
                     <span>{{ index + 1 }}.</span>
                   </div>
                    <div class="container-row-element">
+                     <UTooltip text="Response Satisfaction for Simulation">
                     <span> <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
                         getSimulationVerificationResultsPerResponse(this.findResults(scenario.simulationID), index)
                       }}</span>
+                     </UTooltip>
                   </div>
                   <div class="container-row-element">
+                    <UTooltip text="Response Satisfaction for Monitoring">
                     <span> <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
                         getSearchVerificationResultsPerResponse(this.findResults(scenario.simulationID), index)
                       }}</span>
+                    </UTooltip>
                   </div>
 
                   </div>
@@ -478,21 +498,27 @@ export default {
             <div class="container-row ">
               <div class="container-row-element-s pt-2 pb-1"
                    :style="{ 'background-color': getResilienceScoreColor(this.findResults(scenario.simulationID))}">
-                    <span>
+                <UTooltip text="Scenario's Resilience Score">
+                  <span>
                   {{ getResilienceScore(this.findResults(scenario.simulationID)) }}
-                    </span>
+                  </span>
+                </UTooltip>
               </div>
 
               <div class="container-row-element-s pt-2 pb-1">
-                    <span> <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
+                <UTooltip text="Full Response Satisfaction for Simulation">
+                    <span> <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 mr-1"/>{{
                         getSimulationVerificationResultsPerScenario(this.findResults(scenario.simulationID))
                       }}</span>
+                </UTooltip>
               </div>
 
               <div class="container-row-element-s pt-2 pb-1">
-                    <span> <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
+                <UTooltip text="Full Response Satisfaction for Monitoring">
+                    <span> <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 mr-1"/>{{
                         getSearchVerificationResultsPerScenario(this.findResults(scenario.simulationID))
                       }}</span>
+                </UTooltip>
               </div>
 
               <div class="container-row-element pt-1 pb-1">
@@ -544,20 +570,28 @@ export default {
 
               <div class="container-row-element-s pt-1 pb-1">
 <span class="float-right">
-  <UButton class="mr-1" icon="i-heroicons-globe-alt-20-solid" square size="xs" color="blue"
-           @click="initiateSimulation(scenario)"></UButton>
-  <UButton class="mr-1" icon="i-heroicons-check-16-solid"
-           :class="{ 'blue-glowing-button' : isSimulationVerificationRequired(scenario.simulationID)}" square
-           size="xs"
-           color="blue"
-           @click="verifyScenario(scenario)"></UButton>
-  <UButton class="mr-1" icon="i-heroicons-chart-bar-16-solid" square size="xs" color="blue"
-           @click="initiateSearch(scenario)"></UButton>
-  <UButton class="mr-1" icon="i-heroicons-check-16-solid"
-           :class="{ 'blue-glowing-button' : isSearchVerificationRequired(scenario.simulationID)}" square
-           size="xs"
-           color="blue"
-           @click="verifySearch(scenario)"></UButton>
+  <UTooltip text="Start Simulation">
+    <UButton class="mr-1" icon="i-heroicons-globe-alt-20-solid" square size="xs" color="blue"
+             @click="initiateSimulation(scenario)"/>
+  </UTooltip>
+  <UTooltip text="Check Simulation Results">
+    <UButton class="mr-1" icon="i-heroicons-check-16-solid"
+             :class="{ 'blue-glowing-button' : isSimulationVerificationRequired(scenario.simulationID)}" square
+             size="xs"
+             color="blue"
+             @click="verifyScenario(scenario)"/>
+  </UTooltip>
+  <UTooltip text="Start Monitoring Search">
+    <UButton class="mr-1" icon="i-heroicons-chart-bar-16-solid" square size="xs" color="blue"
+             @click="initiateSearch(scenario)"/>
+  </UTooltip>
+  <UTooltip text="Check Monitoring Search Results">
+    <UButton class="mr-1" icon="i-heroicons-check-16-solid"
+             :class="{ 'blue-glowing-button' : isSearchVerificationRequired(scenario.simulationID)}" square
+             size="xs"
+             color="blue"
+             @click="verifySearch(scenario)"/>
+   </UTooltip>
 </span>
               </div>
             </div>

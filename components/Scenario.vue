@@ -175,12 +175,18 @@ export default {
       </div>
 
       <div class="center mt-2 mb-2">
-        <UButton class="mr-1" icon="i-heroicons-pencil-square-16-solid" square size="xs" color="blue"
-                 @click="toScenarioEditor(scenario.simulationID);"></UButton>
-        <UButton class="mr-1" icon="i-heroicons-cloud-arrow-down-16-solid" square size="xs" color="blue"
-                 @click="downloadJSON(scenario.simulationID);"></UButton>
-        <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                 @click="removeScenario(scenario.simulationID);"></UButton>
+        <UTooltip text="Edit Scenario">
+          <UButton class="mr-1" icon="i-heroicons-pencil-square-16-solid" square size="xs" color="blue"
+                   @click="toScenarioEditor(scenario.simulationID);"></UButton>
+        </UTooltip>
+        <UTooltip text="Download Scenario">
+          <UButton class="mr-1" icon="i-heroicons-cloud-arrow-down-16-solid" square size="xs" color="blue"
+                   @click="downloadJSON(scenario.simulationID);"></UButton>
+        </UTooltip>
+        <UTooltip text="Delete Scenario">
+          <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                   @click="removeScenario(scenario.simulationID);"></UButton>
+        </UTooltip>
       </div>
     </div>
 
@@ -221,10 +227,18 @@ export default {
                 <div class="container-row">
                   <div class="container-row-element-xxs">
                     {{ index + 1 }}.
-                    <UButton class="ml-2" square v-if="!stimulus.showDetails" color="gray" size="2xs"
-                             icon="i-heroicons-chevron-down" @click="toggleDetails(stimulus)"></UButton>
-                    <UButton class="ml-2" square v-if="stimulus.showDetails" color="gray" size="2xs"
-                             icon="i-heroicons-chevron-up" @click="toggleDetails(stimulus)"></UButton>
+                    <span v-if="!stimulus.showDetails">
+                    <UTooltip text="Show Specification Details">
+                      <UButton class="ml-2" square color="gray" size="2xs"
+                               icon="i-heroicons-chevron-down" @click="toggleDetails(stimulus)"></UButton>
+                    </UTooltip>
+                    </span>
+                    <span v-if="stimulus.showDetails">
+                    <UTooltip text="Hide Specification Details">
+                      <UButton class="ml-2" square color="gray" size="2xs"
+                               icon="i-heroicons-chevron-up" @click="toggleDetails(stimulus)"></UButton>
+                    </UTooltip>
+                    </span>
                   </div>
                   <div class="container-row-element">
                     <strong>{{ stimulus.SSEL }}</strong>
@@ -270,10 +284,18 @@ export default {
                 <div class="container-row">
                   <div class="container-row-element-xxs">
                     {{ index + 1 }}.
-                    <UButton class="ml-2" square v-if="!response.showDetails" color="gray" size="2xs"
-                             icon="i-heroicons-chevron-down" @click="toggleDetails(response)"></UButton>
-                    <UButton class="ml-2" square v-if="response.showDetails" color="gray" size="2xs"
-                             icon="i-heroicons-chevron-up" @click="toggleDetails(response)"></UButton>
+                    <span v-if="!response.showDetails">
+                    <UTooltip text="Show Specification Details">
+                      <UButton class="ml-2" square color="gray" size="2xs"
+                               icon="i-heroicons-chevron-down" @click="toggleDetails(response)"></UButton>
+                    </UTooltip>
+                    </span>
+                    <span v-if="response.showDetails">
+                    <UTooltip text="Hide Specification Details">
+                      <UButton class="ml-2" square color="gray" size="2xs"
+                               icon="i-heroicons-chevron-up" @click="toggleDetails(response)"></UButton>
+                    </UTooltip>
+                    </span>
                   </div>
                   <div class="container-row-element">
                     <strong>{{ response.SSEL }}</strong>
@@ -402,14 +424,23 @@ export default {
                     <span>{{ index + 1 }}.</span>
                   </div>
                    <div class="container-row-element">
-                    <span> <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
-                        getSimulationVerificationResultsPerResponse(this.result, index)
-                      }}</span>
+                    <span>
+                      <UTooltip text="Simulation Results">
+                        <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 mr-1"/>{{
+                          getSimulationVerificationResultsPerResponse(this.result, index)
+                        }}
+                      </UTooltip>
+                    </span>
+
                   </div>
                   <div class="container-row-element">
-                    <span> <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
-                        getSearchVerificationResultsPerResponse(this.result, index)
-                      }}</span>
+                    <span>
+                      <UTooltip text="Monitoring Results">
+ <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 mr-1"/>{{
+                          getSearchVerificationResultsPerResponse(this.result, index)
+                        }}
+                    </UTooltip>
+                    </span>
                   </div>
                   </div>
                   </div>
@@ -436,16 +467,22 @@ export default {
             </div>
             <div v-if="result !== null">
               <UDivider label="Actions" class="mb-1"/>
-              <UButton class="mr-1" icon="i-heroicons-globe-alt-20-solid" square size="xs" color="blue"
-                       @click="initiateSimulation(scenario)"></UButton>
-              <UButton class="mr-1" icon="i-heroicons-check-16-solid"
-                       :class="{ 'blue-glowing-button' : isSimulationVerificationRequired(scenario.simulationID)}"
-                       square
-                       size="xs"
-                       color="blue"
-                       @click="verifyScenario(scenario)"></UButton>
-              <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                       @click="deleteAllSimulationResultAndUpdate(scenario.simulationID);"></UButton>
+              <UTooltip text="Start Simulation">
+                <UButton class="mr-1" icon="i-heroicons-globe-alt-20-solid" square size="xs" color="blue"
+                         @click="initiateSimulation(scenario)"></UButton>
+              </UTooltip>
+              <UTooltip text="Check Simulation Results">
+                <UButton class="mr-1" icon="i-heroicons-check-16-solid"
+                         :class="{ 'blue-glowing-button' : isSimulationVerificationRequired(scenario.simulationID)}"
+                         square
+                         size="xs"
+                         color="blue"
+                         @click="verifyScenario(scenario)"></UButton>
+              </UTooltip>
+              <UTooltip text="Delete All Simulation Executions">
+                <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                         @click="deleteAllSimulationResultAndUpdate(scenario.simulationID);"></UButton>
+              </UTooltip>
 
               <UDivider label="Executions" class="mt-2 mb-2"/>
               <div v-for="(resultName,resultIndex) in result.simulationNames">
@@ -464,8 +501,10 @@ export default {
                     </div>
                     <div class="container-element-xs w-full">
                       <div class="float-right mt-1">
-                        <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                                 @click="deleteResultAndUpdate('simulation', scenario.simulationID, resultName, resultIndex);"></UButton>
+                        <UTooltip text="Delete Simulation Execution">
+                          <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                                   @click="deleteResultAndUpdate('simulation', scenario.simulationID, resultName, resultIndex);"></UButton>
+                        </UTooltip>
                       </div>
                     </div>
                   </div>
@@ -500,7 +539,7 @@ export default {
                               </div>
                               <div class="container-row-element">
                                 <UTooltip text="Refine Response">
-                                  <UButton class="mr-1" icon="i-heroicons-arrow-path" square size="xs"
+                                  <UButton class="mr-1" icon="i-heroicons-adjustments-horizontal" square size="xs"
                                            @click="toRefinement(scenario.simulationID, index, resultName, true);"></UButton>
                                 </UTooltip>
                               </div>
@@ -531,15 +570,21 @@ export default {
             </div>
             <div v-if="result !== null">
               <UDivider label="Actions" class="mb-1"/>
+              <UTooltip text="Start Monitoring Search">
               <UButton class="mr-1" icon="i-heroicons-chart-bar-16-solid" square size="xs" color="blue"
                        @click="initiateSearch(scenario)"></UButton>
+              </UTooltip>
+              <UTooltip text="Check Monitoring Search Results">
               <UButton class="mr-1" icon="i-heroicons-check-16-solid"
                        :class="{ 'blue-glowing-button' : isSearchVerificationRequired(scenario.simulationID)}" square
                        size="xs"
                        color="blue"
                        @click="verifySearch(scenario)"></UButton>
+              </UTooltip>
+              <UTooltip text="Delete All Monitoring Executions">
               <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
                        @click="deleteAllSearchResultAndUpdate(scenario.simulationID);"></UButton>
+              </UTooltip>
 
               <UDivider label="Executions" class="mt-2 mb-2"/>
               <div v-for="(resultName,resultIndex) in result.searchNames">
@@ -558,8 +603,10 @@ export default {
                     </div>
                     <div class="container-element-xs w-full">
                       <div class="float-right mt-1">
+                        <UTooltip text="Delete Monitoring Execution">
                         <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
                                  @click="deleteResultAndUpdate('search', scenario.simulationID, resultName, resultIndex);"></UButton>
+                        </UTooltip>
                       </div>
                     </div>
                   </div>
@@ -594,7 +641,7 @@ export default {
                               </div>
                               <div class="container-row-element">
                                 <UTooltip text="Refine Response">
-                                  <UButton class="mr-1" icon="i-heroicons-arrow-path" square size="xs"
+                                  <UButton class="mr-1" icon="i-heroicons-adjustments-horizontal" square size="xs"
                                            @click="toRefinement(scenario.simulationID, index, resultName, false);"></UButton>
                                 </UTooltip>
                               </div>
@@ -621,7 +668,7 @@ export default {
   </div>
 
   <div class="mt-4 mb-4">
-    <UButton @click="toScenariosOverview()">Complete</UButton>
+    <UButton @click="toScenariosOverview()">Leave</UButton>
   </div>
 </template>
 
