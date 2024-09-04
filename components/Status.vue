@@ -42,12 +42,14 @@ export default {
       <h1 class="text-2xl">Dependencies Status Information
         <UTooltip text="">
           <template #text>
-            <span> Shows if required dependencies are available </span>
+            <span> Shows whether required dependencies are available</span>
           </template>
           <Icon name="i-material-symbols-info-outline-rounded" class="text-lg"></Icon>
         </UTooltip>
+        <UTooltip text="Update Tool Status">
         <UButton class="ml-2" icon="i-heroicons-arrow-path-solid" square size="xs"
                  @click="localUpdateServiceState()"></UButton>
+        </UTooltip>
       </h1>
       <div class="flex flex-row space-x-2 mt-2">
         <UTooltip text="Stores scenarios and analysis results">
