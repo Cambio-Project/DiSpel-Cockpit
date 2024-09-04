@@ -500,7 +500,7 @@ export default {
                               </div>
                               <div class="container-row-element">
                                 <UTooltip text="Refine Response">
-                                  <UButton class="mr-1" icon="i-heroicons-arrow-path" square size="xs"
+                                  <UButton class="mr-1" icon="i-heroicons-adjustments-horizontal" square size="xs"
                                            @click="toRefinement(scenario.simulationID, index, resultName, true);"></UButton>
                                 </UTooltip>
                               </div>
@@ -594,7 +594,7 @@ export default {
                               </div>
                               <div class="container-row-element">
                                 <UTooltip text="Refine Response">
-                                  <UButton class="mr-1" icon="i-heroicons-arrow-path" square size="xs"
+                                  <UButton class="mr-1" icon="i-heroicons-adjustments-horizontal" square size="xs"
                                            @click="toRefinement(scenario.simulationID, index, resultName, false);"></UButton>
                                 </UTooltip>
                               </div>
