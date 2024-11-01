@@ -1548,7 +1548,9 @@ export default {
         TBV_untimed: '',
         TBV_timed: '',
         target_logic: this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic),
-        predicates_info: []
+        predicates_info: [],
+        monitoringChecked: true,
+        simulationChecked: true
       };
 
       const payloadWithNames = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, "SEL", this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, true);

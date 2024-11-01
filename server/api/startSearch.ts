@@ -1,5 +1,5 @@
 import {appendExistingFile} from "~/server/utils/appendExistingFile";
-import {exportStimuli} from "~/server/utils/exportStimuli";
+import {AnalysisType, exportStimuli} from "~/server/utils/exportStimuli";
 import fs from "fs";
 import {pushSearchNames} from "~/server/utils/pushSearchResult";
 
@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
         await appendExistingFile(formData, "monitoring_data", monitoringName, "./uploaded/")
     }
 
-    await exportStimuli(formData, "mtls", scenario)
+    await exportStimuli(formData, "mtls", scenario, AnalysisType.Monitoring)
 
     formData.append("simulation_id", simulationID)
     formData.append("search_window_size", scenario!.searchWindowSize!)

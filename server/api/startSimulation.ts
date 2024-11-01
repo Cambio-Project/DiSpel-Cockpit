@@ -1,4 +1,4 @@
-import {exportStimuli} from "~/server/utils/exportStimuli";
+import {AnalysisType, exportStimuli} from "~/server/utils/exportStimuli";
 import {appendExistingFile} from "~/server/utils/appendExistingFile";
 import {exportJsonAsFile} from "~/server/utils/appendJsonAsFile";
 import fs from "fs";
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
     const formData = new FormData();
 
-    await exportStimuli(formData, "mtls", scenario)
+    await exportStimuli(formData, "mtls", scenario, AnalysisType.Simulation)
 
     for (const architecture of architectureArray) {
         const architectureName = Object.keys(architecture)[0]
