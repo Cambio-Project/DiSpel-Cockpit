@@ -270,6 +270,18 @@ export default {
                         </span>
                     </div>
                   </div>
+                  <div class="container-row-element-xxs">
+                    <UTooltip text="Active for Simulation">
+                      <UCheckbox disabled v-model="stimulus.simulationChecked" name="simulation"/>
+                      <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 ml-2 mr-2"/>
+                    </UTooltip>
+                  </div>
+                  <div class="container-row-element-xxs">
+                    <UTooltip text="Active for Monitoring">
+                      <UCheckbox disabled v-model="stimulus.monitoringChecked" name="monitoring"/>
+                      <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 ml-2"/>
+                    </UTooltip>
+                  </div>
                 </div>
               </li>
             </ul>
