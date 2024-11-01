@@ -327,6 +327,12 @@ export default {
     searchWindowSize(newSearchWindowSize) {
       this.addValue("searchWindowSize", newSearchWindowSize)
     },
+    'stimuli': {
+      handler() {
+        this.setValue("stimuli", this.stimuli)
+        },
+        deep: true
+      },
     'target': {
       handler() {
         changeAllTargets([this.scenario], this.target)
@@ -512,6 +518,18 @@ export default {
                 </span>
                 </div>
               </div>
+            </div>
+            <div class="container-row-element-xxs">
+              <UTooltip text="Active for Simulations">
+                <UCheckbox v-model="stimulus.simulationChecked" name="simulation"/>
+                <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 ml-2"/>
+              </UTooltip>
+            </div>
+            <div class="container-row-element-xxs">
+              <UTooltip text="Active for Monitoring">
+                <UCheckbox v-model="stimulus.monitoringChecked" name="monitoring"/>
+                <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 ml-2"/>
+              </UTooltip>
             </div>
             <div class="container-row-element-xxs">
               <UTooltip text="Delete Stimulus Specification">
