@@ -2,7 +2,7 @@ name: "dashboard-project"
 
 services:
   dashboard:
-    image: ghcr.io/cambio-project/dispel-cockpit:1.2.3
+    image: ghcr.io/cambio-project/dispel-cockpit:1.3.0
     container_name: dashboard
     ports:
       - 8080:3000
