@@ -1,5 +1,7 @@
 <script>
 
+import {successMessage} from "~/composables/popup.js";
+
 export default {
   name: "ScenarioList",
   el: '#app',
@@ -89,12 +91,16 @@ export default {
       toScenariosOverview(this.$router)
     },
     async verifyScenario(scenario) {
+      await successMessage("Starting Verification", 'SimID: ' + scenario.simulationID)
       await verifySimulation(scenario)
       await this.updateResults()
+      await successMessage("Finished Verification", 'SimID: ' + scenario.simulationID)
     },
     async verifySearch(scenario) {
+      await successMessage("Starting Verification", 'SimID: ' + scenario.simulationID)
       await verifySearch(scenario)
       await this.updateResults()
+      await successMessage("Finished Verification", 'SimID: ' + scenario.simulationID)
     },
     async initiateSimulation(scenario) {
       await startScenarioSimulation(scenario);
@@ -121,23 +127,29 @@ export default {
       return updateRequired
     },
     async deleteResultAndUpdate(type, simulationID, executionID, executionIndex) {
+      await successMessage("Started Deletion of Result", 'ExecutionID ' + executionID  + 'SimID: ' + simulationID)
       await deleteResult(type, simulationID, executionID, executionIndex);
       await this.updateResults();
+      await successMessage("Deleted Result", 'ExecutionID ' + executionID  + 'SimID: ' + simulationID)
     },
     async deleteAllSimulationResultAndUpdate(simulationID) {
       if (this.result === undefined || this.result.simulationNames === undefined) {
         return
       }
+      await successMessage("Started Deletion of Results", 'SimID: ' + simulationID)
       for (const executionID of this.result.simulationNames) {
         await deleteResult("simulation", simulationID, executionID, 0);
       }
       await this.updateResults();
+      await successMessage("Deleted All Results", 'SimID: ' + simulationID)
     },
     async deleteAllSearchResultAndUpdate(simulationID) {
+      await successMessage("Started Deletion of Results", 'SimID: ' + simulationID)
       for (const executionID of this.result.searchNames) {
         await deleteResult("search", simulationID, executionID, 0);
       }
       await this.updateResults();
+      await successMessage("Deleted All Results", 'SimID: ' + simulationID)
     },
     findSearchResults(result, resultIndex, responseIndex) {
       if (result.searchResults !== undefined && result.searchResults[resultIndex] !== undefined && result.searchResults[resultIndex][responseIndex] !== undefined) {
