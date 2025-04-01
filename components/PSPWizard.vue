@@ -26,6 +26,10 @@ export default {
         key: 'editListener',
         label: 'Edit Listener',
         description: 'Edit an existing listener.'
+      }, {
+        key: 'manageMeasurementSource',
+        label: 'Manage Measurement Source',
+        description: 'Create and Delete Measurement Sources.'
       }],
       responseItems: [{
         key: 'addEvent',
@@ -61,7 +65,10 @@ export default {
         "kill", "load"
       ],
       listenerOptions: [
-        "event"
+        "event", "relational"
+      ],
+      relationalOperatorOptions : [
+        '=', '!=', '<=', '<', '>', '>='
       ],
       loadFunctionOptions: [
         "constant", "exponential", "exponential-inverse", "linear", "linear-inverse"
@@ -140,6 +147,13 @@ export default {
         isOpen: false,
         eventOptions: {
           eventName: ""
+        },
+        relationalOptions: {
+          measurementSourceA: "",
+          hasMeasurementSourceB: true,
+          comparisonValue: 0.0,
+          measurementSourceB: "",
+          relationalOperator: ""
         }
       },
       commandAssistant: {
@@ -427,7 +441,7 @@ export default {
         for (let command of this.state.commands) {
           predicates.push(command.command_name)
         }
-        for (let listener of this.state.listeners) {
+        for (let listener of this.state.  listeners) {
           predicates.push(listener.listener_name)
         }
       }
@@ -571,6 +585,11 @@ export default {
     cancelListenerAssistant() {
       this.listenerAssistant.type = "";
       this.listenerAssistant.eventOptions.eventName = ""
+      this.listenerAssistant.relationalOptions.measurementSourceA = ""
+      this.listenerAssistant.relationalOptions.measurementSourceB = ""
+      this.listenerAssistant.relationalOptions.hasMeasurementSourceB = false
+      this.listenerAssistant.relationalOptions.relationalOperator = ""
+      this.listenerAssistant.relationalOptions.comparisonValue= 0.0
       this.listenerAssistant.isOpen = false
     },
     applyListenerAssistant() {
@@ -578,6 +597,9 @@ export default {
       switch (this.listenerAssistant.type) {
         case "event":
           listener = this.buildEventListener();
+          break;
+        case "relational":
+          listener = this.buildRelationListener();
           break;
       }
       this.customListenerContent = listener;
@@ -587,6 +609,24 @@ export default {
       let listener = "(event["
       listener += this.listenerAssistant.eventOptions.eventName.trim()
       listener += "])"
+      return listener;
+    },
+    buildRelationListener() {
+      let listener = "("
+      listener += "($"
+      listener += this.listenerAssistant.relationalOptions.measurementSourceA
+      listener += ")"
+      listener += " "
+      listener += this.listenerAssistant.relationalOptions.relationalOperator
+      listener += " "
+      if(this.listenerAssistant.relationalOptions.hasMeasurementSourceB){
+        listener += "($"
+        listener += this.listenerAssistant.relationalOptions.measurementSourceB
+        listener += ")"
+      }else{
+        listener += this.listenerAssistant.relationalOptions.comparisonValue
+      }
+      listener += ")"
       return listener;
     },
     cancelCommandAssistant() {
@@ -1161,7 +1201,7 @@ export default {
     ,
     async changeListener() {
       let trimmedName = this.changedListenerName.trim()
-      if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
+      if (this.commandNameExists(trimmedName)) {
         await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
         return
       }
@@ -2065,6 +2105,27 @@ export default {
                     <br>
                     <UButton class="mr-2" @click="changeListener">Save</UButton>
                     <UButton color="red" @click="deleteListener">Delete</UButton>
+                  </div>
+                </div>
+                <div v-if="item.key === 'manageMeasurementSource'">
+                  <br/>
+                  <div class="container-row">
+                    <div class="container-row-element mr-2">
+                      <UInput v-model="newMeasurementSource" type="text"/>
+                    </div>
+                    <div class="container-row-element-xs left">
+                      <UButton @click="addCustomMeasurementSource">Add</UButton>
+                    </div>
+                  </div>
+                  <br/>
+                  <div class="container-row">
+                    <div class="container-row-element mr-2">
+                      <USelectMenu searchable v-model="deleteMarkedMeasurementSource"
+                                   :options="measurementSourceOptions"/>
+                    </div>
+                    <div class="container-row-element-xs left">
+                      <UButton color="red" @click="deleteMeasurementSource"> Delete</UButton>
+                    </div>
                   </div>
                 </div>
               </UCard>
@@ -3024,6 +3085,28 @@ export default {
         <UFormGroup label="Event Name" class="mb-1 mt-4">
           <UInput v-model="listenerAssistant.eventOptions.eventName"
                   placeholder="Enter Event Name"/>
+        </UFormGroup>
+      </div>
+
+      <div v-if="listenerAssistant.type === 'relational'" class="mt-3">
+        <UDivider label="Options"/>
+        <UFormGroup label="Measurement Source" class="mb-1 mt-4" required>
+          <USelectMenu v-model="listenerAssistant.relationalOptions.measurementSourceA" :options="measurementSourceOptions"
+                       placeholder="Select Measurement Source"/>
+        </UFormGroup>
+        <UFormGroup label="Relational Operator" class="mb-1 mt-4" required>
+          <USelectMenu v-model="listenerAssistant.relationalOptions.relationalOperator" :options="relationalOperatorOptions"
+                       placeholder="Select Relational Operator"/>
+        </UFormGroup>
+        <UFormGroup label="Comparison Reference" class="mb-1 mt-1" required>
+          <UCheckbox v-model="listenerAssistant.relationalOptions.hasMeasurementSourceB" label="Compare Against Measurement Source"
+                  class="mb-1 mt-1"></UCheckbox>
+          <UInput v-model="listenerAssistant.relationalOptions.comparisonValue" placeholder="0.0" type="number"
+                  :disabled="listenerAssistant.relationalOptions.hasMeasurementSourceB"
+                  v-if="!listenerAssistant.relationalOptions.hasMeasurementSourceB"/>
+          <USelectMenu v-model="listenerAssistant.relationalOptions.measurementSourceB" :options="measurementSourceOptions"
+                  :disabled="!listenerAssistant.relationalOptions.hasMeasurementSourceB" v-if="listenerAssistant.relationalOptions.hasMeasurementSourceB"
+                  placeholder="Select Measurement Source"/>
         </UFormGroup>
       </div>
 
