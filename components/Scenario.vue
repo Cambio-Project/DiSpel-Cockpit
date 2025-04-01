@@ -18,6 +18,9 @@ export default {
       target: null,
       result: null,
       scenario: null,
+      showSearch: "all",
+      showSimulation: "all",
+      showOptions: ["all", "success", "fail"],
       accordionItems: [{
         label: 'Scenario',
         icon: 'i-heroicons-information-circle',
@@ -109,6 +112,47 @@ export default {
     async initiateSearch(scenario) {
       await startScenarioSearch(scenario);
       await this.updateResults();
+    },
+    getFilteredSimulationScenarioCount() {
+      if(!this.result.simulationResultsTotal){
+        return 0;
+      }
+      switch (this.showSimulation) {
+        case 'all':
+          return this.result.simulationResultsTotal
+        case 'success':
+          return this.result.simulationResultsScenarioSuccessesTotal
+        case 'fail':
+          return this.result.simulationResultsTotal - this.result.simulationResultsScenarioSuccessesTotal
+      }
+    },
+    getFilteredSearchScenarioCount() {
+      if(!this.result.searchResultsTotal){
+        return 0;
+      }
+      switch (this.showSearch) {
+        case 'all':
+          return this.result.searchResultsTotal
+        case 'success':
+          return this.result.searchResultsScenarioSuccessesTotal
+        case 'fail':
+          return this.result.searchResultsTotal - this.result.searchResultsScenarioSuccessesTotal
+      }
+    },
+    showExecution(showOption, success) {
+      let doShow = true
+      switch (showOption){
+        case 'all':
+          doShow = true
+          break
+        case 'success':
+          doShow = success
+          break
+        case 'fail':
+          doShow = !success
+          break
+      }
+      return doShow
     },
     isSimulationVerificationRequired() {
       const result = this.result
@@ -508,9 +552,18 @@ export default {
                          @click="deleteAllSimulationResultAndUpdate(scenario.simulationID);"></UButton>
               </UTooltip>
 
+              <UDivider label="Filter" class="mt-2 mb-2"/>
+
+              <UFormGroup label="Show:" class="mb-1 mt-1">
+                <USelectMenu v-model="showSimulation" :options="showOptions"/>
+              </UFormGroup>
+              <UChip :text="getFilteredSimulationScenarioCount()" size="3xl" >
+              </UChip>
+
               <UDivider label="Executions" class="mt-2 mb-2"/>
+
               <div v-for="(resultName,resultIndex) in result.simulationNames">
-                <div class="scenario-box mb-4"
+                <div class="scenario-box mb-4" v-if="showExecution(this.showSimulation, this.result.simulationResultsScenarioSuccesses[resultIndex])"
                      :class="{ 'green-border' : this.result.simulationResultsScenarioSuccesses[resultIndex], 'red-border' : !this.result.simulationResultsScenarioSuccesses[resultIndex] }">
                   <div class="container-row">
                     <div class="container-element-xs w-full">
@@ -610,9 +663,17 @@ export default {
                        @click="deleteAllSearchResultAndUpdate(scenario.simulationID);"></UButton>
               </UTooltip>
 
+              <UDivider label="Filter" class="mt-2 mb-2"/>
+
+              <UFormGroup class="mb-1 mt-1">
+                <USelectMenu v-model="showSearch" :options="showOptions"/>
+              </UFormGroup>
+              <UChip :text="getFilteredSearchScenarioCount()" size="3xl" >
+              </UChip>
               <UDivider label="Executions" class="mt-2 mb-2"/>
+
               <div v-for="(resultName,resultIndex) in result.searchNames">
-                <div class="scenario-box mb-4"
+                <div class="scenario-box mb-4" v-if="showExecution(this.showSearch, this.result.searchResultsScenarioSuccesses[resultIndex])"
                      :class="{ 'green-border' : this.result.searchResultsScenarioSuccesses[resultIndex], 'red-border' : !this.result.searchResultsScenarioSuccesses[resultIndex] }">
                   <div class="container-row">
                     <div class="container-element-xs w-full">
