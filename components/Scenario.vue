@@ -1,5 +1,7 @@
 <script>
 
+import {successMessage} from "~/composables/popup.js";
+
 export default {
   name: "ScenarioList",
   el: '#app',
@@ -11,11 +13,19 @@ export default {
   },
   data() {
     return {
+      simulationDirectoryName : "simulations_results",
+      searchDirectoryName : "search_results",
       simID: this.$route.query.simID,
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
       result: null,
       scenario: null,
+      predicates: new Set(),
+      activeSearchPredicates : ref([]),
+      activeSimPredicates : ref([]),
+      showSearch: "all",
+      showSimulation: "all",
+      showOptions: ["all", "success", "fail"],
       accordionItems: [{
         label: 'Scenario',
         icon: 'i-heroicons-information-circle',
@@ -68,6 +78,23 @@ export default {
     toScenariosOverview,
     toScenarioEditor,
     toRefinement,
+    generatePlotLink(simID, predicateInfo, file, isSimulation) {
+      const config = useRuntimeConfig()
+
+      let srcDirectory
+      let fileName
+      if (isSimulation) {
+        srcDirectory = this.simulationDirectoryName + "/" + simID + "/" + file
+        fileName = "_combined.csv"
+      } else {
+        srcDirectory = this.searchDirectoryName + "/" + simID
+        fileName = file.toString()
+      }
+
+      const predicate = JSON.stringify(predicateInfo);
+
+      return `http://${config.public.tqPropRefinerDomain}:${config.public.tqPropRefinerPort}/requirement-refinement/plot?file-address=assets/${srcDirectory}&file=${fileName}&sim_id=${simID}&predicates=${predicate}`
+    },
     async toggleDetails(stimulus) {
       if (stimulus.showDetails === undefined) {
         stimulus.showDetails = true
@@ -89,12 +116,16 @@ export default {
       toScenariosOverview(this.$router)
     },
     async verifyScenario(scenario) {
+      await successMessage("Starting Verification", 'SimID: ' + scenario.simulationID)
       await verifySimulation(scenario)
       await this.updateResults()
+      await successMessage("Finished Verification", 'SimID: ' + scenario.simulationID)
     },
     async verifySearch(scenario) {
+      await successMessage("Starting Verification", 'SimID: ' + scenario.simulationID)
       await verifySearch(scenario)
       await this.updateResults()
+      await successMessage("Finished Verification", 'SimID: ' + scenario.simulationID)
     },
     async initiateSimulation(scenario) {
       await startScenarioSimulation(scenario);
@@ -103,6 +134,47 @@ export default {
     async initiateSearch(scenario) {
       await startScenarioSearch(scenario);
       await this.updateResults();
+    },
+    getFilteredSimulationScenarioCount() {
+      if(!this.result.simulationResultsTotal){
+        return 0;
+      }
+      switch (this.showSimulation) {
+        case 'all':
+          return this.result.simulationResultsTotal
+        case 'success':
+          return this.result.simulationResultsScenarioSuccessesTotal
+        case 'fail':
+          return this.result.simulationResultsTotal - this.result.simulationResultsScenarioSuccessesTotal
+      }
+    },
+    getFilteredSearchScenarioCount() {
+      if(!this.result.searchResultsTotal){
+        return 0;
+      }
+      switch (this.showSearch) {
+        case 'all':
+          return this.result.searchResultsTotal
+        case 'success':
+          return this.result.searchResultsScenarioSuccessesTotal
+        case 'fail':
+          return this.result.searchResultsTotal - this.result.searchResultsScenarioSuccessesTotal
+      }
+    },
+    showExecution(showOption, success) {
+      let doShow = true
+      switch (showOption){
+        case 'all':
+          doShow = true
+          break
+        case 'success':
+          doShow = success
+          break
+        case 'fail':
+          doShow = !success
+          break
+      }
+      return doShow
     },
     isSimulationVerificationRequired() {
       const result = this.result
@@ -121,23 +193,29 @@ export default {
       return updateRequired
     },
     async deleteResultAndUpdate(type, simulationID, executionID, executionIndex) {
+      await successMessage("Started Deletion of Result", 'ExecutionID ' + executionID  + 'SimID: ' + simulationID)
       await deleteResult(type, simulationID, executionID, executionIndex);
       await this.updateResults();
+      await successMessage("Deleted Result", 'ExecutionID ' + executionID  + 'SimID: ' + simulationID)
     },
     async deleteAllSimulationResultAndUpdate(simulationID) {
       if (this.result === undefined || this.result.simulationNames === undefined) {
         return
       }
+      await successMessage("Started Deletion of Results", 'SimID: ' + simulationID)
       for (const executionID of this.result.simulationNames) {
         await deleteResult("simulation", simulationID, executionID, 0);
       }
       await this.updateResults();
+      await successMessage("Deleted All Results", 'SimID: ' + simulationID)
     },
     async deleteAllSearchResultAndUpdate(simulationID) {
+      await successMessage("Started Deletion of Results", 'SimID: ' + simulationID)
       for (const executionID of this.result.searchNames) {
         await deleteResult("search", simulationID, executionID, 0);
       }
       await this.updateResults();
+      await successMessage("Deleted All Results", 'SimID: ' + simulationID)
     },
     findSearchResults(result, resultIndex, responseIndex) {
       if (result.searchResults !== undefined && result.searchResults[resultIndex] !== undefined && result.searchResults[resultIndex][responseIndex] !== undefined) {
@@ -157,6 +235,12 @@ export default {
   async beforeMount() {
     await this.updateResults()
     this.scenario = await getScenario(this.$route.query.simID);
+    this.predicates.clear()
+    for(let response of this.scenario.responses){
+      for(let predicatesInfo of response.predicates_info){
+        this.predicates.add(predicatesInfo)
+      }
+    }
 
     this.scenario.simState = "none"
     this.scenario.mosimState = "none"
@@ -496,9 +580,23 @@ export default {
                          @click="deleteAllSimulationResultAndUpdate(scenario.simulationID);"></UButton>
               </UTooltip>
 
+              <UDivider label="Filters" class="mt-2 mb-2"/>
+
+              <div class="left">Verification Result</div>
+              <UFormGroup class="mt-1">
+                <USelectMenu v-model="showSimulation" :options="showOptions"/>
+              </UFormGroup>
+
+              <div class="left mt-2">Visualize Predicate(s)</div>
+              <USelectMenu v-model="this.activeSimPredicates" :options="Array.from(this.predicates)" option-attribute="predicate_name" multiple placeholder="Select Predicate(s)" />
+
               <UDivider label="Executions" class="mt-2 mb-2"/>
+              <UBadge variant="solid" class="mb-2">
+                {{getFilteredSimulationScenarioCount()}}
+              </UBadge>
+
               <div v-for="(resultName,resultIndex) in result.simulationNames">
-                <div class="scenario-box mb-4"
+                <div class="scenario-box mb-4" v-if="showExecution(this.showSimulation, this.result.simulationResultsScenarioSuccesses[resultIndex])"
                      :class="{ 'green-border' : this.result.simulationResultsScenarioSuccesses[resultIndex], 'red-border' : !this.result.simulationResultsScenarioSuccesses[resultIndex] }">
                   <div class="container-row">
                     <div class="container-element-xs w-full">
@@ -564,6 +662,16 @@ export default {
                           </div>
                         </div>
                       </li>
+                      <li>
+                        <div v-for="predicates_info in activeSimPredicates" class="left">
+                          <div class="font-bold mb-2 mt-4">{{predicates_info.predicate_name}}</div>
+                          <div class="iframe-container">
+                            <iframe class="iframe-content"
+                                    v-bind:src="generatePlotLink(scenario.simulationID, predicates_info, resultName, true)">
+                            </iframe>
+                          </div>
+                        </div>
+                      </li>
                     </ul>
                   </UContainer>
                 </div>
@@ -598,9 +706,22 @@ export default {
                        @click="deleteAllSearchResultAndUpdate(scenario.simulationID);"></UButton>
               </UTooltip>
 
+              <UDivider label="Filters" class="mt-2 mb-2"/>
+
+              <div class="left">Verification Result</div>
+              <UFormGroup class="mt-1">
+                <USelectMenu v-model="showSearch" :options="showOptions"/>
+              </UFormGroup>
+
+              <div class="left mt-2">Visualize Predicate(s)</div>
+              <USelectMenu v-model="this.activeSearchPredicates" :options="Array.from(this.predicates)" option-attribute="predicate_name" multiple placeholder="Select Predicate(s)" />
+
               <UDivider label="Executions" class="mt-2 mb-2"/>
+              <UBadge variant="solid" class="mb-2">
+                {{getFilteredSearchScenarioCount()}}
+              </UBadge>
               <div v-for="(resultName,resultIndex) in result.searchNames">
-                <div class="scenario-box mb-4"
+                <div class="scenario-box mb-4" v-if="showExecution(this.showSearch, this.result.searchResultsScenarioSuccesses[resultIndex])"
                      :class="{ 'green-border' : this.result.searchResultsScenarioSuccesses[resultIndex], 'red-border' : !this.result.searchResultsScenarioSuccesses[resultIndex] }">
                   <div class="container-row">
                     <div class="container-element-xs w-full">
@@ -666,6 +787,16 @@ export default {
                           </div>
                         </div>
                       </li>
+                      <li>
+                        <div v-for="predicates_info in activeSearchPredicates" class="left">
+                          <div class="font-bold mb-2 mt-4">{{predicates_info.predicate_name}}</div>
+                          <div>
+                            <iframe class="iframe-content"
+                                    v-bind:src="generatePlotLink(scenario.simulationID, predicates_info, resultName, false)">
+                            </iframe>
+                          </div>
+                        </div>
+                      </li>
                     </ul>
                   </UContainer>
                 </div>
@@ -707,5 +838,9 @@ body {
   padding: 5px;
 }
 
+.iframe-content {
+  width: 100%;
+  height: 280px;
+}
 
 </style>
