@@ -125,6 +125,18 @@ export async function pushScenarioField(simulationID, field, newValue) {
     })
 }
 
+export async function editResponseOrStimulus(simulationID, type, editId, newValue) {
+    await fetch("/api/editResponseOrStimulus", {
+        method: "POST",
+        body: JSON.stringify({
+            simulationID: simulationID,
+            type: type,
+            editId: editId,
+            fieldValue: newValue
+        })
+    })
+}
+
 export async function setScenarioField(simulationID, field, newValue) {
     await fetch("/api/setScenarioField", {
         method: "POST",

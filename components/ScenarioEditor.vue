@@ -532,6 +532,10 @@ export default {
               </UTooltip>
             </div>
             <div class="container-row-element-xxs">
+              <UTooltip text="Edit Stimulus Specification">
+                <UButton color="blue" icon="i-heroicons-pencil-square-16-solid" square size="xs" class="mr-1"
+                         :to="getPSPWizardStimulusURL(simID, index)"></UButton>
+              </UTooltip>
               <UTooltip text="Delete Stimulus Specification">
                 <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
                          @click="removeStimulus(index)"></UButton>
@@ -542,7 +546,7 @@ export default {
         </li>
       </ul>
 
-      <UButton icon="i-heroicons-plus" color="green" size="lg" :to="getPSPWizardStimulusURL(simID)">
+      <UButton icon="i-heroicons-plus" color="green" size="lg" :to="getPSPWizardStimulusURL(simID, null)">
         New Stimulus
       </UButton>
     </div>
@@ -594,6 +598,10 @@ export default {
               </div>
             </div>
             <div class="container-row-element-xxs">
+              <UTooltip text="Edit Response Specification">
+                <UButton color="blue" icon="i-heroicons-pencil-square-16-solid" square size="xs" class="mr-1"
+                         :to="getPSPWizardResponseURL(simID, index)"></UButton>
+              </UTooltip>
               <UTooltip text="Delete Response Specification">
                 <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
                          @click="removeResponse(index)"></UButton>
@@ -603,7 +611,7 @@ export default {
 
         </li>
       </ul>
-      <UButton icon="i-heroicons-plus" color="green" size="lg" :to="getPSPWizardResponseURL(simID)">
+      <UButton icon="i-heroicons-plus" color="green" size="lg" :to="getPSPWizardResponseURL(simID, null)">
         New Response
       </UButton>
 

@@ -10,16 +10,24 @@ export function toPSPWizardResponse(simulationID, router = this.$router) {
     router.push(getPSPWizardResponseURL(simulationID));
 }
 
-export function getPSPWizardResponseURL(simulationID) {
-    return '/pspwizardSite?simID=' + simulationID + '&type=response'
+export function getPSPWizardResponseURL(simulationID, editId) {
+    let editIdParam = ""
+    if(typeof editId !== "undefined" && editId !== null){
+        editIdParam = '&editId=' + editId
+    }
+    return '/pspwizardSite?simID=' + simulationID + '&type=response' + editIdParam
 }
 
 export function toPSPWizardStimulus(simulationID, router = this.$router) {
     router.push(getPSPWizardStimulusURL(simulationID));
 }
 
-export function getPSPWizardStimulusURL(simulationID) {
-    return '/pspwizardSite?simID=' + simulationID + '&type=stimulus'
+export function getPSPWizardStimulusURL(simulationID, editId) {
+    let editIdParam = ""
+    if(typeof editId !== "undefined" && editId !== null){
+        editIdParam = '&editId=' + editId
+    }
+    return '/pspwizardSite?simID=' + simulationID + '&type=stimulus' + editIdParam
 }
 
 export function toScenariosOverview(router = this.$router) {
