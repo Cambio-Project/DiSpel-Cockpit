@@ -51,10 +51,10 @@ _(Not recommended)_
 2. Adjust the URL and Ports in the ```.env``` file in this repository to match your service setup.
 3. Now you cloud either run the Cockpit in dev mode or in build mode
     1. **Development Mode**
-        1. Make sure that you have all dependencies installed: ``npm install``
-        2. Start the Cockpit with the command: ``npm run dev``
+        1. Make sure that you have all dependencies installed: ``pnpm install``
+        2. Start the Cockpit with the command: ``pnpm run dev``
     2. **Build Mode**
-        1. Run the command: ```npm run build```
+        1. Run the command: ```pnpm run build```
         2. Go to your build file and start the endpoint with your Node environment.
 
 Note: TQPropRefiner currently requires the Cockpit to run on port 8080, otherwise refinements can not be sent
