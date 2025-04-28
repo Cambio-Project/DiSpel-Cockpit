@@ -658,10 +658,10 @@ export default {
       if (typeof this.editId !== 'undefined' && this.editId !== null) {
         switch (this.type) {
           case 'response':
-            this.pspSpecification = await Object.assign({}, scenario.responses[this.editId].specification);
+            this.pspSpecification = {...scenario.responses[this.editId].specification};
             break;
           case 'stimulus':
-            this.pspSpecification = await Object.assign({}, scenario.stimuli[this.editId].specification);
+            this.pspSpecification = {...scenario.stimuli[this.editId].specification};
             break;
           default:
             console.log("Unknown type: " + this.type)
