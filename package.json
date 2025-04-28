@@ -10,15 +10,20 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/ui": "^2.16.0",
+    "@nuxt/ui": "^2.22.0",
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
-    "mongoose": "^8.4.0",
-    "nuxt": "^3.11.2",
+    "mongoose": "^8.14.0",
+    "nuxt": "^3.17.0",
     "nuxt-icon": "^0.6.10",
     "nuxt-mongoose": "^1.0.6",
-    "vue": "^3.4.27",
-    "vue-router": "^4.3.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1",
     "vuex": "^4.1.0"
+  },
+  "devDependencies": {
+    "@iconify-json/heroicons": "^1.2.2",
+    "@iconify-json/icon-park-solid": "^1.2.2",
+    "@iconify-json/material-symbols": "^1.2.20"
   }
 }

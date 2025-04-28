@@ -18,15 +18,21 @@ export default defineNuxtConfig({
     },
     devtools: {enabled: true},
     modules: [
-        'nuxt-mongoose',
         '@nuxt/ui',
-        'nuxt-icon'
-    ],
+     //   '@nuxt/icon',
+        process.env.DISABLE_MONGOOSE !== 'true' && 'nuxt-mongoose'
+    ].filter(Boolean), // this removes any 'false' values so Nuxt doesn't try to load undefined modules
     mongoose: {
         uri: process.env.MONGODB_URI,
         options: {},
         modelsDir: 'models',
+    },/*
+    ui: {
+        icons: ['heroicons'] // <== properly defined
     },
+    icon: {
+        // Optional settings for @nuxt/icon
+    },*/
     colorMode: {
         preference: "light"
     },
