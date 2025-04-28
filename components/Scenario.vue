@@ -1,6 +1,7 @@
 <script>
 
 import {successMessage} from "~/composables/popup.js";
+import _ from 'lodash';
 
 export default {
   name: "ScenarioList",
@@ -13,16 +14,17 @@ export default {
   },
   data() {
     return {
-      simulationDirectoryName : "simulations_results",
-      searchDirectoryName : "search_results",
+      simulationDirectoryName: "simulations_results",
+      searchDirectoryName: "search_results",
       simID: this.$route.query.simID,
       targetLogics: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       target: null,
       result: null,
       scenario: null,
       predicates: new Set(),
-      activeSearchPredicates : ref([]),
-      activeSimPredicates : ref([]),
+      uniquePredicates: [],
+      activeSearchPredicates: ref([]),
+      activeSimPredicates: ref([]),
       showSearch: "all",
       showSimulation: "all",
       showOptions: ["all", "success", "fail"],
@@ -78,6 +80,15 @@ export default {
     toScenariosOverview,
     toScenarioEditor,
     toRefinement,
+    getUniqueObjects(arr) {
+      const result = [];
+      arr.forEach(obj => {
+        if (!result.some(o => _.isEqual(o, obj))) {
+          result.push(obj);
+        }
+      });
+      return result;
+    },
     generatePlotLink(simID, predicateInfo, file, isSimulation) {
       const config = useRuntimeConfig()
 
@@ -136,7 +147,7 @@ export default {
       await this.updateResults();
     },
     getFilteredSimulationScenarioCount() {
-      if(!this.result.simulationResultsTotal){
+      if (!this.result.simulationResultsTotal) {
         return 0;
       }
       switch (this.showSimulation) {
@@ -149,7 +160,7 @@ export default {
       }
     },
     getFilteredSearchScenarioCount() {
-      if(!this.result.searchResultsTotal){
+      if (!this.result.searchResultsTotal) {
         return 0;
       }
       switch (this.showSearch) {
@@ -163,7 +174,7 @@ export default {
     },
     showExecution(showOption, success) {
       let doShow = true
-      switch (showOption){
+      switch (showOption) {
         case 'all':
           doShow = true
           break
@@ -193,10 +204,10 @@ export default {
       return updateRequired
     },
     async deleteResultAndUpdate(type, simulationID, executionID, executionIndex) {
-      await successMessage("Started Deletion of Result", 'ExecutionID ' + executionID  + 'SimID: ' + simulationID)
+      await successMessage("Started Deletion of Result", 'ExecutionID ' + executionID + 'SimID: ' + simulationID)
       await deleteResult(type, simulationID, executionID, executionIndex);
       await this.updateResults();
-      await successMessage("Deleted Result", 'ExecutionID ' + executionID  + 'SimID: ' + simulationID)
+      await successMessage("Deleted Result", 'ExecutionID ' + executionID + 'SimID: ' + simulationID)
     },
     async deleteAllSimulationResultAndUpdate(simulationID) {
       if (this.result === undefined || this.result.simulationNames === undefined) {
@@ -236,11 +247,12 @@ export default {
     await this.updateResults()
     this.scenario = await getScenario(this.$route.query.simID);
     this.predicates.clear()
-    for(let response of this.scenario.responses){
-      for(let predicatesInfo of response.predicates_info){
+    for (let response of this.scenario.responses) {
+      for (let predicatesInfo of response.predicates_info) {
         this.predicates.add(predicatesInfo)
       }
     }
+    this.uniquePredicates = this.getUniqueObjects(this.predicates)
 
     this.scenario.simState = "none"
     this.scenario.mosimState = "none"
@@ -588,15 +600,17 @@ export default {
               </UFormGroup>
 
               <div class="left mt-2">Visualize Predicate(s)</div>
-              <USelectMenu v-model="this.activeSimPredicates" :options="Array.from(this.predicates)" option-attribute="predicate_name" multiple placeholder="Select Predicate(s)" />
+              <USelectMenu v-model="this.activeSimPredicates" :options="this.uniquePredicates"
+                           option-attribute="predicate_name" multiple placeholder="Select Predicate(s)"/>
 
               <UDivider label="Executions" class="mt-2 mb-2"/>
               <UBadge variant="solid" class="mb-2">
-                {{getFilteredSimulationScenarioCount()}}
+                {{ getFilteredSimulationScenarioCount() }}
               </UBadge>
 
               <div v-for="(resultName,resultIndex) in result.simulationNames">
-                <div class="scenario-box mb-4" v-if="showExecution(this.showSimulation, this.result.simulationResultsScenarioSuccesses[resultIndex])"
+                <div class="scenario-box mb-4"
+                     v-if="showExecution(this.showSimulation, this.result.simulationResultsScenarioSuccesses[resultIndex])"
                      :class="{ 'green-border' : this.result.simulationResultsScenarioSuccesses[resultIndex], 'red-border' : !this.result.simulationResultsScenarioSuccesses[resultIndex] }">
                   <div class="container-row">
                     <div class="container-element-xs w-full">
@@ -664,7 +678,7 @@ export default {
                       </li>
                       <li>
                         <div v-for="predicates_info in activeSimPredicates" class="left">
-                          <div class="font-bold mb-2 mt-4">{{predicates_info.predicate_name}}</div>
+                          <div class="font-bold mb-2 mt-4">{{ predicates_info.predicate_name }}</div>
                           <div class="iframe-container">
                             <iframe class="iframe-content"
                                     v-bind:src="generatePlotLink(scenario.simulationID, predicates_info, resultName, true)">
@@ -691,19 +705,19 @@ export default {
             <div v-if="result !== null">
               <UDivider label="Actions" class="mb-1"/>
               <UTooltip text="Start Monitoring Search">
-              <UButton class="mr-1" icon="i-heroicons-chart-bar-16-solid" square size="xs" color="blue"
-                       @click="initiateSearch(scenario)"></UButton>
+                <UButton class="mr-1" icon="i-heroicons-chart-bar-16-solid" square size="xs" color="blue"
+                         @click="initiateSearch(scenario)"></UButton>
               </UTooltip>
               <UTooltip text="Check Monitoring Search Results">
-              <UButton class="mr-1" icon="i-heroicons-check-16-solid"
-                       :class="{ 'blue-glowing-button' : isSearchVerificationRequired(scenario.simulationID)}" square
-                       size="xs"
-                       color="blue"
-                       @click="verifySearch(scenario)"></UButton>
+                <UButton class="mr-1" icon="i-heroicons-check-16-solid"
+                         :class="{ 'blue-glowing-button' : isSearchVerificationRequired(scenario.simulationID)}" square
+                         size="xs"
+                         color="blue"
+                         @click="verifySearch(scenario)"></UButton>
               </UTooltip>
               <UTooltip text="Delete All Monitoring Executions">
-              <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                       @click="deleteAllSearchResultAndUpdate(scenario.simulationID);"></UButton>
+                <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                         @click="deleteAllSearchResultAndUpdate(scenario.simulationID);"></UButton>
               </UTooltip>
 
               <UDivider label="Filters" class="mt-2 mb-2"/>
@@ -714,14 +728,16 @@ export default {
               </UFormGroup>
 
               <div class="left mt-2">Visualize Predicate(s)</div>
-              <USelectMenu v-model="this.activeSearchPredicates" :options="Array.from(this.predicates)" option-attribute="predicate_name" multiple placeholder="Select Predicate(s)" />
+              <USelectMenu v-model="this.activeSearchPredicates" :options="this.uniquePredicates"
+                           option-attribute="predicate_name" multiple placeholder="Select Predicate(s)"/>
 
               <UDivider label="Executions" class="mt-2 mb-2"/>
               <UBadge variant="solid" class="mb-2">
-                {{getFilteredSearchScenarioCount()}}
+                {{ getFilteredSearchScenarioCount() }}
               </UBadge>
               <div v-for="(resultName,resultIndex) in result.searchNames">
-                <div class="scenario-box mb-4" v-if="showExecution(this.showSearch, this.result.searchResultsScenarioSuccesses[resultIndex])"
+                <div class="scenario-box mb-4"
+                     v-if="showExecution(this.showSearch, this.result.searchResultsScenarioSuccesses[resultIndex])"
                      :class="{ 'green-border' : this.result.searchResultsScenarioSuccesses[resultIndex], 'red-border' : !this.result.searchResultsScenarioSuccesses[resultIndex] }">
                   <div class="container-row">
                     <div class="container-element-xs w-full">
@@ -737,8 +753,8 @@ export default {
                     <div class="container-element-xs w-full">
                       <div class="float-right mt-1">
                         <UTooltip text="Delete Monitoring Execution">
-                        <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                                 @click="deleteResultAndUpdate('search', scenario.simulationID, resultName, resultIndex);"></UButton>
+                          <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
+                                   @click="deleteResultAndUpdate('search', scenario.simulationID, resultName, resultIndex);"></UButton>
                         </UTooltip>
                       </div>
                     </div>
@@ -789,7 +805,7 @@ export default {
                       </li>
                       <li>
                         <div v-for="predicates_info in activeSearchPredicates" class="left">
-                          <div class="font-bold mb-2 mt-4">{{predicates_info.predicate_name}}</div>
+                          <div class="font-bold mb-2 mt-4">{{ predicates_info.predicate_name }}</div>
                           <div>
                             <iframe class="iframe-content"
                                     v-bind:src="generatePlotLink(scenario.simulationID, predicates_info, resultName, false)">
