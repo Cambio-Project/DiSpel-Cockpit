@@ -272,7 +272,7 @@ export default {
               <div class="container-row-element-xs">
                 <UTooltip text="Stimulus Count">
                 <span>
-                <Icon name="icon-park-solid:lightning" color="red"/>
+                <Icon name="icon-park-solid:lightning" style="color: red"/>
                 {{ scenario.stimuli.length }}
                 </span>
                 </UTooltip>
@@ -282,7 +282,7 @@ export default {
               <div class="container-row-element-xs">
                 <UTooltip text="Response Count">
                 <span>
-                  <Icon name="material-symbols:ecg-heart" color="purple"/>
+                  <Icon name="material-symbols:ecg-heart" style="color: purple"/>
                   {{ scenario.responses.length }}
                 </span>
                 </UTooltip>
@@ -519,7 +519,7 @@ export default {
 
               <div class="container-row-element-s pt-2 pb-1">
                 <UTooltip text="Full Response Satisfaction for Simulation">
-                    <span> <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 mr-1"/>{{
+                    <span> <Icon name="heroicons:globe-alt-20-solid" size="1.1em" class="mr-1"/>{{
                         getSimulationVerificationResultsPerScenario(this.findResults(scenario.simulationID))
                       }}</span>
                 </UTooltip>
@@ -527,7 +527,7 @@ export default {
 
               <div class="container-row-element-s pt-2 pb-1">
                 <UTooltip text="Full Response Satisfaction for Monitoring">
-                    <span> <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 mr-1"/>{{
+                    <span> <Icon name="heroicons:chart-bar-16-solid" size="1.1em" class="mr-1"/>{{
                         getSearchVerificationResultsPerScenario(this.findResults(scenario.simulationID))
                       }}</span>
                 </UTooltip>
@@ -543,40 +543,41 @@ export default {
                   <p>Search is running</p>
                 </div>
                 <div v-if="scenario.analysisState === 'simdone'">
-                  <p class="mt-1">
-                    <Icon name="heroicons:check" color="green" size="1.3em" class="mb-1 mr-1"/>
+                  <span>
+                    <Icon name="heroicons:check" style="color: green" size="1.3em" class="mr-1"/>
                     Simulation finished! Please verify results!
-                  </p>
+                  </span>
                 </div>
                 <div v-if="scenario.analysisState === 'searchdone'">
-                  <p class="mt-1">
-                    <Icon name="heroicons:check" color="green" size="1.3em" class="mb-1 mr-1"/>
+                  <span>
+                    <Icon name="heroicons:check" style="color: green" size="1.3em" class="mr-1"/>
                     Search finished! Please verify results!
-                  </p>
+                  </span>
                 </div>
                 <div v-if="scenario.analysisState === 'simfailed'">
-                  <p class="mt-1">
-                    <Icon name="heroicons:no-symbol" color="red" size="1.3em" class="mb-1 mr-1"/>
+                  <span>
+                    <Icon name="heroicons:no-symbol" style="color: red" size="1.3em" class="mr-1"/>
                     Simulation failed! Please check container logs!
-                  </p>
+                  </span>
                 </div>
                 <div v-if="scenario.analysisState === 'searchfailed'">
-                  <p class="mt-1">
-                    <Icon name="heroicons:no-symbol" color="red" size="1.3em" class="mb-1 mr-1"/>
+                  <span>
+                    <Icon name="heroicons:no-symbol" style="color: red" size="1.3em" class="mr-1"/>
                     Search failed! Please check container logs!
-                  </p>
+                  </span>
                 </div>
                 <div v-if="scenario.analysisState === 'simverified'">
-                  <p class="mt-1">
-                    <Icon name="heroicons:check" color="green" size="1.3em" class="mb-1 mr-1"/>
+                  <span>
+                    <Icon name="heroicons:check" style="color: green" size="1.3em" class="mr-1"/>
                     Simulation results verified! Metrics updated!
-                  </p>
+                  </span>
                 </div>
                 <div v-if="scenario.analysisState === 'searchverified'">
-                  <p class="mt-1">
-                    <Icon name="heroicons:check" color="green" size="1.3em" class="mb-1 mr-1"/>
+                  <span>
+                    <Icon name="heroicons:check" style="color: green" size="1.3em" class="pt-1 mr-1"/>
                     Search results verified! Metrics updated!
-                  </p>
+                  </span>
+
                 </div>
               </div>
 

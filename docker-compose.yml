@@ -81,6 +81,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: example
     ports:
       - 8085:27017
+    volumes:
+      - mongo-data:/data/db
 
   mongo-express:
     image: mongo-express
@@ -98,3 +100,7 @@ services:
 
 networks:
   dashboardNetwork:
+
+volumes:
+  mongo-data:
+    driver: local

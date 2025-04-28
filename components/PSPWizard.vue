@@ -67,12 +67,13 @@ export default {
       listenerOptions: [
         "event", "relational"
       ],
-      relationalOperatorOptions : [
+      relationalOperatorOptions: [
         '=', '!=', '<=', '<', '>', '>='
       ],
       loadFunctionOptions: [
         "constant", "exponential", "exponential-inverse", "linear", "linear-inverse"
       ],
+      isInitialized: false,
       pspSpecification: {
         selectedPatternType: null,
         selectedScope: null,
@@ -100,6 +101,7 @@ export default {
       events: [],
       simID: this.$route.query.simID,
       type: this.$route.query.type,
+      editId: this.$route.query.editId,
       scenario: null,
       customCommandName: "",
       customCommandContent: "",
@@ -178,81 +180,122 @@ export default {
   watch: {
     'pspSpecification.selectedScope': {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     'pspSpecification.selectedPatternType': {
       handler() {
-        this.handleInputChange()
-        this.handleTypeChange()
+        if (!this.isInitialized) {
+          return
+        }
+        if (this.isInitialized) {
+          this.handleInputChange()
+          this.handleTypeChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     'pspSpecification.selectedOccurrence': {
       handler() {
-        this.handleInputChange()
-        this.handleOccurrenceChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+          this.handleOccurrenceChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     checkedProbability: {
       handler() {
+        if (!this.isInitialized) {
+          return
+        }
         this.handleInputChange()
         this.handleProbabilityChange()
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     'pspSpecification.selectedProbabilityBound': {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     'pspSpecification.probability': {
       handler() {
-        this.checkProbability()
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.checkProbability()
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     checkedTime: {
       handler() {
+        if (!this.isInitialized) {
+          return
+        }
         this.handleTimeChange()
         this.handleInputChange()
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.selectedTimeBound": {
       handler() {
-        this.handleLimitChange()
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleLimitChange()
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.upperLimit": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.timeUnit": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.lowerLimit": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "customPredicateName": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "customPredicateLogic": {
       handler() {
@@ -364,63 +407,93 @@ export default {
     },
     "pspSpecification.selectedScopeEventR": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.selectedScopeEventQ": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.selectedEventP": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.selectedEventS": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.selectedConstraintEvent": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.selectedChainedEvents": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.selectedInterval": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.selectedTime": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.selectedTimeUnitType": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "pspSpecification.selectedTargetLogic": {
       handler() {
-        this.handleInputChange()
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
       },
-      deep: true
+      deep: true,
+      flush: 'sync'
     },
     "useNames": {
       handler() {
@@ -441,7 +514,7 @@ export default {
         for (let command of this.state.commands) {
           predicates.push(command.command_name)
         }
-        for (let listener of this.state.  listeners) {
+        for (let listener of this.state.listeners) {
           predicates.push(listener.listener_name)
         }
       }
@@ -580,6 +653,25 @@ export default {
       if (typeof scenario.specification.measurementSources !== "undefined") {
         this.measurementSourceOptions = scenario.specification.measurementSources
       }
+
+      // load stimulus / response specification
+      if (typeof this.editId !== 'undefined' && this.editId !== null) {
+        switch (this.type) {
+          case 'response':
+            this.pspSpecification = {...scenario.responses[this.editId].specification};
+            break;
+          case 'stimulus':
+            this.pspSpecification = {...scenario.stimuli[this.editId].specification};
+            break;
+          default:
+            console.log("Unknown type: " + this.type)
+        }
+        this.checkedTime = this.pspSpecification.selectedTimeBound !== null
+        this.checkedProbability = this.pspSpecification.selectedProbabilityBound !== null
+        this.handleInputChange()
+
+      }
+      this.isInitialized = true;
     }
     ,
     cancelListenerAssistant() {
@@ -589,7 +681,7 @@ export default {
       this.listenerAssistant.relationalOptions.measurementSourceB = ""
       this.listenerAssistant.relationalOptions.hasMeasurementSourceB = false
       this.listenerAssistant.relationalOptions.relationalOperator = ""
-      this.listenerAssistant.relationalOptions.comparisonValue= 0.0
+      this.listenerAssistant.relationalOptions.comparisonValue = 0.0
       this.listenerAssistant.isOpen = false
     },
     applyListenerAssistant() {
@@ -619,11 +711,11 @@ export default {
       listener += " "
       listener += this.listenerAssistant.relationalOptions.relationalOperator
       listener += " "
-      if(this.listenerAssistant.relationalOptions.hasMeasurementSourceB){
+      if (this.listenerAssistant.relationalOptions.hasMeasurementSourceB) {
         listener += "($"
         listener += this.listenerAssistant.relationalOptions.measurementSourceB
         listener += ")"
-      }else{
+      } else {
         listener += this.listenerAssistant.relationalOptions.comparisonValue
       }
       listener += ")"
@@ -1590,7 +1682,8 @@ export default {
         target_logic: this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic),
         predicates_info: [],
         monitoringChecked: true,
-        simulationChecked: true
+        simulationChecked: true,
+        specification: {}
       };
 
       const payloadWithNames = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, "SEL", this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, true);
@@ -1664,7 +1757,17 @@ export default {
         default:
           console.log("Unknown type: " + this.type)
       }
-      await pushScenarioField(this.simID, type, responseObject)
+
+      // write specification infos for editing the scenario
+      responseObject.specification = this.pspSpecification;
+
+      if (typeof this.editId == 'undefined' || this.editId == null) {
+        // not editing, create new entry
+        await pushScenarioField(this.simID, type, responseObject)
+      } else {
+        // editing, edit existing entry
+        await editResponseOrStimulus(this.simID, type, this.editId, responseObject)
+      }
 
       toScenarioEditor(this.simID, this.$router)
     }
@@ -1700,7 +1803,7 @@ export default {
         </div>
       </div>
     </div>
-    <div v-if="this.importErrorMessage">
+    <div v-if="this?.importErrorMessage">
       <pre class="import-error-text">{{ this.importErrorMessage }}</pre>
     </div>
   </div>
@@ -1735,19 +1838,19 @@ export default {
                 </div>
 
                 <div
-                    v-if="this.pspSpecification.selectedPatternType !== 'Occurrence' && this.pspSpecification.selectedPatternType !== 'Order'"
+                    v-if="this?.pspSpecification.selectedPatternType !== 'Occurrence' && this.pspSpecification.selectedPatternType !== 'Order'"
                     class="selection-group">
                   <USelectMenu disabled placeholder="Select Type First"></USelectMenu>
                 </div>
 
-                <div v-if="this.pspSpecification.selectedPatternType === 'Occurrence'" class="selection-group">
+                <div v-if="this?.pspSpecification.selectedPatternType === 'Occurrence'" class="selection-group">
                   <USelectMenu v-model="this.pspSpecification.selectedOccurrence" :options="displayOccurrenceOptions"
                                value-attribute="value"
                                option-attribute="label" searchable placeholder="Select Pattern">
                   </USelectMenu>
                 </div>
 
-                <div v-if="this.pspSpecification.selectedPatternType === 'Order'" class="selection-group">
+                <div v-if="this?.pspSpecification.selectedPatternType === 'Order'" class="selection-group">
                   <USelectMenu v-model="this.pspSpecification.selectedOrder" :options="displayOrderOptions"
                                value-attribute="value"
                                option-attribute="label" searchable placeholder="Select Pattern"/>
@@ -1786,17 +1889,17 @@ export default {
                       v-show="this.checkedTime && this.pspSpecification.selectedOrder !== 'Precedence' && this.pspSpecification.selectedOrder !== 'PrecedenceChain1N' && this.pspSpecification.selectedOrder !== 'PrecedenceChainN1'">
                     <USelectMenu v-model="this.pspSpecification.selectedTimeBound" :options="timeBoundOptions"/>
                     <br><br>
-                    <div v-if="this.pspSpecification.selectedTimeBound === 'Upper' ">
+                    <div v-if="this?.pspSpecification.selectedTimeBound === 'Upper' ">
                       <UInput v-model="this.pspSpecification.upperLimit" :min="0" step="1" type="number"
                               placeholder="Within"/>
                       <UInput v-model="this.pspSpecification.timeUnit" type="text"/>
                     </div>
-                    <div v-if="this.pspSpecification.selectedTimeBound === 'Lower' ">
+                    <div v-if="this?.pspSpecification.selectedTimeBound === 'Lower' ">
                       <UInput v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
                               placeholder="After"/>
                       <UInput v-model="this.pspSpecification.timeUnit" type="text"/>
                     </div>
-                    <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
+                    <div v-if="this?.pspSpecification.selectedTimeBound === 'Interval' ">
                       <div class="container-row">
                         <UInput v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
                                 placeholder="Enter lower Limit" class="container-row-element mr-1"/>
@@ -1812,7 +1915,7 @@ export default {
                   <div
                       v-show="this.checkedTime && (this.pspSpecification.selectedOrder === 'Precedence' || this.pspSpecification.selectedOrder === 'PrecedenceChain1N' || this.pspSpecification.selectedOrder === 'PrecedenceChainN1')">
                     <USelectMenu v-model="this.pspSpecification.selectedTimeBound"/>
-                    <div v-if="this.pspSpecification.selectedTimeBound === 'Interval' ">
+                    <div v-if="this?.pspSpecification.selectedTimeBound === 'Interval' ">
                       <div class="container-row">
                         <UInput v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
                                 placeholder="Enter lower Limit" class="container-row-element mr-1"/>
@@ -1833,7 +1936,7 @@ export default {
     <div class="selection-container">
       <div class="grouping-container">
         <UDivider label="Predicate Builder"></UDivider>
-        <div v-if="this.type === 'response'">
+        <div v-if="this?.type === 'response'">
           <UTabs :items="responseItems" class="w-full">
             <template #item="{ item }">
               <UCard>
@@ -1900,7 +2003,7 @@ export default {
                     </div>
                   </div>
                   <br>
-                  <div v-if="this.eventToChange !== ''">
+                  <div v-if="this?.eventToChange !== ''">
                     <div class="container-row">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle">Predicate Name: </label>
@@ -2021,7 +2124,7 @@ export default {
                     </div>
                   </div>
                   <br>
-                  <div v-if="this.commandToChange !== ''">
+                  <div v-if="this?.commandToChange !== ''">
                     <div class="container-row">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle">Command Name: </label>
@@ -2084,7 +2187,7 @@ export default {
                     </div>
                   </div>
                   <br>
-                  <div v-if="this.listenerToChange !== ''">
+                  <div v-if="this?.listenerToChange !== ''">
                     <div class="container-row">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle">Listener Name: </label>
@@ -2141,13 +2244,13 @@ export default {
     <div class="selection-container">
       <div class="message-container">
         <p>Build Specification:</p>
-        <div v-if="this.pspSpecification.selectedScope === null">
+        <div v-if="this?.pspSpecification.selectedScope === null">
           <span class="warning"> {{ "< No Scope Selected >" }} </span>
         </div>
-        <div v-if="this.pspSpecification.selectedScope === 'Globally'">
+        <div v-if="this?.pspSpecification.selectedScope === 'Globally'">
           Globally
         </div>
-        <div v-if="this.pspSpecification.selectedScope === 'BeforeR'">
+        <div v-if="this?.pspSpecification.selectedScope === 'BeforeR'">
           Before
           <div class="container-row center">
             <div class="min-width">
@@ -2156,7 +2259,7 @@ export default {
             </div>
           </div>
         </div>
-        <div v-if="this.pspSpecification.selectedScope === 'AfterQ'">
+        <div v-if="this?.pspSpecification.selectedScope === 'AfterQ'">
           After
           <div class="container-row center">
             <div class="min-width">
@@ -2165,7 +2268,7 @@ export default {
             </div>
           </div>
         </div>
-        <div v-if="this.pspSpecification.selectedScope === 'BetweenQandR'">
+        <div v-if="this?.pspSpecification.selectedScope === 'BetweenQandR'">
           Between
           <div class="container-row center">
             <div class="min-width">
@@ -2181,7 +2284,7 @@ export default {
             </div>
           </div>
         </div>
-        <div v-if="this.pspSpecification.selectedScope === 'AfterQUntilR'">
+        <div v-if="this?.pspSpecification.selectedScope === 'AfterQUntilR'">
           After
           <div class="container-row center">
             <div class="min-width">
@@ -2200,11 +2303,11 @@ export default {
 
         <br>
 
-        <div v-if="this.pspSpecification.selectedOccurrence === null && this.pspSpecification.selectedOrder === null">
+        <div v-if="this?.pspSpecification.selectedOccurrence === null && this.pspSpecification.selectedOrder === null">
           <span class="warning"> {{ "< No Pattern Selected >" }} </span>
         </div>
 
-        <div v-if="this.pspSpecification.selectedOccurrence === 'SteadyState'">
+        <div v-if="this?.pspSpecification.selectedOccurrence === 'SteadyState'">
           <div class="container-row center">
             <div class="min-width">
               <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
@@ -2213,7 +2316,7 @@ export default {
           </div>
           [holds] in the long run.
         </div>
-        <div v-if="this.pspSpecification.selectedOccurrence === 'MinimumDuration'">
+        <div v-if="this?.pspSpecification.selectedOccurrence === 'MinimumDuration'">
           once
 
           <div class="container-row center">
@@ -2237,7 +2340,7 @@ export default {
             </div>
           </div>
         </div>
-        <div v-if="this.pspSpecification.selectedOccurrence === 'MaximumDuration'">
+        <div v-if="this?.pspSpecification.selectedOccurrence === 'MaximumDuration'">
           once
 
           <div class="container-row center">
@@ -2261,7 +2364,7 @@ export default {
             </div>
           </div>
         </div>
-        <div v-if="this.pspSpecification.selectedOccurrence === 'Recurrence'">
+        <div v-if="this?.pspSpecification.selectedOccurrence === 'Recurrence'">
 
           <div class="container-row center">
             <div class="min-width">
@@ -2285,7 +2388,7 @@ export default {
           </div>
           ]
         </div>
-        <div v-if="this.pspSpecification.selectedOccurrence === 'Universality'">
+        <div v-if="this?.pspSpecification.selectedOccurrence === 'Universality'">
           it is always the case that
 
           <div class="container-row center">
@@ -2296,7 +2399,7 @@ export default {
           </div>
           holds.
         </div>
-        <div v-if="this.pspSpecification.selectedOccurrence === 'Absence'">
+        <div v-if="this?.pspSpecification.selectedOccurrence === 'Absence'">
           it is never the case that
 
           <div class="container-row center">
@@ -2307,7 +2410,7 @@ export default {
           </div>
           holds.
         </div>
-        <div v-if="this.pspSpecification.selectedOccurrence === 'Existence'">
+        <div v-if="this?.pspSpecification.selectedOccurrence === 'Existence'">
 
           <div class="container-row center">
             <div class="min-width">
@@ -2317,7 +2420,7 @@ export default {
           </div>
           [holds] eventually.
         </div>
-        <div v-if="this.pspSpecification.selectedOccurrence === 'BoundedExistence'">
+        <div v-if="this?.pspSpecification.selectedOccurrence === 'BoundedExistence'">
 
           <div class="container-row center">
             <div class="min-width">
@@ -2333,7 +2436,7 @@ export default {
           </div>
           times.
         </div>
-        <div v-if="this.pspSpecification.selectedOccurrence === 'TransientState'">
+        <div v-if="this?.pspSpecification.selectedOccurrence === 'TransientState'">
 
           <div class="container-row center">
             <div class="min-width">
@@ -2355,7 +2458,7 @@ export default {
             </div>
           </div>
         </div>
-        <div v-if="this.pspSpecification.selectedOrder=== 'Response'">
+        <div v-if="this?.pspSpecification.selectedOrder=== 'Response'">
           if
 
           <div class="container-row center">
@@ -2375,13 +2478,13 @@ export default {
           </div>
 
           [eventually holds]. <br>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Upper' ">
             within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
@@ -2395,7 +2498,7 @@ export default {
           </div>
 
         </div>
-        <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChain1N'">
+        <div :key="componentKey" v-if="this?.pspSpecification.selectedOrder=== 'ResponseChain1N'">
           if
           <div class="container-row center">
             <div class="min-width">
@@ -2412,13 +2515,13 @@ export default {
             </div>
           </div>
           [eventually holds] <br>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Upper' ">
             within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
@@ -2517,7 +2620,7 @@ export default {
           <br>
           [eventually holds]
         </div>
-        <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'ResponseChainN1'">
+        <div :key="componentKey" v-if="this?.pspSpecification.selectedOrder=== 'ResponseChainN1'">
           if
           <div class="container-row center">
             <div class="min-width">
@@ -2619,13 +2722,13 @@ export default {
             </div>
           </div>
           [eventually holds] <br>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Upper' ">
             within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
@@ -2637,7 +2740,7 @@ export default {
             </div>
           </div>
         </div>
-        <div v-if="this.pspSpecification.selectedOrder=== 'ResponseInvariance'">
+        <div v-if="this?.pspSpecification.selectedOrder=== 'ResponseInvariance'">
           if
 
           <div class="container-row center">
@@ -2655,18 +2758,18 @@ export default {
             </div>
           </div>
           [holds] continually.
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Upper' ">
             within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
         </div>
-        <div v-if="this.pspSpecification.selectedOrder=== 'Precedence'">
+        <div v-if="this?.pspSpecification.selectedOrder=== 'Precedence'">
           if
 
           <div class="container-row center">
@@ -2684,7 +2787,7 @@ export default {
             </div>
           </div>
           [has occurred] <br>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
@@ -2698,7 +2801,7 @@ export default {
           </div>
           [holds].
         </div>
-        <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChain1N'">
+        <div :key="componentKey" v-if="this?.pspSpecification.selectedOrder=== 'PrecedenceChain1N'">
           if
           <div class="container-row center">
             <div class="min-width">
@@ -2769,7 +2872,7 @@ export default {
             </div>
           </div>
           [has occured] <br>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
@@ -2790,7 +2893,7 @@ export default {
             </div>
           </div>
         </div>
-        <div :key="componentKey" v-if="this.pspSpecification.selectedOrder=== 'PrecedenceChainN1'">
+        <div :key="componentKey" v-if="this?.pspSpecification.selectedOrder=== 'PrecedenceChainN1'">
           if
 
           <div class="container-row center">
@@ -2862,7 +2965,7 @@ export default {
           <br>
 
           [have occurred] <br>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
@@ -2884,7 +2987,7 @@ export default {
           </div>
           [holds] <br>
         </div>
-        <div v-if="this.pspSpecification.selectedOrder=== 'Until'">
+        <div v-if="this?.pspSpecification.selectedOrder=== 'Until'">
 
           <div class="container-row center">
             <div class="min-width">
@@ -2900,27 +3003,27 @@ export default {
             </div>
           </div>
           [holds]
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Upper' ">
             within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
         </div>
 
         <br>
-        <div v-if="this.pspSpecification.selectedPatternType=== 'Occurrence' ">
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Lower' ">
+        <div v-if="this?.pspSpecification.selectedPatternType=== 'Occurrence' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Lower' ">
             after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Upper' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Upper' ">
             within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
           </div>
-          <div v-if="this.pspSpecification.selectedTimeBound=== 'Interval' ">
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
             between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
             {{ this.pspSpecification.timeUnit }}
           </div>
@@ -2929,19 +3032,19 @@ export default {
         <br>
 
         <div
-            v-if="this.pspSpecification.selectedProbabilityBound=== 'Lower' && this.pspSpecification.probability !== null">
+            v-if="this?.pspSpecification.selectedProbabilityBound=== 'Lower' && this.pspSpecification.probability !== null">
           with a probability lower than {{ this.pspSpecification.probability }}
         </div>
         <div
-            v-if="this.pspSpecification.selectedProbabilityBound=== 'LowerEqual' && this.pspSpecification.probability !== null">
+            v-if="this?.pspSpecification.selectedProbabilityBound=== 'LowerEqual' && this.pspSpecification.probability !== null">
           with a probability lower or equal than {{ this.pspSpecification.probability }}
         </div>
         <div
-            v-if="this.pspSpecification.selectedProbabilityBound=== 'Greater' && this.pspSpecification.probability !== null">
+            v-if="this?.pspSpecification.selectedProbabilityBound=== 'Greater' && this.pspSpecification.probability !== null">
           with a probability greater than {{ this.pspSpecification.probability }}
         </div>
         <div
-            v-if="this.pspSpecification.selectedProbabilityBound=== 'GreaterEqual' && this.pspSpecification.probability !== null">
+            v-if="this?.pspSpecification.selectedProbabilityBound=== 'GreaterEqual' && this.pspSpecification.probability !== null">
           with a probability greater or equal than {{ this.pspSpecification.probability }}
         </div>
       </div>
@@ -2956,7 +3059,7 @@ export default {
           <br/>
           <span class="warning"> {{ "< Specification Incomplete >" }} </span>
         </div>
-        <div v-if="this.pspSpecification.mapping && this.transformationPerformed">
+        <div v-if="this?.pspSpecification.mapping && this.transformationPerformed">
           <div class="container-row center mb-2">
             <UToggle v-model="this.useNames" text="Use Predicate Names"></UToggle>
             <span class="ml-1">User-friendly Predicate Names</span>
@@ -2977,17 +3080,17 @@ export default {
         </div>
         <br/>
         <div>
-          <pre v-if="this.pspSpecification.mapping && this.transformationPerformed" style="white-space: normal;">{{
+          <pre v-if="this?.pspSpecification.mapping && this.transformationPerformed" style="white-space: normal;">{{
               this.pspSpecification.mapping
             }}</pre>
         </div>
         <br/>
         <span>
-          <UButton @click="copyToClipboard" v-if="this.pspSpecification.mapping  && this.transformationPerformed"
+          <UButton @click="copyToClipboard" v-if="this?.pspSpecification.mapping  && this.transformationPerformed"
                    class="copy-button">Copy to Clipboard
           </UButton>
         </span>
-        <div class="copy-feedback" v-if="this.showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
+        <div class="copy-feedback" v-if="this?.showCopyFeedback">{{ "Copied to Clipboard!" }}</div>
       </div>
     </div>
   </div>
@@ -3091,22 +3194,27 @@ export default {
       <div v-if="listenerAssistant.type === 'relational'" class="mt-3">
         <UDivider label="Options"/>
         <UFormGroup label="Measurement Source" class="mb-1 mt-4" required>
-          <USelectMenu v-model="listenerAssistant.relationalOptions.measurementSourceA" :options="measurementSourceOptions"
+          <USelectMenu v-model="listenerAssistant.relationalOptions.measurementSourceA"
+                       :options="measurementSourceOptions"
                        placeholder="Select Measurement Source"/>
         </UFormGroup>
         <UFormGroup label="Relational Operator" class="mb-1 mt-4" required>
-          <USelectMenu v-model="listenerAssistant.relationalOptions.relationalOperator" :options="relationalOperatorOptions"
+          <USelectMenu v-model="listenerAssistant.relationalOptions.relationalOperator"
+                       :options="relationalOperatorOptions"
                        placeholder="Select Relational Operator"/>
         </UFormGroup>
         <UFormGroup label="Comparison Reference" class="mb-1 mt-1" required>
-          <UCheckbox v-model="listenerAssistant.relationalOptions.hasMeasurementSourceB" label="Compare Against Measurement Source"
-                  class="mb-1 mt-1"></UCheckbox>
+          <UCheckbox v-model="listenerAssistant.relationalOptions.hasMeasurementSourceB"
+                     label="Compare Against Measurement Source"
+                     class="mb-1 mt-1"></UCheckbox>
           <UInput v-model="listenerAssistant.relationalOptions.comparisonValue" placeholder="0.0" type="number"
                   :disabled="listenerAssistant.relationalOptions.hasMeasurementSourceB"
                   v-if="!listenerAssistant.relationalOptions.hasMeasurementSourceB"/>
-          <USelectMenu v-model="listenerAssistant.relationalOptions.measurementSourceB" :options="measurementSourceOptions"
-                  :disabled="!listenerAssistant.relationalOptions.hasMeasurementSourceB" v-if="listenerAssistant.relationalOptions.hasMeasurementSourceB"
-                  placeholder="Select Measurement Source"/>
+          <USelectMenu v-model="listenerAssistant.relationalOptions.measurementSourceB"
+                       :options="measurementSourceOptions"
+                       :disabled="!listenerAssistant.relationalOptions.hasMeasurementSourceB"
+                       v-if="listenerAssistant.relationalOptions.hasMeasurementSourceB"
+                       placeholder="Select Measurement Source"/>
         </UFormGroup>
       </div>
 
