@@ -1735,7 +1735,7 @@ export default {
       const responsePayload = await response.data.value.result
       let eventArray = [];
       this.state.events.forEach(event => {
-        if (responsePayload.payload.mapping.includes(event.predicate_name)) {
+        if (responsePayload.payload.mapping.includes("{" + event.event_name + "}")) {
           eventArray.push({
             predicate_name: event.predicate_name,
             predicate_logic: event.predicate_logic,
