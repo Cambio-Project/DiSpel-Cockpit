@@ -240,6 +240,16 @@ export async function getPSPMapping(payload) {
     })
 }
 
+export async function duplicateScenario(id){
+    const body = {
+        simulationID: id
+    }
+    return fetch("/api/duplicateScenario", {
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+}
+
 export async function deleteResultEntry(simulationID, index) {
     await fetch("/api/deleteResultEntry", {
         method: "POST",

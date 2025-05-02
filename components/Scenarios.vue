@@ -74,6 +74,15 @@ export default {
   },
   data() {
     return {
+      otherOptionScenarioId: "",
+      otherOptionItems:
+          [[{
+            label: 'Duplicate',
+            icon: 'i-heroicons-document-duplicate-20-solid',
+            click: () => {
+              this.duplicateScenario(this.otherOptionScenarioId)
+            }
+          }]],
       scenarioContents: [{
         key: 'description',
         label: 'Description'
@@ -131,6 +140,16 @@ export default {
     changeAllTargets,
     toScenarioEditor,
     toScenarioDetails,
+    async duplicateScenario(scenarioId) {
+      const response = await duplicateScenario(scenarioId)
+      const bodyResults = await response.json();
+      if (bodyResults.success) {
+        this.scenarios = await allScenarios();
+        await successMessage("Copy Created", "Created a copy of scenario " + scenarioId)
+      } else {
+        await failureMessage("Error", "Could not create copy of scenario " + scenarioId)
+      }
+    },
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
       let simulationID = await initScenario()
@@ -309,6 +328,12 @@ export default {
                     <UButton class="mr-1" icon="i-heroicons-cloud-arrow-down-16-solid" square size="xs" color="blue"
                              @click="downloadJSON(scenario.simulationID);"></UButton>
                   </UTooltip>
+                  <UDropdown
+                      :items="otherOptionItems"
+                  >
+                    <UButton class="mr-1" icon="i-heroicons-ellipsis-horizontal-16-solid" color="blue" square size="xs"
+                             variant="outline" @click="this.otherOptionScenarioId=scenario.simulationID"/>
+                  </UDropdown>
                   <UTooltip text="Delete Scenario">
                     <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
                              @click="removeScenario(scenario.simulationID);"></UButton>
