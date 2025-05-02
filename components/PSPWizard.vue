@@ -1064,7 +1064,10 @@ export default {
         if (this.customMeasurementSource.trim() === "") { // set as current selected
           this.customMeasurementSource = this.newMeasurementSource
         }
+        await successMessage("Added Measurement Source", "The measurement source " + this.newMeasurementSource + " has been added")
         this.newMeasurementSource = "" // reset
+      } else {
+        await failureMessage("Failure", "Name " + this.newMeasurementSource + " already exists or is empty. Please choose another name.")
       }
     }
     ,
@@ -1245,7 +1248,7 @@ export default {
         return
       }
 
-      if(trimmedName === ""){
+      if (trimmedName === "") {
         await failureMessage("Failure", "Name is empty. Please choose a name.")
         return
       }
@@ -1395,6 +1398,11 @@ export default {
 
       // also delete from the local array
       this.measurementSourceOptions.splice(deleteIndex, 1)
+
+      await successMessage("Deleted Measurement Source", "The measurement source " + this.deleteMarkedMeasurementSource + " has been deleted")
+
+      // unselect
+      this.deleteMarkedMeasurementSource = "";
     }
     ,
     handleProbabilityChange() {
