@@ -2078,7 +2078,13 @@ export default {
                     </div>
                     <br>
                     <UButton class="m-1" color="green" @click="changeEvent">Save Changes</UButton>
-                    <UButton class="m-1" color="red" @click="deleteEvent">Delete Event</UButton>
+                    <DeleteDialog
+                        deleteName="this event"
+                        @confirm="deleteEvent"
+                        @cancel=""
+                        altButton=true
+                        altButtonText="Delete Event"
+                    />
                   </div>
                 </div>
 
@@ -2099,7 +2105,13 @@ export default {
                                    :options="measurementSourceOptions"/>
                     </div>
                     <div class="container-row-element-xs left">
-                      <UButton color="red" @click="deleteMeasurementSource"> Delete</UButton>
+                      <DeleteDialog
+                          deleteName="this measurement source"
+                          @confirm="deleteMeasurementSource"
+                          @cancel=""
+                          altButton=true
+                          altButtonText="Delete"
+                      />
                     </div>
                   </div>
                 </div>
@@ -2180,7 +2192,13 @@ export default {
                     </div>
                     <br>
                     <UButton class="mr-2" @click="changeCommand">Save</UButton>
-                    <UButton color="red" @click="deleteCommand">Delete</UButton>
+                    <DeleteDialog
+                        deleteName="this command"
+                        @confirm="deleteCommand"
+                        @cancel=""
+                        altButton=true
+                        altButtonText="Delete"
+                    />
                   </div>
                 </div>
 
@@ -2243,7 +2261,13 @@ export default {
                     </div>
                     <br>
                     <UButton class="mr-2" @click="changeListener">Save</UButton>
-                    <UButton color="red" @click="deleteListener">Delete</UButton>
+                    <DeleteDialog
+                        deleteName="this listener"
+                        @confirm="deleteListener"
+                        @cancel=""
+                        altButton=true
+                        altButtonText="Delete"
+                    />
                   </div>
                 </div>
                 <div v-if="item.key === 'manageMeasurementSource'">
@@ -2263,7 +2287,13 @@ export default {
                                    :options="measurementSourceOptions"/>
                     </div>
                     <div class="container-row-element-xs left">
-                      <UButton color="red" @click="deleteMeasurementSource"> Delete</UButton>
+                      <DeleteDialog
+                          deleteName="this measurement source"
+                          @confirm="deleteMeasurementSource"
+                          @cancel=""
+                          altButton=true
+                          altButtonText="Delete"
+                      />
                     </div>
                   </div>
                 </div>

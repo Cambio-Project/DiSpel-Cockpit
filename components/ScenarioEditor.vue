@@ -422,8 +422,11 @@ export default {
         <div class="container-row-element left">
           <ul>
             <li v-for="(file, index) in environmentArchitecture">
-              <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                       @click="removeEnvironmentArchitecture(index)"></UButton>
+              <DeleteDialog
+                  deleteName="this architecture file"
+                  @confirm="removeEnvironmentArchitecture(index);"
+                  @cancel=""
+              />
               {{ Object.keys(file) }}
               <br>
             </li>
@@ -432,8 +435,11 @@ export default {
         <div class="container-row-element left">
           <ul>
             <li v-for="(file, index) in environmentExperiment">
-              <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                       @click="removeEnvironmentExperiment(index)"></UButton>
+              <DeleteDialog
+                  deleteName="this experiment file"
+                  @confirm="removeEnvironmentExperiment(index);"
+                  @cancel=""
+              />
               {{ Object.keys(file) }}
               <br>
             </li>
@@ -442,8 +448,11 @@ export default {
         <div class="container-row-element left">
           <ul>
             <li v-for="(file, index) in environmentLoad">
-              <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                       @click="removeEnvironmentLoad(index)"></UButton>
+              <DeleteDialog
+                  deleteName="this load file"
+                  @confirm="removeEnvironmentLoad(index);"
+                  @cancel=""
+              />
               {{ Object.keys(file) }}
               <br>
             </li>
@@ -464,8 +473,11 @@ export default {
 
       <ul class="left mb-4">
         <li v-for="(file, index) in environmentMonitoringData">
-          <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                   @click="removeEnvironmentMonitoringData(index)"></UButton>
+          <DeleteDialog
+              deleteName="this monitoring data file"
+              @confirm="removeEnvironmentMonitoringData(index);"
+              @cancel=""
+          />
           {{ Object.keys(file) }}
           <br>
         </li>
@@ -537,8 +549,11 @@ export default {
                          :to="getPSPWizardStimulusURL(simID, index)"></UButton>
               </UTooltip>
               <UTooltip text="Delete Stimulus Specification">
-                <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                         @click="removeStimulus(index)"></UButton>
+                <DeleteDialog
+                    deleteName="this stimulus"
+                    @confirm="removeStimulus(index);"
+                    @cancel=""
+                />
               </UTooltip>
             </div>
           </div>
@@ -603,8 +618,11 @@ export default {
                          :to="getPSPWizardResponseURL(simID, index)"></UButton>
               </UTooltip>
               <UTooltip text="Delete Response Specification">
-                <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                         @click="removeResponse(index)"></UButton>
+                <DeleteDialog
+                    deleteName="this response"
+                    @confirm="removeResponse(index);"
+                    @cancel=""
+                />
               </UTooltip>
             </div>
           </div>

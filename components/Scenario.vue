@@ -280,8 +280,11 @@ export default {
                    @click="downloadJSON(scenario.simulationID);"></UButton>
         </UTooltip>
         <UTooltip text="Delete Scenario">
-          <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                   @click="removeScenario(scenario.simulationID);"></UButton>
+          <DeleteDialog
+              deleteName="this scenario"
+              @confirm="removeScenario(scenario.simulationID);"
+              @cancel=""
+          />
         </UTooltip>
       </div>
     </div>
@@ -588,8 +591,11 @@ export default {
                          @click="verifyScenario(scenario)"></UButton>
               </UTooltip>
               <UTooltip text="Delete All Simulation Executions">
-                <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                         @click="deleteAllSimulationResultAndUpdate(scenario.simulationID);"></UButton>
+                <DeleteDialog
+                    deleteName="all simulation execution results"
+                    @confirm="deleteAllSimulationResultAndUpdate(scenario.simulationID);"
+                    @cancel=""
+                />
               </UTooltip>
 
               <UDivider label="Filters" class="mt-2 mb-2"/>
@@ -626,8 +632,11 @@ export default {
                     <div class="container-element-xs w-full">
                       <div class="float-right mt-1">
                         <UTooltip text="Delete Simulation Execution">
-                          <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                                   @click="deleteResultAndUpdate('simulation', scenario.simulationID, resultName, resultIndex);"></UButton>
+                          <DeleteDialog
+                              deleteName="this simulation execution"
+                              @confirm="deleteResultAndUpdate('simulation', scenario.simulationID, resultName, resultIndex);"
+                              @cancel=""
+                          />
                         </UTooltip>
                       </div>
                     </div>
@@ -716,8 +725,11 @@ export default {
                          @click="verifySearch(scenario)"></UButton>
               </UTooltip>
               <UTooltip text="Delete All Monitoring Executions">
-                <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                         @click="deleteAllSearchResultAndUpdate(scenario.simulationID);"></UButton>
+                <DeleteDialog
+                    deleteName="all monitoring executions"
+                    @confirm="deleteAllSearchResultAndUpdate(scenario.simulationID);"
+                    @cancel=""
+                />
               </UTooltip>
 
               <UDivider label="Filters" class="mt-2 mb-2"/>
@@ -753,8 +765,11 @@ export default {
                     <div class="container-element-xs w-full">
                       <div class="float-right mt-1">
                         <UTooltip text="Delete Monitoring Execution">
-                          <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                                   @click="deleteResultAndUpdate('search', scenario.simulationID, resultName, resultIndex);"></UButton>
+                          <DeleteDialog
+                              deleteName="this monitoring execution"
+                              @confirm="deleteResultAndUpdate('search', scenario.simulationID, resultName, resultIndex);"
+                              @cancel=""
+                          />
                         </UTooltip>
                       </div>
                     </div>

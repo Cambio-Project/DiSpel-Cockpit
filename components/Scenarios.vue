@@ -1,5 +1,7 @@
 <script>
 // Allows sorting objects by a property
+import DeleteDialog from "~/components/DeleteDialog.vue";
+
 const byProperty = function (prop, direction) {
   return function (a, b) {
     if (direction) {
@@ -20,6 +22,7 @@ const byProperty = function (prop, direction) {
 
 export default {
   name: "ScenarioList",
+  components: {DeleteDialog},
   el: '#app',
   scenariosNew: [],
   setup() {
@@ -74,6 +77,7 @@ export default {
   },
   data() {
     return {
+      showDialog: false,
       otherOptionScenarioId: "",
       otherOptionItems:
           [[{
@@ -335,8 +339,11 @@ export default {
                              variant="outline" @click="this.otherOptionScenarioId=scenario.simulationID"/>
                   </UDropdown>
                   <UTooltip text="Delete Scenario">
-                    <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                             @click="removeScenario(scenario.simulationID);"></UButton>
+                    <DeleteDialog
+                        deleteName="this scenario"
+                        @confirm="removeScenario(scenario.simulationID);"
+                        @cancel=""
+                    />
                   </UTooltip>
                 </div>
               </div>
