@@ -81,6 +81,12 @@ export default {
       otherOptionScenarioId: "",
       otherOptionItems:
           [[{
+            label: 'Download',
+            icon: 'i-heroicons-cloud-arrow-down-20-solid',
+            click: () => {
+              this.downloadJSON(this.otherOptionScenarioId)
+            }
+          }, {
             label: 'Duplicate',
             icon: 'i-heroicons-document-duplicate-20-solid',
             click: () => {
@@ -319,18 +325,14 @@ export default {
               <!-- Buttons -->
               <div class="container-row-element-s">
                 <div class="float-right">
-                  <UTooltip text="Edit Scenario">
-                    <UButton class="mr-1" icon="i-heroicons-pencil-square-16-solid" square size="xs" color="blue"
-                             @click="toScenarioEditor(scenario.simulationID);"></UButton>
-                  </UTooltip>
                   <UTooltip text="Show Scenario Details">
                     <UButton class="mr-1" icon="i-heroicons-document-magnifying-glass-16-solid" square size="xs"
                              color="blue"
                              @click="toScenarioDetails(scenario.simulationID)"></UButton>
                   </UTooltip>
-                  <UTooltip text="Download Scenario">
-                    <UButton class="mr-1" icon="i-heroicons-cloud-arrow-down-16-solid" square size="xs" color="blue"
-                             @click="downloadJSON(scenario.simulationID);"></UButton>
+                  <UTooltip text="Edit Scenario">
+                    <UButton class="mr-1" icon="i-heroicons-pencil-square-16-solid" square size="xs" color="blue"
+                             @click="toScenarioEditor(scenario.simulationID);"></UButton>
                   </UTooltip>
                   <UDropdown
                       :items="otherOptionItems"
