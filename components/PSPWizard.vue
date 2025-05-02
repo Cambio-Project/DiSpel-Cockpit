@@ -1269,6 +1269,9 @@ export default {
       this.changedPredicateLogic = "";
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
+
+      this.eventToChange = "";
+
       await successMessage("Changed Event", "The event " + body.customPredicateName + " has been changed successfully")
     }
     ,
@@ -1299,6 +1302,8 @@ export default {
       // clear the input fields after adding the custom command
       this.changedCommandName = "";
       this.changedCommandContent = "";
+
+      this.commandToChange = "";
 
       await successMessage("Changed Command", "The command " + body.command_name + " has been changed successfully")
     }
@@ -1331,6 +1336,8 @@ export default {
       this.changedListenerName = "";
       this.changedListenerContent = "";
 
+      this.listenerToChange = "";
+
       await successMessage("Changed Listener", "The listener " + body.listener_name + " has been changed successfully")
     }
     ,
@@ -1348,6 +1355,7 @@ export default {
       this.changedPredicateLogic = "";
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
+      this.eventToChange = "";
     }
     ,
     async deleteCommand() {
@@ -1362,6 +1370,7 @@ export default {
       // clear the input fields after adding the custom command
       this.changedCommandName = "";
       this.changedCommandContent = "";
+      this.commandToChange = "";
     }
     ,
     async deleteListener() {
@@ -1376,6 +1385,7 @@ export default {
       // clear the input fields after adding the custom event
       this.changedListenerName = "";
       this.changedListenerContent = "";
+      this.listenerToChange = "";
     }
     ,
     async deleteMeasurementSource() {
