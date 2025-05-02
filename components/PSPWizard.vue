@@ -1239,8 +1239,14 @@ export default {
     ,
     async changeEvent() {
       let trimmedName = this.changedPredicateName.trim()
-      if (this.eventNameExists(trimmedName)) {
+      let originalName = this.eventToChange.predicate_name.trim()
+      if ((originalName !== trimmedName) && this.eventNameExists(trimmedName)) {
         await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        return
+      }
+
+      if(trimmedName === ""){
+        await failureMessage("Failure", "Name is empty. Please choose a name.")
         return
       }
 
@@ -1268,8 +1274,14 @@ export default {
     ,
     async changeCommand() {
       let trimmedName = this.changedCommandName.trim()
-      if (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName)) {
+      let originalName = this.commandToChange.command_name.trim();
+      if ((originalName !== trimmedName) && (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName))) {
         await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        return
+      }
+
+      if (trimmedName === "") {
+        await failureMessage("Failure", "Name is empty. Please choose a name.")
         return
       }
 
@@ -1293,8 +1305,14 @@ export default {
     ,
     async changeListener() {
       let trimmedName = this.changedListenerName.trim()
-      if (this.commandNameExists(trimmedName)) {
+      let originalName = this.listenerToChange.listener_name.trim()
+      if ((originalName !== trimmedName) && (this.commandNameExists(trimmedName) || this.listenerNameExists(trimmedName))) {
         await failureMessage("Failure", "Name " + trimmedName + " already exists. Please choose another name.")
+        return
+      }
+
+      if (trimmedName === "") {
+        await failureMessage("Failure", "Name is empty. Please choose a name.")
         return
       }
 
