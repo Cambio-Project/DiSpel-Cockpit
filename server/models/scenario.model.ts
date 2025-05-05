@@ -20,7 +20,26 @@ const ScenarioSchema = new Schema({
     stimuli: [{}],
     responses: [{}],
     specification: {
-        measurementSources: [{}]
+        measurementSources: [{}],
+        commands: [{
+            command_name: String,
+            command_content: String,
+            global: Boolean
+        }
+        ],
+        listeners: [{
+            listener_name: String,
+            listener_content: String,
+            global: Boolean
+        }],
+        events: [{
+            event_name: String,
+            predicate_name: String,
+            predicate_logic: String,
+            predicate_comparison_value: String,
+            measurement_source: String,
+            global: Boolean
+        }]
     }
 });
 

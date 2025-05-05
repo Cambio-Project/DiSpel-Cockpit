@@ -421,9 +421,12 @@ export default {
       <div class="container-row mb-4">
         <div class="container-row-element left">
           <ul>
-            <li v-for="(file, index) in environmentArchitecture">
-              <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                       @click="removeEnvironmentArchitecture(index)"></UButton>
+            <li v-for="(file, index) in environmentArchitecture" class="flex items-center">
+              <DeleteDialog
+                  deleteName="this architecture file"
+                  @confirm="removeEnvironmentArchitecture(index);"
+                  @cancel=""
+              />
               {{ Object.keys(file) }}
               <br>
             </li>
@@ -431,9 +434,12 @@ export default {
         </div>
         <div class="container-row-element left">
           <ul>
-            <li v-for="(file, index) in environmentExperiment">
-              <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                       @click="removeEnvironmentExperiment(index)"></UButton>
+            <li v-for="(file, index) in environmentExperiment" class="flex items-center">
+              <DeleteDialog
+                  deleteName="this experiment file"
+                  @confirm="removeEnvironmentExperiment(index);"
+                  @cancel=""
+              />
               {{ Object.keys(file) }}
               <br>
             </li>
@@ -441,9 +447,12 @@ export default {
         </div>
         <div class="container-row-element left">
           <ul>
-            <li v-for="(file, index) in environmentLoad">
-              <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                       @click="removeEnvironmentLoad(index)"></UButton>
+            <li v-for="(file, index) in environmentLoad" class="flex items-center">
+              <DeleteDialog
+                  deleteName="this load file"
+                  @confirm="removeEnvironmentLoad(index);"
+                  @cancel=""
+              />
               {{ Object.keys(file) }}
               <br>
             </li>
@@ -463,9 +472,12 @@ export default {
       </UFormGroup>
 
       <ul class="left mb-4">
-        <li v-for="(file, index) in environmentMonitoringData">
-          <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                   @click="removeEnvironmentMonitoringData(index)"></UButton>
+        <li v-for="(file, index) in environmentMonitoringData" class="flex items-center">
+          <DeleteDialog
+              deleteName="this monitoring data file"
+              @confirm="removeEnvironmentMonitoringData(index);"
+              @cancel=""
+          />
           {{ Object.keys(file) }}
           <br>
         </li>
@@ -480,7 +492,7 @@ export default {
 
       <ul>
         <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="mb-2">
-          <div class="container-row">
+          <div class="container-row flex items-center">
             <div class="container-row-element-xxs">
               <span class="">
                 {{ index + 1 }}.
@@ -537,8 +549,11 @@ export default {
                          :to="getPSPWizardStimulusURL(simID, index)"></UButton>
               </UTooltip>
               <UTooltip text="Delete Stimulus Specification">
-                <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                         @click="removeStimulus(index)"></UButton>
+                <DeleteDialog
+                    deleteName="this stimulus"
+                    @confirm="removeStimulus(index);"
+                    @cancel=""
+                />
               </UTooltip>
             </div>
           </div>
@@ -558,7 +573,7 @@ export default {
 
       <ul>
         <li v-for="(response, index) in responses" :key="response" class="mb-2">
-          <div class="container-row">
+          <div class="container-row flex items-center">
             <div class="container-row-element-xxs">
               <span class="">
                 {{ index + 1 }}.
@@ -603,8 +618,11 @@ export default {
                          :to="getPSPWizardResponseURL(simID, index)"></UButton>
               </UTooltip>
               <UTooltip text="Delete Response Specification">
-                <UButton color="red" icon="i-heroicons-trash-16-solid" square size="xs"
-                         @click="removeResponse(index)"></UButton>
+                <DeleteDialog
+                    deleteName="this response"
+                    @confirm="removeResponse(index);"
+                    @cancel=""
+                />
               </UTooltip>
             </div>
           </div>

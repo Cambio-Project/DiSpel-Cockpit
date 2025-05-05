@@ -1,5 +1,7 @@
 <script>
 // Allows sorting objects by a property
+import DeleteDialog from "~/components/DeleteDialog.vue";
+
 const byProperty = function (prop, direction) {
   return function (a, b) {
     if (direction) {
@@ -20,6 +22,7 @@ const byProperty = function (prop, direction) {
 
 export default {
   name: "ScenarioList",
+  components: {DeleteDialog},
   el: '#app',
   scenariosNew: [],
   setup() {
@@ -74,6 +77,22 @@ export default {
   },
   data() {
     return {
+      showDialog: false,
+      otherOptionScenarioId: "",
+      otherOptionItems:
+          [[{
+            label: 'Download',
+            icon: 'i-heroicons-cloud-arrow-down-20-solid',
+            click: () => {
+              this.downloadJSON(this.otherOptionScenarioId)
+            }
+          }, {
+            label: 'Duplicate',
+            icon: 'i-heroicons-document-duplicate-20-solid',
+            click: () => {
+              this.duplicateScenario(this.otherOptionScenarioId)
+            }
+          }]],
       scenarioContents: [{
         key: 'description',
         label: 'Description'
@@ -131,6 +150,16 @@ export default {
     changeAllTargets,
     toScenarioEditor,
     toScenarioDetails,
+    async duplicateScenario(scenarioId) {
+      const response = await duplicateScenario(scenarioId)
+      const bodyResults = await response.json();
+      if (bodyResults.success) {
+        this.scenarios = await allScenarios();
+        await successMessage("Copy Created", "Created a copy of scenario " + scenarioId)
+      } else {
+        await failureMessage("Error", "Could not create copy of scenario " + scenarioId)
+      }
+    },
     // Open the ScenarioEditor with to create a new scenario
     async openEditor() {
       let simulationID = await initScenario()
@@ -256,7 +285,7 @@ export default {
             <div class="container-row mt-1 mb-1">
               <!-- Category -->
               <div class="container-row-element-xs left ml-2">
-                <div class="container-row">
+                <div class="container-row flex items-center">
                   <div class="container-row-element-xs">
                     <UButton :icon="getScenarioTypeIcon(scenario.category)" :ui="{ rounded: 'rounded-full' }"
                              :color="getScenarioTypeColor(scenario.category)"
@@ -271,8 +300,8 @@ export default {
               <!-- Stimuli Counter -->
               <div class="container-row-element-xs">
                 <UTooltip text="Stimulus Count">
-                <span>
-                <Icon name="icon-park-solid:lightning" style="color: red"/>
+                <span class="flex items-center" >
+                <Icon name="icon-park-solid:lightning" class="mr-1" style="color: red"/>
                 {{ scenario.stimuli.length }}
                 </span>
                 </UTooltip>
@@ -281,37 +310,42 @@ export default {
               <!-- Response Counter -->
               <div class="container-row-element-xs">
                 <UTooltip text="Response Count">
-                <span>
-                  <Icon name="material-symbols:ecg-heart" style="color: purple"/>
+                <span class="flex items-center">
+                  <Icon name="material-symbols:ecg-heart" class="mr-1" style="color: purple"/>
                   {{ scenario.responses.length }}
                 </span>
                 </UTooltip>
               </div>
 
               <!-- ID -->
-              <div class=" container-row-element text-gray-300">
+              <div class="container-row-element text-gray-300 text-center">
                 {{ "ID: " + scenario.simulationID }}
               </div>
 
               <!-- Buttons -->
               <div class="container-row-element-s">
                 <div class="float-right">
-                  <UTooltip text="Edit Scenario">
-                    <UButton class="mr-1" icon="i-heroicons-pencil-square-16-solid" square size="xs" color="blue"
-                             @click="toScenarioEditor(scenario.simulationID);"></UButton>
-                  </UTooltip>
                   <UTooltip text="Show Scenario Details">
                     <UButton class="mr-1" icon="i-heroicons-document-magnifying-glass-16-solid" square size="xs"
                              color="blue"
                              @click="toScenarioDetails(scenario.simulationID)"></UButton>
                   </UTooltip>
-                  <UTooltip text="Download Scenario">
-                    <UButton class="mr-1" icon="i-heroicons-cloud-arrow-down-16-solid" square size="xs" color="blue"
-                             @click="downloadJSON(scenario.simulationID);"></UButton>
+                  <UTooltip text="Edit Scenario">
+                    <UButton class="mr-1" icon="i-heroicons-pencil-square-16-solid" square size="xs" color="blue"
+                             @click="toScenarioEditor(scenario.simulationID);"></UButton>
                   </UTooltip>
+                  <UDropdown
+                      :items="otherOptionItems"
+                  >
+                    <UButton class="mr-1" icon="i-heroicons-ellipsis-horizontal-16-solid" color="blue" square size="xs"
+                             variant="outline" @click="this.otherOptionScenarioId=scenario.simulationID"/>
+                  </UDropdown>
                   <UTooltip text="Delete Scenario">
-                    <UButton class="mr-1" icon="i-heroicons-trash-16-solid" square size="xs" color="red"
-                             @click="removeScenario(scenario.simulationID);"></UButton>
+                    <DeleteDialog
+                        deleteName="this scenario"
+                        @confirm="removeScenario(scenario.simulationID);"
+                        @cancel=""
+                    />
                   </UTooltip>
                 </div>
               </div>
@@ -354,7 +388,7 @@ export default {
                     </div>
                     <div class="container-row-element">
                        <i class="left"> <strong> {{ stimulus.SSEL }} </strong> </i>
-                      <div v-if="showTransformations" class="container-row">
+                      <div v-if="showTransformations" class="container-row flex items-center">
                       <div class="container-row-element-xs">
                       <USelectMenu class="foreground" v-model="stimulus.target_logic" :options="targetLogics"
                                    value-attribute="id"
@@ -386,15 +420,15 @@ export default {
                     </div>
                     </div>
                     <div class="container-row-element-xxs">
-                      <UTooltip text="Active for Simulation">
+                      <UTooltip text="Active for Simulation" class="flex items-center">
                         <UCheckbox disabled v-model="stimulus.simulationChecked" name="simulation"/>
-                        <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 ml-2 mr-2"/>
+                        <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="ml-2 mr-2"/>
                       </UTooltip>
                     </div>
                     <div class="container-row-element-xxs">
-                      <UTooltip text="Active for Monitoring">
+                      <UTooltip text="Active for Monitoring" class="flex items-center">
                         <UCheckbox disabled v-model="stimulus.monitoringChecked" name="monitoring"/>
-                        <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 ml-2"/>
+                        <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="ml-2"/>
                       </UTooltip>
                     </div>
                   </div>
@@ -417,14 +451,14 @@ export default {
                   </div>
                    <div class="container-row-element">
                      <UTooltip text="Response Satisfaction for Simulation">
-                    <span> <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
+                    <span class="flex items-center"> <Icon name="heroicons:globe-alt-20-solid" size="1.1em" class="mr-1"></Icon>{{
                         getSimulationVerificationResultsPerResponse(this.findResults(scenario.simulationID), index)
                       }}</span>
                      </UTooltip>
                   </div>
                   <div class="container-row-element">
                     <UTooltip text="Response Satisfaction for Monitoring">
-                    <span> <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 mr-1"></Icon>{{
+                    <span class="flex items-center"> <Icon name="heroicons:chart-bar-16-solid" size="1.1em" class="mr-1"></Icon>{{
                         getSearchVerificationResultsPerResponse(this.findResults(scenario.simulationID), index)
                       }}</span>
                     </UTooltip>
@@ -436,7 +470,7 @@ export default {
                   <div class="container-row-element">
                 <span>
                 <i class="left"> <strong> {{ response.SSEL }} </strong> </i>
-                    <div v-if="showTransformations" class="container-row">
+                    <div v-if="showTransformations" class="container-row  flex items-center">
                       <div class="container-row-element-xs">
                       <USelectMenu v-model="response.target_logic" :options="targetLogics" value-attribute="id"
                                    option-attribute="name"/>
@@ -508,7 +542,7 @@ export default {
 
             <!-- Footer -->
             <div class="container-row ">
-              <div class="container-row-element-s pt-2 pb-1"
+              <div class="container-row-element-s pt-2"
                    :style="{ 'background-color': getResilienceScoreColor(this.findResults(scenario.simulationID))}">
                 <UTooltip text="Scenario's Resilience Score">
                   <span>
@@ -517,23 +551,23 @@ export default {
                 </UTooltip>
               </div>
 
-              <div class="container-row-element-s pt-2 pb-1">
+              <div class="container-row-element-s pt-2">
                 <UTooltip text="Full Response Satisfaction for Simulation">
-                    <span> <Icon name="heroicons:globe-alt-20-solid" size="1.1em" class="mr-1"/>{{
+                    <span class="flex items-center"> <Icon name="heroicons:globe-alt-20-solid" size="1.1em" class="mr-1"/>{{
                         getSimulationVerificationResultsPerScenario(this.findResults(scenario.simulationID))
                       }}</span>
                 </UTooltip>
               </div>
 
-              <div class="container-row-element-s pt-2 pb-1">
+              <div class="container-row-element-s pt-2">
                 <UTooltip text="Full Response Satisfaction for Monitoring">
-                    <span> <Icon name="heroicons:chart-bar-16-solid" size="1.1em" class="mr-1"/>{{
+                    <span class="flex items-center"> <Icon name="heroicons:chart-bar-16-solid" size="1.1em" class="mr-1"/>{{
                         getSearchVerificationResultsPerScenario(this.findResults(scenario.simulationID))
                       }}</span>
                 </UTooltip>
               </div>
 
-              <div class="container-row-element pt-1 pb-1">
+              <div class="container-row-element pt-1">
                 <div v-if="scenario.analysisState === 'simrunning'">
                   <UProgress animation="carousel"></UProgress>
                   <p>Simulation is running</p>

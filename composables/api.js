@@ -161,6 +161,39 @@ export async function deleteScenarioField(simulationID, fieldName, fieldIndex) {
     })
 }
 
+export async function saveLocalEvent(simulationID, event) {
+    const body = {
+        simulationID: simulationID,
+        event: event
+    }
+    await fetch("/api/saveLocalEvent", {
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+}
+
+export async function saveLocalCommand(simulationID, command) {
+    const body = {
+        simulationID: simulationID,
+        command: command
+    }
+    await fetch("/api/saveLocalCommand", {
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+}
+
+export async function saveLocalListener(simulationID, listener) {
+    const body = {
+        simulationID: simulationID,
+        listener: listener
+    }
+    await fetch("/api/saveLocalListener", {
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+}
+
 export async function saveEvent(params) {
     await fetch("/api/saveEvent", {
         method: "POST",
@@ -203,6 +236,42 @@ export async function changeListener(params) {
     })
 }
 
+export async function changeLocalEvent(simulationID, oldName, event) {
+    const body = {
+        simulationID: simulationID,
+        oldName: oldName,
+        event: event
+    }
+    await fetch("/api/changeLocalEvent", {
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+}
+
+export async function changeLocalCommand(simulationID, oldName, command) {
+    const body = {
+        simulationID: simulationID,
+        oldName: oldName,
+        event: command
+    }
+    await fetch("/api/changeLocalCommand", {
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+}
+
+export async function changeLocalListener(simulationID, oldName, listener) {
+    const body = {
+        simulationID: simulationID,
+        oldName: oldName,
+        event: listener
+    }
+    await fetch("/api/changeLocalListener", {
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+}
+
 export async function deleteEvent(id) {
     const body = {
         _id: id
@@ -233,10 +302,53 @@ export async function deleteListener(id) {
     })
 }
 
+export async function deleteLocalEvent(simulationID, event) {
+    const body = {
+        simulationID: simulationID,
+        event: event
+    }
+    await fetch("/api/deleteLocalEvent", {
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+}
+
+export async function deleteLocalCommand(simulationID, command) {
+    const body = {
+        simulationID: simulationID,
+        command: command
+    }
+    await fetch("/api/deleteLocalCommand", {
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+}
+
+export async function deleteLocalListener(simulationID, listener) {
+    const body = {
+        simulationID: simulationID,
+        listener: listener
+    }
+    await fetch("/api/deleteLocalListener", {
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+}
+
 export async function getPSPMapping(payload) {
     return useFetch("/api/getPSPMapping", {
         method: "POST",
         body: payload
+    })
+}
+
+export async function duplicateScenario(id){
+    const body = {
+        simulationID: id
+    }
+    return fetch("/api/duplicateScenario", {
+        method: "POST",
+        body: JSON.stringify(body)
     })
 }
 
