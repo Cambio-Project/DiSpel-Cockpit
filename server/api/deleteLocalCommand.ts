@@ -1,6 +1,3 @@
-import {setSearchUpdateRequired} from "~/server/utils/pushSearchResult";
-import {setSimulationUpdateRequired} from "~/server/utils/pushSimulationResult";
-
 export default defineEventHandler(async (event) => {
     let body = await readBody(event)
     body = JSON.parse(body)
