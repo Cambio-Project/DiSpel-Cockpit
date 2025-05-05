@@ -297,13 +297,13 @@ export default {
               <h4 class="text-mb font-bold mb-2">
                 Type:
               </h4>
-              <div class="container-row">
+              <div class="container-row flex items-center">
                 <span>
                   <UButton :icon="getScenarioTypeIcon(scenario.category)" :ui="{ rounded: 'rounded-full' }"
                            :color="getScenarioTypeColor(scenario.category)"
                            size="2xs" square/>
                 </span>
-                <span class="left mt-1 ml-1">
+                <span class="left ml-1 text-center">
                   {{ scenario.category }}
                 </span>
               </div>
@@ -324,7 +324,7 @@ export default {
             <ul>
               <li v-for="(stimulus, index) in scenario.stimuli" :key="stimulus" class="left">
                 <div class="container-row">
-                  <div class="container-row-element-xxs">
+                  <div class="container-row-element-xxs flex">
                     {{ index + 1 }}.
                     <span v-if="!stimulus.showDetails">
                     <UTooltip text="Show Specification Details">
@@ -332,7 +332,7 @@ export default {
                                icon="i-heroicons-chevron-down" @click="toggleDetails(stimulus)"></UButton>
                     </UTooltip>
                     </span>
-                    <span v-if="stimulus.showDetails">
+                    <span v-if="stimulus.showDetails" >
                     <UTooltip text="Hide Specification Details">
                       <UButton class="ml-2" square color="gray" size="2xs"
                                icon="i-heroicons-chevron-up" @click="toggleDetails(stimulus)"></UButton>
@@ -370,15 +370,15 @@ export default {
                     </div>
                   </div>
                   <div class="container-row-element-xxs">
-                    <UTooltip text="Active for Simulation">
+                    <UTooltip text="Active for Simulation" class="flex items-center">
                       <UCheckbox disabled v-model="stimulus.simulationChecked" name="simulation"/>
-                      <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="mb-1 ml-2 mr-2"/>
+                      <Icon name="heroicons:globe-alt-20-solid" size="1.3em" class="ml-2 mr-2"/>
                     </UTooltip>
                   </div>
                   <div class="container-row-element-xxs">
-                    <UTooltip text="Active for Monitoring">
+                    <UTooltip text="Active for Monitoring" class="flex items-center">
                       <UCheckbox disabled v-model="stimulus.monitoringChecked" name="monitoring"/>
-                      <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="mb-1 ml-2"/>
+                      <Icon name="heroicons:chart-bar-16-solid" size="1.3em" class="ml-2"/>
                     </UTooltip>
                   </div>
                 </div>
@@ -393,7 +393,7 @@ export default {
             <ul>
               <li v-for="(response, index) in scenario.responses" :key="response" class="left">
                 <div class="container-row">
-                  <div class="container-row-element-xxs">
+                  <div class="container-row-element-xxs flex">
                     {{ index + 1 }}.
                     <span v-if="!response.showDetails">
                     <UTooltip text="Show Specification Details">
@@ -646,11 +646,11 @@ export default {
                   <UContainer>
                     <ul>
                       <li v-for="(response, index) in scenario.responses" :key="response" class="left">
-                        <div class="container-row">
-                          <div class="container-row-element-xxs mt-2">
+                        <div class="container-row flex items-center">
+                          <div class="container-row-element-xxs">
                             {{ index + 1 }}.
                           </div>
-                          <div class="container-row-element-xxs ">
+                          <div class="container-row-element-xxs">
                             <div class="container-row">
                               <div class="container-row-element">
                                 <UTooltip v-if="findSimulationResults(result, resultIndex, index)"
@@ -678,7 +678,7 @@ export default {
                               </div>
                             </div>
                           </div>
-                          <div class="container-row-element mt-2">
+                          <div class="container-row-element ml-1">
                             <i class="sel-line"
                                :style="{'color': mapResultToColor(findSimulationResults(result, resultIndex, index))}">
                               <strong>{{ response.SSEL }}</strong> </i>
@@ -779,11 +779,11 @@ export default {
                   <UContainer>
                     <ul>
                       <li v-for="(response, index) in scenario.responses" :key="response" class="left">
-                        <div class="container-row">
-                          <div class="container-row-element-xxs mt-2">
+                        <div class="container-row flex items-center">
+                          <div class="container-row-element-xxs">
                             {{ index + 1 }}.
                           </div>
-                          <div class="container-row-element-xxs ">
+                          <div class="container-row-element-xxs">
                             <div class="container-row">
                               <div class="container-row-element">
                                 <UTooltip v-if="findSearchResults(result, resultIndex, index)"
@@ -811,7 +811,7 @@ export default {
                               </div>
                             </div>
                           </div>
-                          <div class="container-row-element mt-2">
+                          <div class="container-row-element ml-1">
                             <i class="sel-line"
                                :style="{'color': mapResultToColor(findSearchResults(result, resultIndex, index))}">
                               <strong>{{ response.SSEL }}</strong> </i>

@@ -421,7 +421,7 @@ export default {
       <div class="container-row mb-4">
         <div class="container-row-element left">
           <ul>
-            <li v-for="(file, index) in environmentArchitecture">
+            <li v-for="(file, index) in environmentArchitecture" class="flex items-center">
               <DeleteDialog
                   deleteName="this architecture file"
                   @confirm="removeEnvironmentArchitecture(index);"
@@ -434,7 +434,7 @@ export default {
         </div>
         <div class="container-row-element left">
           <ul>
-            <li v-for="(file, index) in environmentExperiment">
+            <li v-for="(file, index) in environmentExperiment" class="flex items-center">
               <DeleteDialog
                   deleteName="this experiment file"
                   @confirm="removeEnvironmentExperiment(index);"
@@ -447,7 +447,7 @@ export default {
         </div>
         <div class="container-row-element left">
           <ul>
-            <li v-for="(file, index) in environmentLoad">
+            <li v-for="(file, index) in environmentLoad" class="flex items-center">
               <DeleteDialog
                   deleteName="this load file"
                   @confirm="removeEnvironmentLoad(index);"
@@ -472,7 +472,7 @@ export default {
       </UFormGroup>
 
       <ul class="left mb-4">
-        <li v-for="(file, index) in environmentMonitoringData">
+        <li v-for="(file, index) in environmentMonitoringData" class="flex items-center">
           <DeleteDialog
               deleteName="this monitoring data file"
               @confirm="removeEnvironmentMonitoringData(index);"
@@ -492,7 +492,7 @@ export default {
 
       <ul>
         <li v-for="(stimulus, index) in stimuli" :key="stimulus" class="mb-2">
-          <div class="container-row">
+          <div class="container-row flex items-center">
             <div class="container-row-element-xxs">
               <span class="">
                 {{ index + 1 }}.
@@ -573,7 +573,7 @@ export default {
 
       <ul>
         <li v-for="(response, index) in responses" :key="response" class="mb-2">
-          <div class="container-row">
+          <div class="container-row flex items-center">
             <div class="container-row-element-xxs">
               <span class="">
                 {{ index + 1 }}.

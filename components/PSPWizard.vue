@@ -2077,7 +2077,7 @@ export default {
 
                 <div v-if="item.key === 'addEvent'">
                   <br/>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Predicate Name: </label>
                     </div>
@@ -2086,7 +2086,7 @@ export default {
                     </div>
                   </div>
                   <br>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Predicate Logic: </label>
                     </div>
@@ -2096,7 +2096,7 @@ export default {
                     </div>
                   </div>
                   <br>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Measurement Source: </label>
                     </div>
@@ -2105,7 +2105,7 @@ export default {
                     </div>
                   </div>
                   <br>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOut }">Comparison
                         Value: </label>
@@ -2129,7 +2129,7 @@ export default {
 
                 <div v-if="item.key === 'editEvent'">
                   <br/>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Choose Event: </label>
                     </div>
@@ -2140,7 +2140,7 @@ export default {
                   </div>
                   <br>
                   <div v-if="this?.eventToChange !== ''">
-                    <div class="container-row">
+                    <div class="container-row flex items-center">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle">Predicate Name: </label>
                       </div>
@@ -2149,7 +2149,7 @@ export default {
                       </div>
                     </div>
                     <br>
-                    <div class="container-row">
+                    <div class="container-row flex items-center">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle">Predicate Logic: </label>
                       </div>
@@ -2158,7 +2158,7 @@ export default {
                       </div>
                     </div>
                     <br>
-                    <div class="container-row">
+                    <div class="container-row flex items-center">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle">Measurement Source: </label>
                       </div>
@@ -2167,7 +2167,7 @@ export default {
                       </div>
                     </div>
                     <br>
-                    <div class="container-row">
+                    <div class="container-row flex items-center">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle" :class="{ 'grayed-out': comparisonValueShouldGrayOutEdit }">Comparison
                           Value: </label>
@@ -2243,7 +2243,7 @@ export default {
 
                 <div v-if="item.key === 'addCommand'">
                   <br/>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Command Name: </label>
                     </div>
@@ -2252,7 +2252,7 @@ export default {
                     </div>
                   </div>
                   <br/>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Command Content: </label>
                     </div>
@@ -2278,7 +2278,7 @@ export default {
 
                 <div v-if="item.key === 'editCommand'">
                   <br/>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Choose Command: </label>
                     </div>
@@ -2289,7 +2289,7 @@ export default {
                   </div>
                   <br>
                   <div v-if="this?.commandToChange !== ''">
-                    <div class="container-row">
+                    <div class="container-row flex items-center">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle">Command Name: </label>
                       </div>
@@ -2298,7 +2298,7 @@ export default {
                       </div>
                     </div>
                     <br>
-                    <div class="container-row">
+                    <div class="container-row flex items-center">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle">Command Content: </label>
                       </div>
@@ -2328,7 +2328,7 @@ export default {
 
                 <div v-if="item.key === 'addListener'">
                   <br/>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Listener Name: </label>
                     </div>
@@ -2337,7 +2337,7 @@ export default {
                     </div>
                   </div>
                   <br>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Listener Content: </label>
                     </div>
@@ -2350,7 +2350,7 @@ export default {
                     </div>
                   </div>
                   <br>
-                  <div class="container-row">
+                  <div class="container-row flex">
                     <div class="container-row-element-s right mr-2">
                     </div>
                     <div class="container-row-element">
@@ -2363,7 +2363,7 @@ export default {
 
                 <div v-if="item.key === 'editListener'">
                   <br/>
-                  <div class="container-row">
+                  <div class="container-row flex items-center">
                     <div class="container-row-element-s right mr-2">
                       <label class="subtitle">Choose Listener: </label>
                     </div>
@@ -2374,7 +2374,7 @@ export default {
                   </div>
                   <br>
                   <div v-if="this?.listenerToChange !== ''">
-                    <div class="container-row">
+                    <div class="container-row flex items-center">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle">Listener Name: </label>
                       </div>
@@ -2383,7 +2383,7 @@ export default {
                       </div>
                     </div>
                     <br>
-                    <div class="container-row">
+                    <div class="container-row flex items-center">
                       <div class="container-row-element-s right mr-2">
                         <label class="subtitle">Listener Content: </label>
                       </div>
