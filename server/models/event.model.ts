@@ -7,6 +7,7 @@ const EventSchema = new Schema({
     predicate_logic: String,
     predicate_comparison_value: String,
     measurement_source: String,
+    predicate_global: { type: Boolean, default: true },
 });
 
 export const Event = model("Event", EventSchema);

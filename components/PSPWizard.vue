@@ -73,6 +73,11 @@ export default {
       loadFunctionOptions: [
         "constant", "exponential", "exponential-inverse", "linear", "linear-inverse"
       ],
+      state: {
+        events: [],
+        commands: [],
+        listeners: [],
+      },
       isInitialized: false,
       pspSpecification: {
         selectedPatternType: null,
@@ -105,9 +110,12 @@ export default {
       scenario: null,
       customCommandName: "",
       customCommandContent: "",
+      customCommandGlobal: false,
       customListenerName: "",
       customListenerContent: "",
+      customListenerGlobal: false,
       customPredicateName: "",
+      customPredicateGlobal: false,
       customPredicateLogic: "",
       customMeasurementSource: "",
       newMeasurementSource: "",
@@ -118,12 +126,15 @@ export default {
       listenerToChange: "",
       changedCommandName: "",
       changedCommandContent: "",
+      changedCommandGlobal: false,
       changedListenerName: "",
       changedListenerContent: "",
+      changedListenerGlobal: false,
       changedPredicateName: "",
       changedPredicateLogic: "",
       changedMeasurementSource: "",
       changedPredicateComparisonValue: "",
+      changedPredicateGlobal: false,
       changedEventId: "",
       changedCommandId: "",
       changedListenerId: "",
@@ -500,7 +511,7 @@ export default {
         this.handleInputChange()
       },
       deep: true
-    }
+    },
   },
   computed: {
     predicates: function () {
@@ -621,28 +632,11 @@ export default {
   }
   ,
   setup() {
-    const state = reactive({
-      events: [],
-      commands: [],
-      listeners: [],
-    });
-
-    onMounted(async () => {
-      state.events = await allEvents();
-    });
-    onMounted(async () => {
-      state.commands = await allCommands();
-    });
-    onMounted(async () => {
-      state.listeners = await allListeners()
-    });
     onMounted(async () => {
       preparePopups();
     });
 
-    return {
-      state,
-    };
+    return {};
   }
   ,
   methods: {
@@ -653,6 +647,11 @@ export default {
       if (typeof scenario.specification.measurementSources !== "undefined") {
         this.measurementSourceOptions = scenario.specification.measurementSources
       }
+
+      // add local listener commands and events
+      this.state.events = (await allEvents()).concat(scenario.specification.events);
+      this.state.commands = (await allCommands()).concat(scenario.specification.commands);
+      this.state.listeners = (await allListeners()).concat(scenario.specification.listeners);
 
       // load stimulus / response specification
       if (typeof this.editId !== 'undefined' && this.editId !== null) {
@@ -1087,17 +1086,26 @@ export default {
           predicate_logic: this.customPredicateLogic,
           predicate_comparison_value: this.customPredicateComparisonValue,
           measurement_source: this.customMeasurementSource,
+          predicate_global: this.customPredicateGlobal
         }
-        await saveEvent(body)
+
+        if (this.customPredicateGlobal) {
+          // write the event to the mongodb database
+          await saveEvent(body);
+        } else {
+          await saveLocalEvent(this.simID, body);
+        }
 
         // also add this event to the local event array
-        this.state.events = await allEvents();
+        this.scenario = await getScenario(this.simID);
+        this.state.events = (await allEvents()).concat(this.scenario.specification.events);
 
         // clear the input fields after adding the custom event
         this.customPredicateName = "";
         this.customPredicateLogic = "";
         this.customPredicateComparisonValue = "";
         this.customMeasurementSource = "";
+        this.customPredicateGlobal = false;
 
         await successMessage("Added Event", "The event " + body.customPredicateName + " has been added successfully")
       }
@@ -1116,15 +1124,23 @@ export default {
         const body = {
           command_name: this.customCommandName,
           command_content: this.customCommandContent,
+          command_global: this.customCommandGlobal
         }
-        await saveCommand(body);
+        if (this.customCommandGlobal) {
+          // write the event to the mongodb database
+          await saveCommand(body);
+        } else {
+          await saveLocalCommand(this.simID, body);
+        }
 
         // also add this event to the local event array
-        this.state.commands = await allCommands();
+        this.scenario = await getScenario(this.simID);
+        this.state.commands = (await allCommands()).concat(this.scenario.specification.commands);
 
         // clear the input fields after adding the custom event
         this.customCommandName = "";
         this.customCommandContent = "";
+        this.customCommandGlobal = false;
 
         await successMessage("Added Command", "The command " + body.command_name + " has been added successfully")
       }
@@ -1166,19 +1182,26 @@ export default {
           return
         }
 
-        // write the event to the mongodb database
         const body = {
           listener_name: this.customListenerName,
           listener_content: this.customListenerContent,
+          listener_global: this.customListenerGlobal,
         }
-        await saveListener(body)
+        if (this.customListenerGlobal) {
+          // write the event to the mongodb database
+          await saveListener(body);
+        } else {
+          await saveLocalListener(this.simID, body);
+        }
 
         // also add this event to the local event array
-        this.state.listeners = await allListeners();
+        this.scenario = await getScenario(this.simID);
+        this.state.listeners = (await allListeners()).concat(this.scenario.specification.listeners);
 
         // clear the input fields after adding the custom event
         this.customListenerName = "";
         this.customListenerContent = "";
+        this.customListenerGlobal = false;
 
         await successMessage("Added Listener", "The listener " + body.listener_name + " has been added successfully")
       }
@@ -1207,6 +1230,7 @@ export default {
       this.changedPredicateLogic = this.eventToChange.predicate_logic
       this.changedPredicateComparisonValue = this.eventToChange.predicate_comparison_value
       this.changedMeasurementSource = this.eventToChange.measurement_source
+      this.changedPredicateGlobal = this.eventToChange.predicate_global
 
       this.forceRerender()
       this.handleInputChange()
@@ -1221,6 +1245,7 @@ export default {
 
       this.changedCommandName = this.commandToChange.command_name
       this.changedCommandContent = this.commandToChange.command_content
+      this.changedCommandGlobal = this.commandToChange.command_global
 
       this.forceRerender()
       this.handleInputChange()
@@ -1235,6 +1260,7 @@ export default {
 
       this.changedListenerName = this.listenerToChange.listener_name
       this.changedListenerContent = this.listenerToChange.listener_content
+      this.changedListenerGlobal = this.listenerToChange.listener_global
 
       this.forceRerender()
       this.handleInputChange()
@@ -1261,17 +1287,33 @@ export default {
         predicate_logic: this.changedPredicateLogic,
         predicate_comparison_value: this.changedPredicateComparisonValue,
         measurement_source: this.changedMeasurementSource,
+        predicate_global: this.changedPredicateGlobal
       }
-      await changeEvent(body);
+
+      if (this.eventToChange.predicate_global !== this.changedPredicateGlobal) {
+        if (this.changedPredicateGlobal) {
+          await deleteLocalEvent(this.simID, this.eventToChange)
+          await saveEvent(body)
+        } else {
+          await deleteEvent(this.eventToChange._id)
+          await saveLocalEvent(this.simID, body)
+        }
+      } else if (this.eventToChange.predicate_global) {
+        await changeEvent(body);
+      } else {
+        await changeLocalEvent(this.simID, this.eventToChange.predicate_name, body)
+      }
 
       // also add this event to the local event array
-      this.state.events = await allEvents();
+      this.scenario = await getScenario(this.simID);
+      this.state.events = (await allEvents()).concat(this.scenario.specification.events);
 
       // clear the input fields after adding the custom event
       this.changedPredicateName = "";
       this.changedPredicateLogic = "";
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
+      this.changedPredicateGlobal = false;
 
       this.eventToChange = "";
 
@@ -1296,15 +1338,31 @@ export default {
         _id: this.commandToChange._id,
         command_name: this.changedCommandName,
         command_content: this.changedCommandContent,
+        command_global: this.changedCommandGlobal
       }
-      await changeCommand(body)
+
+      if (this.commandToChange.command_global !== this.changedCommandGlobal) {
+        if (this.changedCommandGlobal) {
+          await deleteLocalCommand(this.simID, this.commandToChange)
+          await saveCommand(body)
+        } else {
+          await deleteCommand(this.commandToChange._id)
+          await saveLocalCommand(this.simID, body)
+        }
+      } else if (this.commandToChange.changedCommandGlobal) {
+        await changeCommand(body)
+      } else {
+        await changeLocalCommand(this.simID, this.commandToChange.command_name, body)
+      }
 
       // also add this command to the local command array
-      this.state.commands = await allCommands();
+      this.scenario = await getScenario(this.simID);
+      this.state.commands = (await allCommands()).concat(this.scenario.specification.commands);
 
       // clear the input fields after adding the custom command
       this.changedCommandName = "";
       this.changedCommandContent = "";
+      this.changedCommandGlobal = false;
 
       this.commandToChange = "";
 
@@ -1329,15 +1387,31 @@ export default {
         _id: this.listenerToChange._id,
         listener_name: this.changedListenerName,
         listener_content: this.changedListenerContent,
+        listener_global: this.changedListenerGlobal
       }
-      await changeListener(body);
+
+      if (this.listenerToChange.listener_global !== this.changedListenerGlobal) {
+        if (this.changedListenerGlobal) {
+          await deleteLocalListener(this.simID, this.listenerToChange)
+          await saveListener(body)
+        } else {
+          await deleteListener(this.listenerToChange._id)
+          await saveLocalListener(this.simID, body)
+        }
+      } else if (this.listenerToChange.changedListenerGlobal) {
+        await changeListener(body);
+      } else {
+        await changeLocalListener(this.simID, this.listenerToChange.listener_name, body)
+      }
 
       // also add this listener to the local listener array
-      this.state.listeners = await allListeners()
+      this.scenario = await getScenario(this.simID);
+      this.state.listeners = (await allListeners()).concat(this.scenario.specification.listeners)
 
       // clear the input fields after adding the custom listener
       this.changedListenerName = "";
       this.changedListenerContent = "";
+      this.changedListenerGlobal = false;
 
       this.listenerToChange = "";
 
@@ -1346,10 +1420,15 @@ export default {
     ,
     async deleteEvent() {
       // delete the event from the mongodb database
-      await deleteEvent(this.eventToChange._id)
+      if (this.eventToChange.predicate_global) {
+        await deleteEvent(this.eventToChange._id)
+      } else {
+        await deleteLocalEvent(this.simID, this.eventToChange);
+      }
 
       // also add this event to the local event array
-      this.state.events = await allEvents()
+      this.scenario = await getScenario(this.simID);
+      this.state.events = (await allEvents()).concat(this.scenario.specification.events)
 
       await successMessage("Deleted Event", "The event " + this.eventToChange.event_name + " has been deleted")
 
@@ -1359,14 +1438,20 @@ export default {
       this.changedPredicateComparisonValue = "";
       this.changedMeasurementSource = "";
       this.eventToChange = "";
+      this.changedPredicateGlobal = false;
     }
     ,
     async deleteCommand() {
       // delete the command from the mongodb database
-      await deleteCommand(this.commandToChange._id)
+      if (this.commandToChange.command_global) {
+        await deleteCommand(this.commandToChange._id)
+      } else {
+        await deleteLocalCommand(this.simID, this.commandToChange);
+      }
 
       // also add this event to the local command array
-      this.state.commands = await allCommands();
+      this.scenario = await getScenario(this.simID);
+      this.state.commands = (await allCommands()).concat(this.scenario.specification.commands);
 
       await successMessage("Deleted Command", "The command " + this.commandToChange.command_name + " has been deleted")
 
@@ -1374,21 +1459,28 @@ export default {
       this.changedCommandName = "";
       this.changedCommandContent = "";
       this.commandToChange = "";
+      this.changedCommandGlobal = false;
     }
     ,
     async deleteListener() {
       // delete the listener from the mongodb database
-      await deleteListener(this.listenerToChange._id)
+      if (this.listenerToChange.listener_global) {
+        await deleteListener(this.listenerToChange._id)
+      } else {
+        await deleteLocalListener(this.simID, this.listenerToChange);
+      }
 
       await successMessage("Deleted Listener", "The listener " + this.listenerToChange.listener_name + " has been deleted")
 
       // also add this listener to the local listener array
-      this.state.listeners = await allListeners();
+      this.scenario = await getScenario(this.simID);
+      this.state.listeners = (await allListeners()).concat(this.scenario.specification.listeners);
 
       // clear the input fields after adding the custom event
       this.changedListenerName = "";
       this.changedListenerContent = "";
       this.listenerToChange = "";
+      this.changedListenerGlobal = false;
     }
     ,
     async deleteMeasurementSource() {
@@ -2024,6 +2116,14 @@ export default {
                     </div>
                   </div>
                   <br>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                    </div>
+                    <div class="container-row-element">
+                      <UCheckbox v-model="customPredicateGlobal" label="Global (available in all scenarios)"/>
+                    </div>
+                  </div>
+                  <br>
                   <UButton color="green" label="Save" @click="addCustomEvent"/>
                 </div>
 
@@ -2074,6 +2174,14 @@ export default {
                       </div>
                       <div class="container-row-element">
                         <UInput v-model="changedPredicateComparisonValue" type="text"/>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                      </div>
+                      <div class="container-row-element">
+                        <UCheckbox v-model="changedPredicateGlobal" label="Global (available in all scenarios)"/>
                       </div>
                     </div>
                     <br>
@@ -2156,6 +2264,14 @@ export default {
                       </UButtonGroup>
                     </div>
                   </div>
+                  <br>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                    </div>
+                    <div class="container-row-element">
+                      <UCheckbox v-model="customCommandGlobal" label="Global (available in all scenarios)"/>
+                    </div>
+                  </div>
                   <br/>
                   <UButton color="green" @click="addCustomCommand">Save</UButton>
                 </div>
@@ -2188,6 +2304,14 @@ export default {
                       </div>
                       <div class="container-row-element">
                         <UInput v-model="changedCommandContent" type="text"></UInput>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                      </div>
+                      <div class="container-row-element">
+                        <UCheckbox v-model="changedCommandGlobal" label="Global (available in all scenarios)"/>
                       </div>
                     </div>
                     <br>
@@ -2226,6 +2350,14 @@ export default {
                     </div>
                   </div>
                   <br>
+                  <div class="container-row">
+                    <div class="container-row-element-s right mr-2">
+                    </div>
+                    <div class="container-row-element">
+                      <UCheckbox v-model="customListenerGlobal" label="Global (available in all scenarios)"/>
+                    </div>
+                  </div>
+                  <br>
                   <UButton color="green" @click="addCustomListener">Save</UButton>
                 </div>
 
@@ -2257,6 +2389,14 @@ export default {
                       </div>
                       <div class="container-row-element">
                         <UInput v-model="changedListenerContent" type="text"/>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="container-row">
+                      <div class="container-row-element-s right mr-2">
+                      </div>
+                      <div class="container-row-element">
+                        <UCheckbox v-model="changedListenerGlobal" label="Global (available in all scenarios)"/>
                       </div>
                     </div>
                     <br>
