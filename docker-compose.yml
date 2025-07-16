@@ -60,7 +60,7 @@ services:
       - ./data/simulations_results:/simulations_results
 
   mosim:
-    image: ghcr.io/cambio-project/mosim:0.3.5
+    image: ghcr.io/cambio-project/mosim:0.3.6
     container_name: mosim
     ports:
       - 8087:8080

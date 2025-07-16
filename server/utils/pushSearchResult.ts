@@ -77,8 +77,13 @@ export async function pushSearchResult(simulationID: string, searchNames: string
 
 export async function pushSearchNames(simulationID: string, searchNames: string[]) {
     try {
+        // Filter for strings ending with '.csv' (case-insensitive)
+        const filteredSearchNames = searchNames.filter(name =>
+            name.toLowerCase().endsWith('.csv')
+        );
+
         const result = await getOrCreateResults(simulationID)
-        result.searchNames = searchNames
+        result.searchNames = filteredSearchNames
         result.searchUpdateRequired = true
         await result.save();
 

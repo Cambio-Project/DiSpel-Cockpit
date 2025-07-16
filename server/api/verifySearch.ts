@@ -19,6 +19,10 @@ export default defineEventHandler(async (event) => {
     const allVerificationResults = []
     if (fs.existsSync(testFolder)) {
         fileNames = fs.readdirSync(testFolder);
+        // Filter for strings ending with '.csv' (case-insensitive)
+        fileNames = fileNames.filter(name =>
+            name.toLowerCase().endsWith('.csv')
+        );
         const allResponseVerificationResultPromises = []
 
         for (let fileName of fileNames) {
