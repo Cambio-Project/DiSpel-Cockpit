@@ -1,5 +1,19 @@
 import {Schema, model} from "mongoose";
 
+export interface SearchName {
+    id: number;
+    fileName: string;
+    RelativeStartTime: number;
+    RelativeEndTime: number;
+}
+
+const NamedSearchSchema = new Schema({
+    id: Number,
+    fileName: String,
+    RelativeStartTime: Number,
+    RelativeEndTime: Number
+}, { _id: false }); // Disable _id for subdocuments if not needed
+
 const ResultSchema = new Schema({
     simulationID: String,
     resilienceScore: Number,
@@ -11,7 +25,7 @@ const ResultSchema = new Schema({
     simulationResultsScenarioSuccesses: [Boolean],
     simulationResultsScenarioSuccessesTotal: Number,
     searchUpdateRequired: Boolean,
-    searchNames: [String],
+    searchNames: [NamedSearchSchema], // Updated here
     searchResults: [[Boolean]],
     searchResultsTotal: Number,
     searchResultsResponseSuccesses: [Number],

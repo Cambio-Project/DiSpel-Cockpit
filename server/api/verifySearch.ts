@@ -13,19 +13,18 @@ export default defineEventHandler(async (event) => {
     const scenario = body.scenario;
     const simulationID = scenario.simulationID;
     const responses = scenario.responses;
+    const result = await Result.findOne({simulationID: simulationID})
+
+    if(result == null){
+        return;
+    }
 
     const testFolder = 'data/search_results/' + simulationID;
-    let fileNames: string[] = []
     const allVerificationResults = []
     if (fs.existsSync(testFolder)) {
-        fileNames = fs.readdirSync(testFolder);
-        // Filter for strings ending with '.csv' (case-insensitive)
-        fileNames = fileNames.filter(name =>
-            name.toLowerCase().endsWith('.csv')
-        );
         const allResponseVerificationResultPromises = []
 
-        for (let fileName of fileNames) {
+        for (let searchName of result.searchNames) {
             const fileResponseVerificationResultPromises = responses.map((response: any) => {
                 const specification = response.TBV_timed;
                 const predicates = response.predicates_info;
@@ -36,7 +35,7 @@ export default defineEventHandler(async (event) => {
                     specification_type: 'tbv',
                     predicates_info: predicates,
                     measurement_source: "remote-csv",
-                    "remote-csv-address": "/app/search_results/" + simulationID + "/" + fileName,
+                    "remote-csv-address": "/app/search_results/" + simulationID + "/" + searchName.fileName,
                     measurement_points: getMeasurementPointsFromPredicates(predicates),
                     options: {
                         create_plots: false,
@@ -53,9 +52,9 @@ export default defineEventHandler(async (event) => {
             allVerificationResults.push(fileResponseVerificationResults)
         }
     }
-    await pushSearchResult(simulationID, fileNames, allVerificationResults)
+    await pushSearchResult(simulationID, allVerificationResults)
     return {
-        files: fileNames,
+        files: result.searchNames,
         results: allVerificationResults,
     }
 })

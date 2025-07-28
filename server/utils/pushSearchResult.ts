@@ -1,4 +1,5 @@
 import {getOrCreateResults, updateResilienceScore} from "~/server/utils/resultUtils";
+import { SearchName } from '~/server/models/result.model';
 
 export function computeSearchMetrics(result: any) {
     let searchResults = result.searchResults
@@ -47,18 +48,16 @@ export function computeSearchMetrics(result: any) {
     updateResilienceScore(result)
 }
 
-export function setSearchResults(result: any, searchNames: string[], searchResults: boolean[][]) {
-    // Set values directly
-    result.searchNames = searchNames
+export function setSearchResults(result: any, searchResults: boolean[][]) {
     // @ts-ignore
     result.searchResults = searchResults
 }
 
 
-export async function pushSearchResult(simulationID: string, searchNames: string[], searchResults: boolean[][]) {
+export async function pushSearchResult(simulationID: string, searchResults: boolean[][]) {
     try {
         const result = await getOrCreateResults(simulationID)
-        setSearchResults(result, searchNames, searchResults)
+        setSearchResults(result, searchResults)
         computeSearchMetrics(result)
         result.searchUpdateRequired = false
         await result.save();
@@ -75,15 +74,10 @@ export async function pushSearchResult(simulationID: string, searchNames: string
     };
 }
 
-export async function pushSearchNames(simulationID: string, searchNames: string[]) {
+export async function pushSearchNames(simulationID: string, searchNames: SearchName[]) {
     try {
-        // Filter for strings ending with '.csv' (case-insensitive)
-        const filteredSearchNames = searchNames.filter(name =>
-            name.toLowerCase().endsWith('.csv')
-        );
-
         const result = await getOrCreateResults(simulationID)
-        result.searchNames = filteredSearchNames
+        result.set('searchNames', searchNames);
         result.searchUpdateRequired = true
         await result.save();
 

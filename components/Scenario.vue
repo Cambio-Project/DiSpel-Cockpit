@@ -222,7 +222,8 @@ export default {
     },
     async deleteAllSearchResultAndUpdate(simulationID) {
       await successMessage("Started Deletion of Results", 'SimID: ' + simulationID)
-      for (const executionID of this.result.searchNames) {
+      for (const searchName of this.result.searchNames) {
+        const executionID = searchName.fileName;
         await deleteResult("search", simulationID, executionID, 0);
       }
       await this.updateResults();
@@ -332,7 +333,7 @@ export default {
                                icon="i-heroicons-chevron-down" @click="toggleDetails(stimulus)"></UButton>
                     </UTooltip>
                     </span>
-                    <span v-if="stimulus.showDetails" >
+                    <span v-if="stimulus.showDetails">
                     <UTooltip text="Hide Specification Details">
                       <UButton class="ml-2" square color="gray" size="2xs"
                                icon="i-heroicons-chevron-up" @click="toggleDetails(stimulus)"></UButton>
@@ -767,7 +768,7 @@ export default {
                         <UTooltip text="Delete Monitoring Execution">
                           <DeleteDialog
                               deleteName="this monitoring execution"
-                              @confirm="deleteResultAndUpdate('search', scenario.simulationID, resultName, resultIndex);"
+                              @confirm="deleteResultAndUpdate('search', scenario.simulationID, resultName.fileName, resultIndex);"
                               @cancel=""
                           />
                         </UTooltip>
@@ -806,7 +807,7 @@ export default {
                               <div class="container-row-element">
                                 <UTooltip text="Refine Response">
                                   <UButton class="mr-1" icon="i-heroicons-adjustments-horizontal" square size="xs"
-                                           @click="toRefinement(scenario.simulationID, index, resultName, false);"></UButton>
+                                           @click="toRefinement(scenario.simulationID, index, resultName.fileName, false);"></UButton>
                                 </UTooltip>
                               </div>
                             </div>
@@ -823,7 +824,7 @@ export default {
                           <div class="font-bold mb-2 mt-4">{{ predicates_info.predicate_name }}</div>
                           <div>
                             <iframe class="iframe-content"
-                                    v-bind:src="generatePlotLink(scenario.simulationID, predicates_info, resultName, false)">
+                                    v-bind:src="generatePlotLink(scenario.simulationID, predicates_info, resultName.fileName, false)">
                             </iframe>
                           </div>
                         </div>

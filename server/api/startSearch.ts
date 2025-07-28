@@ -32,8 +32,10 @@ export default defineEventHandler(async (event) => {
     // Update result names
     const searchResultFolder = 'data/search_results/' + simulationID;
     if (fs.existsSync(searchResultFolder)) {
-        const fileNames = fs.readdirSync(searchResultFolder);
-        await pushSearchNames(simulationID, fileNames)
+        // metadata file
+        const metadataFile = searchResultFolder + '/metadata.json';
+        const metadataContent = JSON.parse(fs.readFileSync(metadataFile, 'utf-8'));
+        await pushSearchNames(simulationID, metadataContent)
     }
 
     const resText = await moSimResponse.text()
