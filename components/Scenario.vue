@@ -757,7 +757,10 @@ export default {
                     </div>
                     <div class="container-row-element text-center">
                       <div class="scenario-title font-bold">
-                        {{ resultName }}
+                        ID: {{ resultName.id }}
+                      </div>
+                      <div>
+                        Time: {{ resultName.RelativeStartTime }} - {{ resultName.RelativeEndTime }}
                       </div>
                       <div>
                         &lt;Monitoring Execution&gt;
