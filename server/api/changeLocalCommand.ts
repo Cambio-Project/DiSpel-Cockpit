@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
     let body = await readBody(event)
     body = JSON.parse(body)
 
-    if (typeof body.simulationID === "undefined"  || typeof body.oldName === "undefined" || typeof body.command === "undefined") {
+    if (typeof body.simulationID === "undefined" || typeof body.oldName === "undefined" || typeof body.command === "undefined") {
         return {
             "success": false,
         }
@@ -25,15 +25,13 @@ export default defineEventHandler(async (event) => {
 
         // @ts-ignore
         const index = scenario.specification!.commands.findIndex(item => item.command_name === oldName);
-        if (index !== -1) {
+        if (index < 0) {
             return {
                 success: false,
                 message: "Event not found",
             };
         }
-        if (index !== -1) {
-            scenario.specification!.commands[index] = command;
-        }
+        scenario.specification!.commands[index] = command;
 
         await scenario.save();
     } catch (e) {

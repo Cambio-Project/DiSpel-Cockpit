@@ -25,15 +25,13 @@ export default defineEventHandler(async (event) => {
 
         // @ts-ignore
         const index = scenario.specification!.listeners.findIndex(item => item.listener_name === oldName);
-        if (index !== -1) {
+        if (index < 0) {
             return {
                 success: false,
                 message: "Listener not found",
             };
         }
-        if (index !== -1) {
-            scenario.specification!.listeners[index] = listener;
-        }
+        scenario.specification!.listeners[index] = listener;
 
         await scenario.save();
     } catch (e) {

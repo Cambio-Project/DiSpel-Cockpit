@@ -1317,7 +1317,7 @@ export default {
 
       this.eventToChange = "";
 
-      await successMessage("Changed Event", "The event " + body.customPredicateName + " has been changed successfully")
+      await successMessage("Changed Event", "The event " + body.predicate_name + " has been changed successfully")
     }
     ,
     async changeCommand() {

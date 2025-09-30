@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
     let body = await readBody(event)
     body = JSON.parse(body)
 
-    if (typeof body.simulationID === "undefined" || typeof body.oldName === "undefined" || typeof body.listener === "undefined") {
+    if (typeof body.simulationID === "undefined" || typeof body.oldName === "undefined" || typeof body.event === "undefined") {
         return {
             "success": false,
         }
@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
 
     try {
         const scenario = await Scenario.findOne({simulationID: simulationID});
-
         if (!scenario) {
             return {
                 success: false,
@@ -25,15 +24,13 @@ export default defineEventHandler(async (event) => {
 
         // @ts-ignore
         const index = scenario.specification!.events.findIndex(item => item.predicate_name === oldName);
-        if (index !== -1) {
+        if (index < 0) {
             return {
                 success: false,
                 message: "Event not found",
             };
         }
-        if (index !== -1) {
-            scenario.specification!.events[index] = event1;
-        }
+        scenario.specification!.events[index] = event1;
 
         await scenario.save();
     } catch (e) {
