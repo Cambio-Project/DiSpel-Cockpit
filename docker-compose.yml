@@ -70,6 +70,16 @@ services:
     volumes:
       - ./data/search_results:/search_results
 
+  prometheus-service:
+    image: ghcr.io/cambio-project/prometheus-service:v1.0.2
+    container_name: prometheus-service
+    ports:
+      - 8088:8080
+      - 9091:9090
+    networks:
+      - dashboardNetwork
+    pull_policy: always
+
   mongo:
     image: mongo
     restart: always

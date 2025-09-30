@@ -13,7 +13,10 @@ export default defineNuxtConfig({
             tbVerifierDomain: process.env.TB_VERIFIER_DOMAINNAME || "localhost",
             tbVerifierPort: process.env.TB_VERIFIER_PORT || "8083",
             moSimDomain: process.env.MO_SIM_DOMAINNAME || "localhost",
-            moSimPort: process.env.MO_SIM_PORT || "8087"
+            moSimPort: process.env.MO_SIM_PORT || "8087",
+            prometheusServiceDomain: process.env.PROMETHEUS_SERVICE_DOMAINNAME || "localhost",
+            prometheusServicePort: process.env.PROMETHEUS_SERVICE_PORT || "8088",
+            prometheusServiceViewerPort: process.env.PROMETHEUS_SERVICE_VIEWER_PORT || "9091"
         }
     },
     devtools: {enabled: true},
