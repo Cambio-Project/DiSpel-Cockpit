@@ -16,6 +16,7 @@ export default defineNuxtConfig({
             moSimPort: process.env.MO_SIM_PORT || "8087",
             prometheusServiceDomain: process.env.PROMETHEUS_SERVICE_DOMAINNAME || "localhost",
             prometheusServicePort: process.env.PROMETHEUS_SERVICE_PORT || "8088",
+            prometheusServiceViewerDomain: process.env.PROMETHEUS_SERVICE_VIEWER_DOMAINNAME || "localhost",
             prometheusServiceViewerPort: process.env.PROMETHEUS_SERVICE_VIEWER_PORT || "9091"
         }
     },

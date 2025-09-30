@@ -64,6 +64,6 @@ export function getScenarioDetailsURL(simulationID) {
 
 export function openPrometheusTab(){
     const config = useRuntimeConfig();
-    const url = `http://${config.public.prometheusServiceDomain}:${config.public.prometheusServiceViewerPort}`;
+    const url = `http://${config.public.prometheusServiceViewerDomain}:${config.public.prometheusServiceViewerPort}`;
     window.open(url, '_blank');
 }
