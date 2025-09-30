@@ -382,3 +382,12 @@ export async function deleteResult(type, simulationID, executionID, executionInd
         })
     });
 }
+
+export async function startPrometheusTransfer(simulationID){
+    await fetch("/api/generateOpenMetrics", {
+        method: "POST",
+        body: JSON.stringify({
+            simulationID: simulationID,
+        })
+    });
+}

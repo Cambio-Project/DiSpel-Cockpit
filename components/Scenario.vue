@@ -2,6 +2,7 @@
 
 import {successMessage} from "~/composables/popup.js";
 import _ from 'lodash';
+import {openPrometheusTab} from "~/composables/navigation.js";
 
 export default {
   name: "ScenarioList",
@@ -67,6 +68,7 @@ export default {
     };
   },
   methods: {
+    openPrometheusTab,
     deleteResult,
     changeAllTargets,
     getSearchVerificationResultsPerScenario,
@@ -243,6 +245,22 @@ export default {
         return undefined
       }
     },
+    formatCompactTime(seconds) {
+      const days = Math.floor(seconds / 86400); // 1 day = 86400 seconds
+      const hours = Math.floor((seconds % 86400) / 3600); // 1 hour = 3600 seconds
+      const minutes = Math.floor((seconds % 3600) / 60); // 1 minute = 60 seconds
+      const secs = seconds % 60; // Remaining seconds
+
+      // Pad single-digit numbers with leading zeros
+      const pad = (num) => num.toString().padStart(2, '0');
+
+      // Format time as Days HH:MM:SS, only show days if greater than 0
+       if (days > 0) {
+        return `${days}d ${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
+      } else {
+        return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
+      }
+    }
   },
   async beforeMount() {
     await this.updateResults()
@@ -725,6 +743,12 @@ export default {
                          color="blue"
                          @click="verifySearch(scenario)"></UButton>
               </UTooltip>
+              <UTooltip text="Send To Prometheus">
+                <UButton class="mr-1" icon="i-heroicons-arrow-top-right-on-square-solid"
+                         size="xs"
+                         color="blue"
+                         @click="startPrometheusTransfer(scenario.simulationID);openPrometheusTab()"></UButton>
+              </UTooltip>
               <UTooltip text="Delete All Monitoring Executions">
                 <DeleteDialog
                     deleteName="all monitoring executions"
@@ -760,7 +784,9 @@ export default {
                         ID: {{ resultName.id }}
                       </div>
                       <div>
-                        Time: {{ resultName.RelativeStartTime }} - {{ resultName.RelativeEndTime }}
+                        Time: {{ resultName.RelativeStartTime }} - {{ resultName.RelativeEndTime }} |
+                        {{ formatCompactTime(resultName.RelativeStartTime * this.scenario.secondsPerTimeStep) }} -
+                        {{ formatCompactTime(resultName.RelativeEndTime * this.scenario.secondsPerTimeStep) }}
                       </div>
                       <div>
                         &lt;Monitoring Execution&gt;

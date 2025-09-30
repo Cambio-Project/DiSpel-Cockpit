@@ -61,3 +61,9 @@ export async function toScenarioDetails(simulationID, router = this.$router) {
 export function getScenarioDetailsURL(simulationID) {
     return '/scenarioDetails/?simID=' + simulationID
 }
+
+export function openPrometheusTab(){
+    const config = useRuntimeConfig();
+    const url = `http://${config.public.prometheusServiceDomain}:${config.public.prometheusServiceViewerPort}`;
+    window.open(url, '_blank');
+}
