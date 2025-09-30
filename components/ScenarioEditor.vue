@@ -42,6 +42,8 @@ export default {
       environmentMonitoringData: null,
       responses: null,
       searchWindowSize: null,
+      prometheusStartTimestamp: null,
+      secondsPerTimeStep: null,
       scenario: null,
       importErrorMessage: null,
       componentKey: 0,
@@ -91,6 +93,12 @@ export default {
       if (typeof scenario.searchWindowSize !== "undefined") {
         this.searchWindowSize = scenario.searchWindowSize
       }
+      if (typeof scenario.prometheusStartTimestamp !== "undefined") {
+        this.prometheusStartTimestamp = scenario.prometheusStartTimestamp
+      }
+      if (typeof scenario.secondsPerTimeStep !== "undefined") {
+        this.secondsPerTimeStep = scenario.secondsPerTimeStep
+      }
       if (typeof scenario.responses !== "undefined") {
         this.responses = scenario.responses
       }
@@ -126,6 +134,9 @@ export default {
     },
     async deleteResultField(index) {
       await deleteResultEntry(this.simID, index);
+    },
+    handleUnixTimestamp(timestamp) {
+      this.prometheusStartTimestamp = timestamp
     },
     uploadArchitecture(type) {
       const fileInput = this.$refs.fileInputEnvironmentArchitecture;
@@ -287,7 +298,6 @@ export default {
       fileReader.readAsText(file);
     },
     resetAllFields() {
-      this.outputType = null
       this.target = null
       this.name = ""
       this.category = "None"
@@ -299,7 +309,6 @@ export default {
       this.environmentMonitoringData = null
       this.searchWindowSize = null
       this.responses = null
-      this.showTooltip = false
     },
     async addValue(field, newValue) {
       await pushScenarioField(this.simID, field, newValue)
@@ -327,12 +336,18 @@ export default {
     searchWindowSize(newSearchWindowSize) {
       this.addValue("searchWindowSize", newSearchWindowSize)
     },
+    secondsPerTimeStep(newSecondsPerTimeStep) {
+      this.addValue("secondsPerTimeStep", newSecondsPerTimeStep)
+    },
+    prometheusStartTimestamp(newPrometheusStartTimestamp) {
+      this.addValue("prometheusStartTimestamp", newPrometheusStartTimestamp)
+    },
     'stimuli': {
       handler() {
         this.setValue("stimuli", this.stimuli)
-        },
-        deep: true
       },
+      deep: true
+    },
     'target': {
       handler() {
         changeAllTargets([this.scenario], this.target)
@@ -461,10 +476,23 @@ export default {
       </div>
 
       <UDivider label="Monitoring"></UDivider>
-
-      <UFormGroup label="Search Window Size" class="mb-2">
-        <UInput v-model="searchWindowSize" type="text" placeholder="Enter Search Window Size"/>
-      </UFormGroup>
+      <div class="container-row mb-4">
+        <div class="container-row-element mr-2">
+          <UFormGroup label="Search Window Size [time steps]" class="mb-2">
+            <UInput v-model="searchWindowSize" type="number" placeholder="Enter Search Window Size"/>
+          </UFormGroup>
+        </div>
+        <div class="container-row-element mr-2">
+          <UFormGroup label="Time Step Duration [seconds]" class="mb-2">
+            <UInput v-model="secondsPerTimeStep" type="number" placeholder="Enter Time Step Duration"/>
+          </UFormGroup>
+        </div>
+        <div class="container-row-element">
+          <UFormGroup label="Start Timestamp (Prometheus Export)" class="mb-2">
+            <DateTimePicker :initialTimestamp="this.prometheusStartTimestamp" @update:unixTimestamp="handleUnixTimestamp"/>
+          </UFormGroup>
+        </div>
+      </div>
 
       <UFormGroup label="Monitoring Data" class="mb-2">
         <input class="custom-file-input left" id="fileInput" type="file"
@@ -647,7 +675,7 @@ export default {
         <div v-else>
           <div>
             <UTooltip text="Minimum: Name and 1 Response!">
-              <UButton size="xl" color="gray" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">
+              <UButton size="xl" color="gray">
                 Complete
               </UButton>
             </UTooltip>

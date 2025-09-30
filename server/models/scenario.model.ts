@@ -17,6 +17,8 @@ const ScenarioSchema = new Schema({
         endpointNames: [String],
     },
     searchWindowSize: String,
+    prometheusStartTimestamp: Number,
+    secondsPerTimeStep: Number,
     stimuli: [{}],
     responses: [{}],
     specification: {
