@@ -5,6 +5,10 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
 
     const endpointStatus = {
+        prometheusService: {
+            domain: "http://" + config.public.prometheusServiceDomain + ":" + config.public.prometheusServicePort,
+            status: "red"
+        },
         pspWizard: {
             domain: "http://" + config.public.pspDomain + ":" + config.public.pspPort,
             status: "red"

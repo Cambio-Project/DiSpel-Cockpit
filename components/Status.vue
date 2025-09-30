@@ -14,6 +14,7 @@ export default {
   data() {
     return {
       serviceStatus: {
+        prometheusService: "red",
         db: "red",
         pspWizard: "red",
         tqPropRefiner: "red",
@@ -52,6 +53,12 @@ export default {
         </UTooltip>
       </h1>
       <div class="flex flex-row space-x-2 mt-2">
+        <UTooltip text="For detailed investigation of scenario results.">
+          <UChip :color="serviceStatus.prometheusService" size="lg">
+            <UBadge color="white" class="text-sm	">Prometheus</UBadge>
+          </UChip>
+        </UTooltip>
+
         <UTooltip text="Stores scenarios and analysis results">
           <UChip :color="serviceStatus.db" size="lg">
             <UBadge color="white" class="text-sm	">Database</UBadge>
