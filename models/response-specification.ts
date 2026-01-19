@@ -5,6 +5,7 @@ export interface ResponseSpecification {
     behavior_description: string;
     specification: string,
     specification_type: 'mtl' | 'psp' | 'tbv';
+    "future-mtl": boolean,
     predicates_info: Predicate[],
     "remote-misim-address"?: string;
     measurement_source: 'remote-csv' | 'misim';

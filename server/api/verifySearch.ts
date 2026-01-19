@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
                     specification,
                     specification_type: 'tbv',
                     predicates_info: predicates,
+                    "future-mtl": true,
                     measurement_source: "remote-csv",
                     "remote-csv-address": "/app/search_results/" + simulationID + "/" + searchName.fileName,
                     measurement_points: getMeasurementPointsFromPredicates(predicates),

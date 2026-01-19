@@ -38,7 +38,7 @@ const sel = response.SEL;
 const tbvTimed = response.TBV_timed;
 const predicates = JSON.stringify(response.predicates_info);
 
-const src = computed(() => "http://" + config.public.tqPropRefinerDomain + ":" + config.public.tqPropRefinerPort + "/requirement-refinement/dynamic?file-address=assets/" + srcDirectory + "&file=" + fileName + "&sim_id=" + simId + "&response_index=" + responseIndex + "&sel=" + sel + "&tbv_timed=" + tbvTimed + "&predicates=" + predicates)
+const src = computed(() => "http://" + config.public.tqPropRefinerDomain + ":" + config.public.tqPropRefinerPort + "/requirement-refinement/dynamic?file-address=assets/" + srcDirectory + "&file=" + fileName + "&sim_id=" + simId + "&response_index=" + responseIndex + "&future_mtl=true" + "&sel=" + sel + "&tbv_timed=" + tbvTimed + "&predicates=" + predicates)
 
 </script>
 

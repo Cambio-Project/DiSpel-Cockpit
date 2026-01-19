@@ -27,6 +27,7 @@ export default defineEventHandler(async (event) => {
                     behavior_description: 'Description',
                     specification,
                     specification_type: 'tbv',
+                    "future-mtl": true,
                     predicates_info: predicates,
                     measurement_source: "misim",
                     "remote-misim-address": "/app/simulations_results/" + simulationID + "/" + fileName,
