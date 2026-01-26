@@ -13,16 +13,19 @@ export const getMeasurementPointsFromPredicates = (predicates: Predicate[]) => {
 }
 
 export const sendVerificationRequest = async (responseSepcification: ResponseSpecification, TBVERIFIER_URL: string) => {
-    const formdata = new FormData();
-    formdata.append("formula_json", JSON.stringify(responseSepcification));
-    const requestOptions: RequestInit = {
-        method: 'POST',
-        body: formdata,
-        redirect: 'follow',
-    };
-    const response = await fetch(TBVERIFIER_URL, requestOptions);
+  const response = await $fetch<VerificationResponse>(TBVERIFIER_URL, {
+  method: 'POST',
+  body: responseSepcification,
+  headers: {
+    'Content-Type': 'application/json',
+  }});
+    console.log(response)
+    console.log(response.result === 'True')
 
     // Result
-    const verificationResult = await response.json();
-    return verificationResult.result === 'True';
+    return response.result === 'True';
+}
+
+interface VerificationResponse {
+  result: 'True' | 'False'
 }
