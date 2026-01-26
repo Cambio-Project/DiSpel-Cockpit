@@ -12,20 +12,15 @@ export const getMeasurementPointsFromPredicates = (predicates: Predicate[]) => {
     });
 }
 
-export const sendVerificationRequest = async (responseSepcification: ResponseSpecification, TBVERIFIER_URL: string) => {
-  const response = await $fetch<VerificationResponse>(TBVERIFIER_URL, {
+export const sendVerificationRequest = async (responseSpecification: ResponseSpecification, TBVERIFIER_URL: string) => {
+  const response = await $fetch(TBVERIFIER_URL, {
   method: 'POST',
-  body: responseSepcification,
+  body: responseSpecification,
   headers: {
     'Content-Type': 'application/json',
   }});
-    console.log(response)
-    console.log(response.result === 'True')
+    const parsed = JSON.parse(response as unknown as string)
 
     // Result
-    return response.result === 'True';
-}
-
-interface VerificationResponse {
-  result: 'True' | 'False'
+    return parsed.result === 'True';
 }
