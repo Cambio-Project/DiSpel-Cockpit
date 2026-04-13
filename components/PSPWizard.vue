@@ -3164,7 +3164,7 @@ export default {
                 <div class="container-row center">
                   <div class="min-width">
                     <USelectMenu class="w-full" v-model="chainedEvent.time_bound.type"
-                                 :options="extendedTimeBoundOptions" option-attribute=""
+                                 :options="upperTimeBoundOptions" option-attribute=""
                                  value-attribute=""></USelectMenu>
                   </div>
                 </div>
