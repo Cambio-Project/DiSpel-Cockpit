@@ -155,6 +155,7 @@ export default {
       checkedProbability: false,
       checkedTime: false,
       formulas: [],
+      timeBoundOptionsOnlyInterval: ["Interval"],
       timeBoundOptions: ["Interval", "Lower", "Upper"],
       upperTimeBoundOptions: ["none", "Upper"],
       probabilityBoundOptions: ["GreaterEqual", "Greater", "LowerEqual", "Lower"],
@@ -2072,7 +2073,7 @@ export default {
                 <div class="selection-group">
                   <div
                       v-show="this.checkedTime && (this.pspSpecification.selectedOrder === 'Precedence' || this.pspSpecification.selectedOrder === 'PrecedenceChain1N' || this.pspSpecification.selectedOrder === 'PrecedenceChainN1')">
-                    <USelectMenu v-model="this.pspSpecification.selectedTimeBound"/>
+                    <USelectMenu v-model="this.pspSpecification.selectedTimeBound" :options="timeBoundOptionsOnlyInterval"/>
                     <div v-if="this?.pspSpecification.selectedTimeBound === 'Interval' ">
                       <div class="container-row">
                         <UInput v-model="this.pspSpecification.lowerLimit" :min="0" step="1" type="number"
