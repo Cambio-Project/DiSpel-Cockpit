@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
 
         for (let fileName of fileNames) {
             const fileResponseVerificationResultPromises = responses.map((response: any) => {
-                const specification = response.TBV_timed;
+                const specification = determineFormula(response);
                 const predicates = response.predicates_info;
 
                 const responseSpecification: ResponseSpecification = {
@@ -54,3 +54,11 @@ export default defineEventHandler(async (event) => {
         results: allVerificationResults
     }
 })
+
+function determineFormula(response: any): string{
+    if(response.specification.selectedTimeBound == null){
+        return response.TBV_untimed
+    }else{
+        return response.TBV_timed
+    }
+}

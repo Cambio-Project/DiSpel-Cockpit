@@ -29,7 +29,8 @@ function getSimulationMTLs(scenario: any): string {
     let fileContent = "";
     for (let stimulus of scenario.stimuli!) {
         if (stimulus.simulationChecked) {
-            fileContent = fileContent + stimulus.MTL + "\n"
+            const formula = determineFormula(stimulus)
+            fileContent = fileContent + formula + "\n"
         }
     }
     return fileContent
@@ -39,8 +40,17 @@ function getMonitoringMTLs(scenario: any): string {
     let fileContent = "";
     for (let stimulus of scenario.stimuli!) {
         if (stimulus.monitoringChecked) {
-            fileContent = fileContent + stimulus.MTL + "\n"
+            const formula = determineFormula(stimulus)
+            fileContent = fileContent + formula + "\n"
         }
     }
     return fileContent
+}
+
+function determineFormula(stimulus: any): string{
+    if(stimulus.specification.selectedTimeBound == null){
+        return stimulus.LTL
+    }else{
+        return stimulus.MTL
+    }
 }
