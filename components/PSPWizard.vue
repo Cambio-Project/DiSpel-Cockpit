@@ -10,6 +10,13 @@ export default {
         value: 'Order',
         label: 'Order'
       }],
+      patterSubTypeOptions: [{
+        value: 'Basic',
+        label: 'Basic'
+      }, {
+        value: 'Liberal',
+        label: 'Liberal'
+      }],
       stimulusItems: [{
         key: 'addCommand',
         label: 'Add Command',
@@ -81,6 +88,7 @@ export default {
       isInitialized: false,
       pspSpecification: {
         selectedPatternType: null,
+        selectedPatternSubType: "Basic",
         selectedScope: null,
         selectedOccurrence: null,
         selectedOrder: null,
@@ -190,6 +198,15 @@ export default {
   },
   watch: {
     'pspSpecification.selectedScope': {
+      handler() {
+        if (this.isInitialized) {
+          this.handleInputChange()
+        }
+      },
+      deep: true,
+      flush: 'sync'
+    },
+    'pspSpecification.selectedPatternSubType': {
       handler() {
         if (this.isInitialized) {
           this.handleInputChange()
@@ -826,9 +843,10 @@ export default {
     ,
 
 // creates the pattern part of the payload
-    createPattern(selectedPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, useNames) {
+    createPattern(selectedPatternType, selectedPatternSubType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, useNames) {
       const pattern = {
         type: selectedPatternType === 'Occurrence' ? selectedOccurrence : selectedOrder,
+        subType: selectedPatternSubType,
         p_event: this.createEvent(selectedEventP, useNames)
       };
 
@@ -934,10 +952,10 @@ export default {
     ,
 
 // creates the payload
-    createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, useNames = false) {
+    createPayload(selectedScope, selectedScopeEventQ, selectedScopeEventR, selectionPatternType, selectedPatternSubType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTargetLogic, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, useNames = false) {
       return {
         scope: this.createScope(selectedScope, selectedScopeEventQ, selectedScopeEventR, useNames),
-        pattern: this.createPattern(selectionPatternType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, useNames),
+        pattern: this.createPattern(selectionPatternType, selectedPatternSubType, selectedOccurrence, selectedOrder, selectedEventP, selectedEventS, selectedChainedEvents, selectedTime, selectedTimeUnitType, selectedInterval, selectedConstraintEvent, selectedTimeBound, selectedProbabilityBound, timeUnit, probability, upperLimit, lowerLimit, useNames),
         target_logic: selectedTargetLogic
       };
     }
@@ -1006,6 +1024,7 @@ export default {
     resetAllFields() {
       this.pspSpecification = {
         selectedPatternType: null,
+        selectedPatternSubType: "Basic",
         selectedScope: null,
         selectedOccurrence: null,
         selectedOrder: null,
@@ -1550,7 +1569,7 @@ export default {
     }
     ,
     async transformToTemporalLogic() {
-      const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.useNames);
+      const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedPatternSubType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.pspSpecification.selectedTargetLogic, this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit, this.useNames);
       await this.sendTransformRequest(payload)
       this.forceRerender()
     }
@@ -1650,6 +1669,9 @@ export default {
           } else {
             this.pspSpecification.selectedPatternType = "Order"
             this.pspSpecification.selectedOrder = jsonData.pattern.type
+          }
+          if(this.patterSubTypeOptions.includes(jsonData.pattern.subType)){
+            this.pspSpecification.selectedPatternSubType = jsonData.pattern.subType
           }
           // main pattern events
           if (jsonData.pattern.p_event && jsonData.pattern.p_event.name) {
@@ -1821,7 +1843,7 @@ export default {
 
       // add all mappings to the commit
       for (index in this.targetLogicOptions) {
-        const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
+        const payload = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedPatternSubType, this.pspSpecification.selectedPatternSubType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[index], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
 
         // Perform the HTTP request with the input data
         const response = await getPSPMapping(payload);
@@ -1858,7 +1880,7 @@ export default {
       }
 
       // add predicates to commit
-      const pl = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
+      const pl = this.createPayload(this.pspSpecification.selectedScope, this.pspSpecification.selectedScopeEventQ, this.pspSpecification.selectedScopeEventR, this.pspSpecification.selectedPatternType, this.selectedPatternSubType, this.pspSpecification.selectedOccurrence, this.pspSpecification.selectedOrder, this.pspSpecification.selectedEventP, this.pspSpecification.selectedEventS, this.pspSpecification.selectedChainedEvents, this.pspSpecification.selectedTime, this.pspSpecification.selectedTimeUnitType, this.pspSpecification.selectedInterval, this.pspSpecification.selectedConstraintEvent, this.targetLogicOptions[0], this.pspSpecification.selectedTimeBound, this.pspSpecification.selectedProbabilityBound, this.pspSpecification.timeUnit, this.pspSpecification.probability, this.pspSpecification.upperLimit, this.pspSpecification.lowerLimit);
       const response = await getPSPMapping(pl)
       const responsePayload = await response.data.value.result
       let eventArray = [];
@@ -1982,6 +2004,14 @@ export default {
                   <USelectMenu v-model="this.pspSpecification.selectedOrder" :options="displayOrderOptions"
                                value-attribute="value"
                                option-attribute="label" searchable placeholder="Select Pattern"/>
+                </div>
+                
+                <p class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                  Implementation
+                </p>
+                <div class="radio-group">
+                  <URadioGroup v-model="this.pspSpecification.selectedPatternSubType" :options="this.patterSubTypeOptions"
+                               :class="'breaking-div'"/>
                 </div>
               </div>
 
