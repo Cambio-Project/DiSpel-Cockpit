@@ -150,7 +150,7 @@ export default {
       measurementSourceOptions: null,
       scopeOptions: ["Globally", "BeforeR", "AfterQ", "BetweenQandR", "AfterQUntilR"],
       occurrenceOptions: ["SteadyState", "MinimumDuration", "MaximumDuration", "Recurrence", "Universality", "Absence", "Existence", "BoundedExistence", "TransientState"],
-      orderOptions: ["Response", "ResponseChain1N", "ResponseChainN1", "ResponseInvariance", "Precedence", "PrecedenceChain1N", "PrecedenceChainN1", "Until"],
+      orderOptions: ["Response", "ResponseChain1N", "ResponseChainN1", "RelaxedResponseChain1N", "RelaxedResponseChainN1", "ResponseInvariance", "Precedence", "PrecedenceChain1N", "PrecedenceChainN1", "RelaxedPrecedenceChain1N", "RelaxedPrecedenceChainN1", "Until"],
       targetLogicOptions: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       checkedProbability: false,
       checkedTime: false,
@@ -614,10 +614,14 @@ export default {
         "Response": "Response",
         "ResponseChain1N": "Response Chain 1N",
         "ResponseChainN1": "Response Chain N1",
+        "RelaxedResponseChain1N": "Relaxed Response Chain 1N",
+        "RelaxedResponseChainN1": "Relaxed Response Chain N1",
         "ResponseInvariance": "Response Invariance",
         "Precedence": "Precedence",
         "PrecedenceChain1N": "Precedence Chain 1N",
         "PrecedenceChainN1": "Precedence Chain N1",
+        "RelaxedPrecedenceChain1N": "Relaxed Precedence Chain 1N",
+        "RelaxedPrecedenceChainN1": "Relaxed Precedence Chain N1",
         "Until": "Until"
       };
       return this.orderOptions.map(option => ({label: orderMap[option], value: option}));
@@ -2045,7 +2049,7 @@ export default {
 
                 <div class="selection-group">
                   <div
-                      v-show="this.checkedTime && this.pspSpecification.selectedOrder !== 'Precedence' && this.pspSpecification.selectedOrder !== 'PrecedenceChain1N' && this.pspSpecification.selectedOrder !== 'PrecedenceChainN1'">
+                      v-show="this.checkedTime && this.pspSpecification.selectedOrder !== 'Precedence' && this.pspSpecification.selectedOrder !== 'PrecedenceChain1N' && this.pspSpecification.selectedOrder !== 'PrecedenceChainN1' && this.pspSpecification.selectedOrder !== 'RelaxedPrecedenceChain1N' && this.pspSpecification.selectedOrder !== 'RelaxedPrecedenceChainN1'">
                     <USelectMenu v-model="this.pspSpecification.selectedTimeBound" :options="timeBoundOptions"/>
                     <br><br>
                     <div v-if="this?.pspSpecification.selectedTimeBound === 'Upper' ">
@@ -2072,7 +2076,7 @@ export default {
                 </div>
                 <div class="selection-group">
                   <div
-                      v-show="this.checkedTime && (this.pspSpecification.selectedOrder === 'Precedence' || this.pspSpecification.selectedOrder === 'PrecedenceChain1N' || this.pspSpecification.selectedOrder === 'PrecedenceChainN1')">
+                      v-show="this.checkedTime && (this.pspSpecification.selectedOrder === 'Precedence' || this.pspSpecification.selectedOrder === 'PrecedenceChain1N' || this.pspSpecification.selectedOrder === 'PrecedenceChainN1' || this.pspSpecification.selectedOrder === 'RelaxedPrecedenceChain1N' || this.pspSpecification.selectedOrder === 'RelaxedPrecedenceChainN1')">
                     <USelectMenu v-model="this.pspSpecification.selectedTimeBound" :options="timeBoundOptionsOnlyInterval"/>
                     <div v-if="this?.pspSpecification.selectedTimeBound === 'Interval' ">
                       <div class="container-row">
@@ -2857,6 +2861,128 @@ export default {
           <br>
           [eventually holds]
         </div>
+        <div :key="componentKey" v-if="this?.pspSpecification.selectedOrder=== 'RelaxedResponseChain1N'">
+          if
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          [has occurred] <br>
+          then in response
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          [eventually holds] <br>
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Lower' ">
+            after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Upper' ">
+            within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
+            {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" placeholder="Constraint" searchable
+                           v-model="this.pspSpecification.selectedConstraintEvent"
+                           :options="constraintPredicates"></USelectMenu>
+            </div>
+          </div>
+          <br>
+
+          <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index"
+               class="chained-event-section">
+            <label class="title">and then </label>
+
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" searchable v-model="chainedEvent.event.name"
+                             :options="predicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <div>
+
+              <div class="container-row center">
+                <div class="min-width">
+                  <USelectMenu class="w-full" v-model="chainedEvent.time_bound.type"
+                               :options="extendedTimeBoundOptions" option-attribute="" value-attribute=""></USelectMenu>
+                </div>
+              </div>
+
+              <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                placeholder="Within"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Lower' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number"
+                                placeholder="After"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Interval' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number"
+                                placeholder="Enter lower Limit"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                placeholder="Enter upper Limit"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" placeholder="Constraint" searchable
+                             v-model="chainedEvent.constrain_event.name"
+                             :options="constraintPredicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <UButton color="gray" @click="deleteChainedEvent(index)">Remove Chained Event</UButton>
+          </div>
+
+          <UButton color="gray" @click="addChainedEvent">Add Chained Event</UButton>
+          <br>
+          [eventually holds]
+        </div>
         <div :key="componentKey" v-if="this?.pspSpecification.selectedOrder=== 'ResponseChainN1'">
           if
           <div class="container-row center">
@@ -2870,6 +2996,126 @@ export default {
           <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index"
                class="chained-event-section">
             <label class="title">followed by </label>
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" searchable v-model="chainedEvent.event.name"
+                             :options="predicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <div>
+              <div class="container-row center">
+                <div class="min-width">
+                  <USelectMenu class="w-full" v-model="chainedEvent.time_bound.type"
+                               :options="extendedTimeBoundOptions" option-attribute="" value-attribute=""></USelectMenu>
+                </div>
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                placeholder="Within"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Lower' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number"
+                                placeholder="After"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="chainedEvent.time_bound.type === 'Interval' ">
+                <div class="container-row center">
+                  <div class="min-width">
+                    <div class="container-row center">
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.lower_limit" :min="0" step="1" type="number"
+                                placeholder="Enter lower Limit"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                placeholder="Enter upper Limit"/>
+                      </div>
+                      <div class="container-row-element">
+                        <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" placeholder="Constraint" searchable
+                             v-model="chainedEvent.constrain_event.name"
+                             :options="constraintPredicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event
+            </button>
+          </div>
+          <br>
+          <button class="button" @click="addChainedEvent">Add Chained Event</button>
+          <br>
+          [have occured] <br>
+          then in response
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          [eventually holds] <br>
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Lower' ">
+            after {{ this.pspSpecification.lowerLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Upper' ">
+            within {{ this.pspSpecification.upperLimit }} {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
+            {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" placeholder="Constraint" searchable
+                           v-model="this.pspSpecification.selectedConstraintEvent"
+                           :options="constraintPredicates"></USelectMenu>
+            </div>
+          </div>
+        </div>
+        <div :key="componentKey" v-if="this?.pspSpecification.selectedOrder=== 'RelaxedResponseChainN1'">
+          if
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          <br>
+
+          <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index"
+               class="chained-event-section">
+            <label class="title">and then</label>
             <div class="container-row center">
               <div class="min-width">
                 <USelectMenu class="w-full" searchable v-model="chainedEvent.event.name"
@@ -3130,6 +3376,98 @@ export default {
             </div>
           </div>
         </div>
+        <div :key="componentKey" v-if="this?.pspSpecification.selectedOrder=== 'RelaxedPrecedenceChain1N'">
+          if
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          [has occurred] <br>
+
+          <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index"
+               class="chained-event-section">
+            <label class="title">and then </label>
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" searchable v-model="chainedEvent.event.name"
+                             :options="predicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <div>
+              <div>
+                <div class="container-row center">
+                  <div class="min-width">
+                    <USelectMenu class="w-full" v-model="chainedEvent.time_bound.type"
+                                 :options="upperTimeBoundOptions" option-attribute="" value-attribute=""></USelectMenu>
+                  </div>
+                </div>
+                <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+                  <div class="container-row center">
+                    <div class="min-width">
+                      <div class="container-row center">
+                        <div class="container-row-element">
+                          <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                  placeholder="Within"/>
+                        </div>
+                        <div class="container-row-element">
+                          <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" placeholder="Constraint" searchable
+                             v-model="chainedEvent.constrain_event.name"
+                             :options="constraintPredicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event
+            </button>
+          </div>
+          <br>
+
+          <button class="button" @click="addChainedEvent">Add Chained Event</button>
+          <br>
+
+          [holds] <br>
+          then it must be the case that
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          [has occured] <br>
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
+            {{ this.pspSpecification.timeUnit }}
+          </div>
+          before
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          <br>
+          [holds].
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" placeholder="Constraint" searchable
+                           v-model="this.pspSpecification.selectedConstraintEvent"
+                           :options="constraintPredicates"></USelectMenu>
+            </div>
+          </div>
+        </div>
         <div :key="componentKey" v-if="this?.pspSpecification.selectedOrder=== 'PrecedenceChainN1'">
           if
 
@@ -3152,6 +3490,100 @@ export default {
           <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index"
                class="chained-event-section">
             <label class="title">and afterwards </label>
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" searchable v-model="chainedEvent.event.name"
+                             :options="predicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <div>
+              <div>
+                <div class="container-row center">
+                  <div class="min-width">
+                    <USelectMenu class="w-full" v-model="chainedEvent.time_bound.type"
+                                 :options="upperTimeBoundOptions" option-attribute=""
+                                 value-attribute=""></USelectMenu>
+                  </div>
+                </div>
+                <div v-if="chainedEvent.time_bound.type === 'Upper' ">
+                  <div class="container-row center">
+                    <div class="min-width">
+                      <div class="container-row center">
+                        <div class="container-row-element">
+                          <UInput v-model="chainedEvent.time_bound.upper_limit" :min="0" step="1" type="number"
+                                  placeholder="Within"/>
+                        </div>
+                        <div class="container-row-element">
+                          <UInput v-model="chainedEvent.time_bound.time_unit" type="text"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="container-row center">
+              <div class="min-width">
+                <USelectMenu class="w-full" placeholder="Constraint" searchable
+                             v-model="chainedEvent.constrain_event.name"
+                             :options="constraintPredicates"></USelectMenu>
+              </div>
+            </div>
+            <br>
+            <button class="delete-chainedevent-button" @click="deleteChainedEvent(index)">Remove Chained Event
+            </button>
+          </div>
+          <br>
+
+          <button class="button" @click="addChainedEvent">Add Chained Event</button>
+          <br>
+
+          [have occurred] <br>
+          <div v-if="this?.pspSpecification.selectedTimeBound=== 'Interval' ">
+            between {{ this.pspSpecification.lowerLimit }} and {{ this.pspSpecification.upperLimit }}
+            {{ this.pspSpecification.timeUnit }}
+          </div>
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" placeholder="Constraint" searchable
+                           v-model="this.pspSpecification.selectedConstraintEvent"
+                           :options="constraintPredicates"></USelectMenu>
+            </div>
+          </div>
+          <br>
+          before
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          [holds] <br>
+        </div>
+        <div :key="componentKey" v-if="this?.pspSpecification.selectedOrder=== 'RelaxedPrecedenceChainN1'">
+          if
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          [holds] <br>
+          then it must be the case that
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventS"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          <br>
+
+          <div v-for="(chainedEvent, index) in this.pspSpecification.selectedChainedEvents" :key="index"
+               class="chained-event-section">
+            <label class="title">and then </label>
             <div class="container-row center">
               <div class="min-width">
                 <USelectMenu class="w-full" searchable v-model="chainedEvent.event.name"

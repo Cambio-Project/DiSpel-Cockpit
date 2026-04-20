@@ -2,7 +2,7 @@ name: "dashboard-project"
 
 services:
   dashboard:
-    image: ghcr.io/cambio-project/dispel-cockpit:1.4.1
+    image: ghcr.io/cambio-project/dispel-cockpit:1.4.2
     container_name: dashboard
     ports:
       - 8080:3000
@@ -16,7 +16,7 @@ services:
       - ./data/search_results:/app/data/search_results
 
   pspwizard:
-    image: ghcr.io/cambio-project/pspwizardextended:1.1.2
+    image: ghcr.io/cambio-project/pspwizardextended:1.2.0
     container_name: pspwizard
     ports:
       - 8081:8080
