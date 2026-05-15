@@ -16,7 +16,7 @@ services:
       - ./data/search_results:/app/data/search_results
 
   pspwizard:
-    image: ghcr.io/cambio-project/pspwizardextended:1.2.0
+    image: ghcr.io/cambio-project/pspwizardextended:latest # 1.2.0
     container_name: pspwizard
     ports:
       - 8081:8080
@@ -60,7 +60,7 @@ services:
       - ./data/simulations_results:/simulations_results
 
   mosim:
-    image: ghcr.io/cambio-project/mosim:0.3.6
+    image: ghcr.io/cambio-project/mosim:latest # 0.3.6
     container_name: mosim
     ports:
       - 8087:8080

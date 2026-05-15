@@ -1556,6 +1556,7 @@ export default {
       try {
         const response = await getPSPMapping(payload);
         const responsePayload = await response.data.value.result
+        console.log("Response Payload:", responsePayload.payload);
 
         // if mapping is returned, display it, else display the error message
         if (responsePayload.payload.mapping) {
@@ -1834,6 +1835,14 @@ export default {
         Quantitative_Prism: '',
         TBV_untimed: '',
         TBV_timed: '',
+        SSEL_requires_end_mode: false,
+        SEL_requires_end_mode: false,
+        LTL_requires_end_mode: false,
+        MTL_requires_end_mode: false,
+        Prism_requires_end_mode: false,
+        Quantitative_Prism_requires_end_mode: false,
+        TBV_untimed_requires_end_mode: false,
+        TBV_timed_requires_end_mode: false,
         target_logic: this.targetLogicOptions.indexOf(this.pspSpecification.selectedTargetLogic),
         predicates_info: [],
         monitoringChecked: true,
@@ -1845,6 +1854,7 @@ export default {
       const responseWithNames = await getPSPMapping(payloadWithNames);
       const responsePayloadWithNames = await responseWithNames.data.value.result
       responseObject.SSEL = responsePayloadWithNames.payload.mapping;
+      responseObject.SSEL_requires_end_mode = responsePayloadWithNames.payload.endMode;
 
       // add all mappings to the commit
       for (index in this.targetLogicOptions) {
@@ -1859,24 +1869,31 @@ export default {
           switch (this.targetLogicOptions[index]) {
             case 'SEL':
               responseObject.SEL = responsePayload.payload.mapping;
+              responseObject.SEL_requires_end_mode = responsePayload.payload.endMode;
               break;
             case 'LTL':
               responseObject.LTL = responsePayload.payload.mapping;
+              responseObject.LTL_requires_end_mode = responsePayload.payload.endMode;
               break;
             case 'MTL':
               responseObject.MTL = responsePayload.payload.mapping;
+              responseObject.MTL_requires_end_mode = responsePayload.payload.endMode;
               break;
             case 'Prism':
               responseObject.Prism = responsePayload.payload.mapping;
+              responseObject.Prism_requires_end_mode = responsePayload.payload.endMode;
               break;
             case 'Quantitative Prism':
               responseObject.Quantitative_Prism = responsePayload.payload.mapping;
+              responseObject.Quantitative_Prism_requires_end_mode = responsePayload.payload.endMode;
               break;
             case 'TBV (untimed)':
               responseObject.TBV_untimed = responsePayload.payload.mapping;
+              responseObject.TBV_untimed_requires_end_mode = responsePayload.payload.endMode;
               break;
             case 'TBV (timed)':
               responseObject.TBV_timed = responsePayload.payload.mapping;
+              responseObject.TBV_timed_requires_end_mode = responsePayload.payload.endMode;
               break;
             default:
               console.log('This target logic doesnt exist');
