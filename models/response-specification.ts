@@ -11,6 +11,7 @@ export interface ResponseSpecification {
     measurement_source: 'remote-csv' | 'misim';
     "remote-csv-address"?: string;
     measurement_points: MeasurementPoint[];
+    endMode: boolean;
     options?: {
         create_plots?: boolean;
         store_combined_misim_results?: boolean;

@@ -37,7 +37,7 @@ services:
       - ./data/search_results:/usr/share/nginx/html/assets/search_results
 
   tbverifier:
-    image: ghcr.io/cambio-project/transient-behavior-verifier:1.0.3
+    image: ghcr.io/cambio-project/transient-behavior-verifier:latest # 1.0.3
     container_name: tbverifier
     ports:
       - 8083:5000

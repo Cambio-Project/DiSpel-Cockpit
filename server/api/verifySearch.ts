@@ -26,8 +26,15 @@ export default defineEventHandler(async (event) => {
 
         for (let searchName of result.searchNames) {
             const fileResponseVerificationResultPromises = responses.map((response: any) => {
-                const specification = determineFormula(response);
-                const predicates = response.predicates_info;
+                let specification = determineFormula(response);
+                let predicates = response.predicates_info;
+                const endMode = determineEndMode(response);
+                const measurementPoints = getMeasurementPointsFromPredicates(predicates);
+                
+                if (endMode) {
+                    specification = modifySpecificationWithEndMode(specification);
+                    predicates = modifyPredicatesWithEndMode(predicates);
+                }
 
                 const responseSpecification: ResponseSpecification = {
                     behavior_description: 'Description',
@@ -37,12 +44,14 @@ export default defineEventHandler(async (event) => {
                     "future-mtl": true,
                     measurement_source: "remote-csv",
                     "remote-csv-address": "/app/search_results/" + simulationID + "/" + searchName.fileName,
-                    measurement_points: getMeasurementPointsFromPredicates(predicates),
+                    measurement_points: measurementPoints,
+                    endMode,
                     options: {
                         create_plots: false,
                         store_combined_misim_results: false,
                     }
                 }
+
                 return sendVerificationRequest(responseSpecification, TBVERIFIER_URL);
             })
             allResponseVerificationResultPromises.push(fileResponseVerificationResultPromises)
@@ -60,10 +69,33 @@ export default defineEventHandler(async (event) => {
     }
 })
 
+function modifySpecificationWithEndMode(specification: string): string {
+    return specification.replaceAll("$END", "(END(end))");
+}
+
+function modifyPredicatesWithEndMode(predicates: any[]): any[] {
+    const endModePredicate = {
+        predicate_name: 'END',
+        predicate_logic: 'equal',
+        measurement_source: 'end',
+        predicate_comparison_value: '1'
+    }
+    return [...predicates, endModePredicate];
+}
+
 function determineFormula(response: any): string{
     if(response.specification.selectedTimeBound == null){
         return response.TBV_untimed
     }else{
         return response.TBV_timed
+    }
+}
+
+function determineEndMode(response: any): boolean{
+    if(response.specification.selectedTimeBound == null){
+        return response.TBV_untimed_requires_end_mode
+    }
+    else{
+        return response.TBV_timed_requires_end_mode
     }
 }
