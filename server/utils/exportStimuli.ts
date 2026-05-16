@@ -18,6 +18,7 @@ export async function exportStimuli(formData: FormData, type: string, scenario: 
 
     let fileName = scenario.simulationID!
     await fs.promises.writeFile(fileName, fileContent);
+    console.log("Stimuli file content:\n" + fileContent)
 
     const file = await fs.promises.readFile("./" + fileName)
     const blob = new Blob([file], {type: 'application/octet-stream'});
@@ -26,13 +27,13 @@ export async function exportStimuli(formData: FormData, type: string, scenario: 
 }
 
 export async function exportEndModes(formData: FormData, type: string, scenario: any) {
-    let index = 0;
+    let endModes: boolean[] = [];
     for (let stimulus of scenario.stimuli!) {
         if (stimulus.monitoringChecked) {
-            formData.append(`${type}[${index}]`, String(determineEndMode(stimulus)));
-            index++;
+            endModes.push(determineEndMode(stimulus));
         }
     }
+    formData.append(type, JSON.stringify(endModes));
 }
 
 function getSimulationMTLs(scenario: any): string {
