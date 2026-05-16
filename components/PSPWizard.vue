@@ -1933,6 +1933,11 @@ export default {
       // write specification infos for editing the scenario
       responseObject.specification = this.pspSpecification;
 
+      // If timebound is not selectable, it means it is a pattern that does require a timebound, so we set it to true
+      if(this.timeboundShouldGrayOut){
+        responseObject.specification.selectedTimeBound = true;
+      }
+
       if (typeof this.editId == 'undefined' || this.editId == null) {
         // not editing, create new entry
         await pushScenarioField(this.simID, type, responseObject)
