@@ -25,6 +25,16 @@ export async function exportStimuli(formData: FormData, type: string, scenario: 
     await fs.promises.unlink(fileName);
 }
 
+export async function exportEndModes(formData: FormData, type: string, scenario: any) {
+    let index = 0;
+    for (let stimulus of scenario.stimuli!) {
+        if (stimulus.monitoringChecked) {
+            formData.append(`${type}[${index}]`, String(determineEndMode(stimulus)));
+            index++;
+        }
+    }
+}
+
 function getSimulationMTLs(scenario: any): string {
     let fileContent = "";
     for (let stimulus of scenario.stimuli!) {
@@ -40,7 +50,8 @@ function getMonitoringMTLs(scenario: any): string {
     let fileContent = "";
     for (let stimulus of scenario.stimuli!) {
         if (stimulus.monitoringChecked) {
-            const formula = determineFormula(stimulus)
+            // replace $END with the actual end mode formula for MoSIM
+            const formula = determineFormula(stimulus).replaceAll("$END", "(($b:end) == (true))")
             fileContent = fileContent + formula + "\n"
         }
     }
@@ -52,5 +63,14 @@ function determineFormula(stimulus: any): string{
         return stimulus.LTL
     }else{
         return stimulus.MTL
+    }
+}
+
+function determineEndMode(stimulus: any): boolean{
+    if(stimulus.specification.selectedTimeBound == null){
+        return stimulus.LTL_requires_end_mode
+    }
+    else{
+        return stimulus.MTL_requires_end_mode
     }
 }

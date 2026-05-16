@@ -1,5 +1,5 @@
 import {appendExistingFile} from "~/server/utils/appendExistingFile";
-import {AnalysisType, exportStimuli} from "~/server/utils/exportStimuli";
+import {AnalysisType, exportEndModes, exportStimuli} from "~/server/utils/exportStimuli";
 import fs from "fs";
 import {pushSearchNames} from "~/server/utils/pushSearchResult";
 
@@ -20,9 +20,11 @@ export default defineEventHandler(async (event) => {
     }
 
     await exportStimuli(formData, "mtls", scenario, AnalysisType.Monitoring)
+    await exportEndModes(formData, "endModeConfig", scenario)
 
     formData.append("simulation_id", simulationID)
     formData.append("search_window_size", scenario!.searchWindowSize!)
+    
     const config = useRuntimeConfig(event)
     const moSimResponse = await fetch("http://" + config.public.moSimDomain + ":" + config.public.moSimPort + "/search/upload", {
         method: "POST",
