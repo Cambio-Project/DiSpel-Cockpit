@@ -35,10 +35,49 @@ const responseIndex = Number.parseInt(route.query.response_index as any);
 
 const response = scenario.responses[responseIndex];
 const sel = response.SEL;
-const tbvTimed = response.TBV_timed;
-const predicates = JSON.stringify(response.predicates_info);
+let tbvTimed = determineFormula(response);
+let predicates = response.predicates_info;
 
-const src = computed(() => "http://" + config.public.tqPropRefinerDomain + ":" + config.public.tqPropRefinerPort + "/requirement-refinement/dynamic?file-address=assets/" + srcDirectory + "&file=" + fileName + "&sim_id=" + simId + "&response_index=" + responseIndex + "&future_mtl=true" + "&sel=" + sel + "&tbv_timed=" + tbvTimed + "&predicates=" + predicates)
+const endMode = determineEndMode(response);
+                
+if (endMode) {
+  tbvTimed = modifySpecificationWithEndMode(tbvTimed);
+  predicates = modifyPredicatesWithEndMode(predicates);
+}
+predicates = JSON.stringify(predicates);                
+
+const src = computed(() => "http://" + config.public.tqPropRefinerDomain + ":" + config.public.tqPropRefinerPort + "/requirement-refinement/dynamic?file-address=assets/" + srcDirectory + "&file=" + fileName + "&sim_id=" + simId + "&response_index=" + responseIndex + "&future_mtl=true" + "&sel=" + sel + "&tbv_timed=" + tbvTimed + "&predicates=" + predicates+ "&end_mode=" + endMode);
+
+function modifySpecificationWithEndMode(specification: string): string {
+    return specification.replaceAll("$END", "(END(end))");
+}
+
+function modifyPredicatesWithEndMode(predicates: any[]): any[] {
+    const endModePredicate = {
+        predicate_name: 'END',
+        predicate_logic: 'equal',
+        measurement_source: 'end',
+        predicate_comparison_value: '1'
+    }
+    return [...predicates, endModePredicate];
+}
+
+function determineFormula(response: any): string{
+    if(response.specification.selectedTimeBound == null){
+        return response.TBV_untimed
+    }else{
+        return response.TBV_timed
+    }
+}
+
+function determineEndMode(response: any): boolean{
+    if(response.specification.selectedTimeBound == null){
+        return response.TBV_untimed_requires_end_mode
+    }
+    else{
+        return response.TBV_timed_requires_end_mode
+    }
+}
 
 </script>
 
