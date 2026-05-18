@@ -18,7 +18,6 @@ export async function exportStimuli(formData: FormData, type: string, scenario: 
 
     let fileName = scenario.simulationID!
     await fs.promises.writeFile(fileName, fileContent);
-    console.log("Stimuli file content:\n" + fileContent)
 
     const file = await fs.promises.readFile("./" + fileName)
     const blob = new Blob([file], {type: 'application/octet-stream'});
