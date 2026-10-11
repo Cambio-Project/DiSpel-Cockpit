@@ -152,7 +152,7 @@ export default {
       predicateLogicOptions: ['equal', 'smallerEqual', 'smaller', 'biggerEqual', 'bigger', 'trendUpward', 'trendUpwardStrict', 'trendDownward', 'trendDownwardStrict',],
       measurementSourceOptions: null,
       scopeOptions: ["Globally", "BeforeR", "AfterQ", "BetweenQandR", "AfterQUntilR"],
-      occurrenceOptions: ["SteadyState", "MinimumDuration", "MaximumDuration", "Recurrence", "Universality", "Absence", "Existence", "BoundedExistence", "TransientState"],
+      occurrenceOptions: ["SteadyState", "MinimumDuration", "MaximumDuration", "Recurrence", "Universality", "Absence", "Existence", "BoundedEventExistence", "BoundedExistence", "TransientState"],
       orderOptions: ["Response", "ResponseChain1N", "ResponseChainN1", "RelaxedResponseChain1N", "RelaxedResponseChainN1", "ResponseInvariance", "Precedence", "PrecedenceChain1N", "PrecedenceChainN1", "RelaxedPrecedenceChain1N", "RelaxedPrecedenceChainN1", "Until"],
       targetLogicOptions: ["SEL", "LTL", "MTL", "Prism", "Quantitative Prism", "TBV (untimed)", "TBV (timed)"],
       checkedProbability: false,
@@ -607,6 +607,7 @@ export default {
         "Absence": "Absence",
         "Existence": "Existence",
         "BoundedExistence": "Bounded Existence",
+        "BoundedEventExistence": "Bounded Event Existence",
         "TransientState": "Transient State",
       };
       return this.occurrenceOptions.map(option => ({label: occurenceMap[option], value: option}));
@@ -635,6 +636,7 @@ export default {
           this.pspSpecification.selectedOccurrence === 'Universality' ||
           this.pspSpecification.selectedOccurrence === 'Absence' ||
           this.pspSpecification.selectedOccurrence === 'Existence' ||
+          this.pspSpecification.selectedOccurrence === 'BoundedEventExistence' ||
           this.pspSpecification.selectedOccurrence === 'BoundedExistence');
     }
     ,
@@ -1559,7 +1561,7 @@ export default {
       try {
         const response = await getPSPMapping(payload);
         const responsePayload = await response.data.value.result
-        console.log("Response Payload:", responsePayload.payload);
+        // console.log("Response Payload:", responsePayload.payload);
 
         // if mapping is returned, display it, else display the error message
         if (responsePayload.payload.mapping) {
@@ -2685,6 +2687,22 @@ export default {
             </div>
           </div>
           [holds] eventually.
+        </div>
+        <div v-if="this?.pspSpecification.selectedOccurrence === 'BoundedEventExistence'">
+
+          <div class="container-row center">
+            <div class="min-width">
+              <USelectMenu class="w-full" searchable v-model="this.pspSpecification.selectedEventP"
+                           :options="predicates"></USelectMenu>
+            </div>
+          </div>
+          [holds] at most
+          <div class="container-row center">
+            <div class="min-width">
+              <UInput v-model="this.pspSpecification.selectedInterval" type="number"/>
+            </div>
+          </div>
+          times.
         </div>
         <div v-if="this?.pspSpecification.selectedOccurrence === 'BoundedExistence'">
 
