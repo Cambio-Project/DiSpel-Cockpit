@@ -16,6 +16,9 @@ export default {
       }, {
         value: 'Liberal',
         label: 'Liberal'
+      }, {
+        value: 'Conservative',
+        label: 'Conservative'
       }],
       stimulusItems: [{
         key: 'addCommand',
